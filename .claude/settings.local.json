@@ -4,7 +4,13 @@
       "Bash(python3 -c ' *)",
       "Bash(npm -v)",
       "Bash(npx --yes create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --yes)",
-      "Bash(mv /Users/hugotorres/proyectos-web/cambialibros/design_source /tmp/design_source_backup *)"
+      "Bash(mv /Users/hugotorres/proyectos-web/cambialibros/design_source /tmp/design_source_backup *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
