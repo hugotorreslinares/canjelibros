@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+  html, body { margin: 0; padding: 0; background: #f3f2f2; color: #201e1d; font-family: "Source Serif 4", Georgia, serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #006786; text-decoration: none; }
+  a:hover { color: #d6006c; }
+  button { font-family: inherit; cursor: pointer; }
+  input, textarea, select { font-family: inherit; }
+  :focus-visible { outline: 2px solid #0088b0; outline-offset: 2px; }
+  ::selection { background: #cbeeff; }
+  @keyframes breathe { 0%,100% { transform: scale(1); opacity: .85 } 50% { transform: scale(1.09); opacity: 1 } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+
+<sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ true }}">
+  <div style="flex: 1; display: grid; grid-template-columns: minmax(420px, 1fr) minmax(320px, 0.7fr); gap: 60px; padding: 50px 60px 40px; align-items: start">
+    <div style="max-width: 720px">
+      <div style="display: flex; align-items: baseline; gap: 15px; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: #605d5d">
+        <span>Bogotá</span><span>·</span><span>Edición del lector</span><span>·</span><span>Nº 001</span>
+      </div>
+      <div style="height: 6px; background: #201e1d; margin: 10px 0 3px"></div>
+      <div style="height: 1px; background: #201e1d; margin-bottom: 20px"></div>
+      <h1 style="font-size: 96px; line-height: .92; letter-spacing: -.03em; margin: 0 0 20px; font-weight: 600">El Canje</h1>
+      <p style="font-size: 27px; line-height: 1.34; margin: 0 0 30px; max-width: 20em; text-wrap: pretty">El conocimiento es libertad. No se compra: se pasa de mano en mano, en la esquina de siempre, a las siete de la tarde.</p>
+      <p style="font-size: 17px; line-height: 1.6; color: #444141; max-width: 34em; margin: 0 0 15px; text-wrap: pretty">Cinco libros en tu estante para empezar. Cada intercambio que completes te abre un cupo más: quien más comparte, más muestra.</p>
+      <p style="font-size: 17px; line-height: 1.6; color: #444141; max-width: 34em; margin: 0 0 40px; text-wrap: pretty">Para verte con quien tienes cerca necesitamos una idea de dónde estás. Nunca tu dirección: una zona difusa de 600 metros, y el punto de encuentro lo eliges tú.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center">
+        <button onClick="{{ allowLocation }}" style="background: #0088b0; color: #fff; border: none; border-radius: 2px; padding: 15px 30px; font-size: 18px" style-hover="background: #1186ac" style-active="background: #006786">Compartir mi zona aproximada</button>
+        <button onClick="{{ allowLocation }}" style="background: transparent; color: #201e1d; border: 1px solid #201e1d; border-radius: 2px; padding: 15px 24px; font-size: 18px" style-hover="background: #eae7e7">Marcarla yo en el mapa</button>
+      </div>
+      <p style="font-size: 14px; color: #605d5d; margin: 25px 0 0">Sin publicidad, sin venta de datos, sin precios. Solo libros usados que ya leyó alguien.</p>
+    </div>
+    <div style="padding-top: 60px">
+      <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 15px">En circulación hoy</div>
+      <div style="display: grid; gap: 20px">
+        <div>
+          <div style="font-size: 54px; line-height: 1; color: #0088b0">1.284</div>
+          <div style="font-size: 15px; color: #444141">libros en estantes de Bogotá</div>
+        </div>
+        <div>
+          <div style="font-size: 54px; line-height: 1; color: #d6006c">317</div>
+          <div style="font-size: 15px; color: #444141">intercambios cerrados este mes</div>
+        </div>
+        <div>
+          <div style="font-size: 54px; line-height: 1">0</div>
+          <div style="font-size: 15px; color: #444141">pesos que cambiaron de manos</div>
+        </div>
+      </div>
+      <p style="font-size: 17px; line-height: 1.5; font-style: italic; color: #201e1d; margin: 40px 0 0; border-top: 1px solid rgba(32,30,29,.16); padding-top: 20px; max-width: 20em">«Cambié un García Márquez por un libro de botánica y ahora tengo un huerto en la terraza.»<span style="display: block; font-style: normal; font-size: 14px; color: #605d5d; margin-top: 8px">Diana P. — Teusaquillo, 9 intercambios</span></p>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isApp }}">
+<div style="flex: 1; display: flex; flex-direction: column">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 30px; padding: 14px 40px; border-bottom: 1px solid rgba(32,30,29,.16); flex-wrap: wrap">
+    <div style="display: flex; align-items: baseline; gap: 20px">
+      <button onClick="{{ goMap }}" style="background: none; border: none; padding: 0; font-family: inherit; font-size: 30px; font-weight: 600; letter-spacing: -.02em; color: #201e1d">El Canje</button>
+      <span style="font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #605d5d">Bogotá · {{ today }}</span>
+    </div>
+    <nav style="display: flex; align-items: center; gap: 26px; font-size: 17px">
+      <button onClick="{{ goMap }}" style="background: none; border: none; padding: 4px 0; font-size: 17px; color: {{ navMapColor }}; border-bottom: 2px solid {{ navMapLine }}">Mapa</button>
+      <button onClick="{{ goCatalog }}" style="background: none; border: none; padding: 4px 0; font-size: 17px; color: {{ navCatColor }}; border-bottom: 2px solid {{ navCatLine }}">Catálogo</button>
+      <button onClick="{{ goChat }}" style="background: none; border: none; padding: 4px 0; font-size: 17px; color: {{ navChatColor }}; border-bottom: 2px solid {{ navChatLine }}">Mensajes <span style="color: #d6006c">·{{ unread }}</span></button>
+      <button onClick="{{ goShelf }}" style="background: none; border: none; padding: 4px 0; font-size: 17px; color: {{ navShelfColor }}; border-bottom: 2px solid {{ navShelfLine }}">Mi estante</button>
+      <button onClick="{{ goPublish }}" style="background: #0088b0; color: #fff; border: none; border-radius: 2px; padding: 9px 18px; font-size: 16px" style-hover="background: #1186ac" style-active="background: #006786">Publicar libro</button>
+    </nav>
+  </header>
+
+  <sc-if value="{{ isMap }}" hint-placeholder-val="{{ true }}">
+    <div style="display: grid; grid-template-columns: minmax(0,1fr) 400px; gap: 0; flex: 1; align-items: stretch">
+      <div style="position: relative; overflow: hidden; background: #f3f2f2; min-height: 640px">
+        <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0; width: 100%; height: 100%">
+          <g stroke="#201e1d" stroke-opacity=".13" fill="none">
+            <path d="M0 120 H1000 M0 250 H1000 M0 380 H1000 M0 510 H1000 M0 630 H1000" stroke-width="1"></path>
+            <path d="M120 0 V700 M260 0 V700 M400 0 V700 M540 0 V700 M680 0 V700 M820 0 V700" stroke-width="1"></path>
+          </g>
+          <g stroke="#201e1d" stroke-opacity=".38" fill="none">
+            <path d="M300 0 V700" stroke-width="5"></path>
+            <path d="M0 300 H1000" stroke-width="5"></path>
+            <path d="M640 0 L900 700" stroke-width="3"></path>
+          </g>
+          <g fill="#201e1d" fill-opacity=".06">
+            <rect x="700" y="60" width="220" height="150"></rect>
+            <rect x="130" y="470" width="150" height="120"></rect>
+          </g>
+          <g stroke="#201e1d" stroke-opacity=".2" stroke-width="1">
+            <path d="M700 60 L920 210 M700 110 L920 260 M700 160 L870 210"></path>
+          </g>
+          <g fill="#605d5d" font-family="Source Serif 4, serif" font-size="13" letter-spacing="1.5">
+            <text x="310" y="30">CRA 7</text>
+            <text x="14" y="292">CALLE 26</text>
+            <text x="712" y="52">PARQUE NACIONAL</text>
+            <text x="140" y="462">CEMENTERIO CENTRAL</text>
+            <text x="820" y="660">AV. CIRCUNVALAR</text>
+          </g>
+          <g stroke="#0088b0" stroke-width="1" fill="none">
+            <path d="M20 20 h18 M20 20 v18 M980 680 h-18 M980 680 v-18"></path>
+          </g>
+          <g stroke="#d6006c" stroke-width="1" fill="none">
+            <path d="M980 20 h-18 M980 20 v18 M20 680 h18 M20 680 v-18"></path>
+          </g>
+        </svg>
+
+        <sc-for list="{{ users }}" as="u" hint-placeholder-count="5">
+          <button onClick="{{ u.select }}" style="position: absolute; left: {{ u.x }}%; top: {{ u.y }}%; transform: translate(-50%,-50%); background: none; border: none; padding: 0; display: grid; justify-items: center; gap: 6px">
+            <div style="position: relative; width: 132px; height: 132px; display: grid; place-items: center">
+              <div style="position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, {{ u.haloInk }} 0%, rgba(0,136,176,0) 68%); filter: blur(7px); animation: breathe {{ u.pulse }}s ease-in-out infinite"></div>
+              <div style="position: relative; width: 46px; height: 46px; border-radius: 50%; background: #f8f4f4; border: 1.5px solid {{ u.ink }}; display: grid; place-items: center; font-size: 19px; color: {{ u.ink }}; box-shadow: 0 3px 10px rgba(45,43,43,.16)">{{ u.count }}</div>
+            </div>
+            <div style="background: #f8f4f4; border: 1px solid rgba(32,30,29,.16); border-radius: 2px; padding: 4px 9px; display: grid; gap: 1px; justify-items: center; box-shadow: 0 1px 2px rgba(45,43,43,.14)">
+              <span style="font-size: 15px; color: #201e1d">{{ u.name }}</span>
+              <span style="font-size: 12px; color: #605d5d">{{ u.statusLine }}</span>
+            </div>
+          </button>
+        </sc-for>
+
+        <div style="position: absolute; left: 24px; bottom: 24px; background: rgba(248,244,244,.92); border: 1px solid rgba(32,30,29,.16); border-radius: 2px; padding: 12px 16px; max-width: 300px">
+          <div style="font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #605d5d; margin-bottom: 6px">Tu zona</div>
+          <div style="font-size: 16px; line-height: 1.4">Chapinero Alto · radio de 600 m. Nadie ve tu dirección exacta.</div>
+        </div>
+      </div>
+
+      <aside style="border-left: 1px solid rgba(32,30,29,.16); padding: 28px 30px 40px; overflow: auto">
+        <sc-if value="{{ noSelection }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d">Cerca de ti</div>
+            <h2 style="font-size: 34px; line-height: 1.05; margin: 8px 0 14px">{{ nearCount }} lectores en 3 km</h2>
+            <p style="font-size: 17px; line-height: 1.5; color: #444141; margin: 0 0 26px; text-wrap: pretty">Toca una zona en el mapa para ver el estante de esa persona. El número dentro del círculo es cuántos libros tiene disponibles.</p>
+            <div style="display: grid; gap: 18px">
+              <sc-for list="{{ users }}" as="u" hint-placeholder-count="5">
+                <button onClick="{{ u.select }}" style="text-align: left; background: none; border: none; border-top: 1px solid rgba(32,30,29,.16); padding: 16px 0 0; display: grid; gap: 4px" style-hover="background: #eae7e7">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+                    <span style="font-size: 21px">{{ u.name }}</span>
+                    <span style="font-size: 14px; color: #605d5d">{{ u.dist }} km</span>
+                  </div>
+                  <div style="font-size: 14px; color: #605d5d">{{ u.barrio }} · {{ u.stars }} {{ u.rating }} · {{ u.trades }} intercambios</div>
+                  <div style="font-size: 16px; color: #201e1d">{{ u.teaser }}</div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasSelection }}">
+          <div>
+            <button onClick="{{ clearSelection }}" style="background: none; border: none; padding: 0 0 18px; font-size: 15px; color: #006786">← Volver a la lista</button>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d">{{ sel.barrio }} · {{ sel.dist }} km</div>
+            <h2 style="font-size: 36px; line-height: 1.05; margin: 8px 0 6px">{{ sel.name }}</h2>
+            <div style="font-size: 16px; color: #444141; margin-bottom: 6px">{{ sel.stars }} {{ sel.rating }} de 5 · {{ sel.trades }} intercambios · {{ sel.statusLine }}</div>
+            <div style="font-size: 16px; line-height: 1.5; color: #444141; margin-bottom: 8px; font-style: italic">{{ sel.bio }}</div>
+            <div style="font-size: 14px; color: #605d5d; border-top: 1px solid rgba(32,30,29,.16); padding-top: 10px; margin-bottom: 22px">Punto de encuentro que propone: {{ sel.spot }}</div>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 14px">Su estante · {{ sel.count }} disponibles</div>
+            <div style="display: grid; gap: 20px">
+              <sc-for list="{{ selBooks }}" as="b" hint-placeholder-count="4">
+                <div style="display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 14px; border-top: 1px solid rgba(32,30,29,.16); padding-top: 16px">
+                  <div style="height: 82px; background: {{ b.plate }}; border-radius: 1px; padding: 6px; display: flex; align-items: flex-end; font-size: 10px; line-height: 1.15; color: #f8f4f4; overflow: hidden">{{ b.short }}</div>
+                  <div style="display: grid; gap: 5px">
+                    <div style="font-size: 20px; line-height: 1.15">{{ b.t }}</div>
+                    <div style="font-size: 15px; color: #605d5d">{{ b.a }}</div>
+                    <div style="font-size: 15px; line-height: 1.45; color: #444141">{{ b.desc }}</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 3px">
+                      <span style="font-size: 13px; padding: 2px 8px; border-radius: 2px; background: #cbeeff; color: #004961">{{ b.cat }}</span>
+                      <span style="font-size: 13px; padding: 2px 8px; border-radius: 2px; border: 1px solid rgba(32,30,29,.3); color: #444141">{{ b.cond }}</span>
+                    </div>
+                    <button onClick="{{ b.propose }}" style="justify-self: start; margin-top: 8px; background: #0088b0; color: #fff; border: none; border-radius: 2px; padding: 8px 16px; font-size: 15px" style-hover="background: #1186ac" style-active="background: #006786">Proponer intercambio</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isCatalog }}">
+    <div style="padding: 34px 40px 60px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 30px; flex-wrap: wrap; margin-bottom: 6px">
+        <h1 style="font-size: 52px; line-height: 1; margin: 0">Catálogo</h1>
+        <div style="font-size: 16px; color: #605d5d">{{ catCount }} libros disponibles · ordenados por {{ sortLabel }}</div>
+      </div>
+      <div style="height: 5px; background: #201e1d; margin: 14px 0 2px"></div>
+      <div style="height: 1px; background: #201e1d; margin-bottom: 26px"></div>
+      <div style="display: grid; grid-template-columns: 230px minmax(0,1fr); gap: 44px; align-items: start">
+        <div style="display: grid; gap: 26px; position: sticky; top: 20px">
+          <div>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 10px">Categoría</div>
+            <div style="display: grid; gap: 4px">
+              <sc-for list="{{ catOptions }}" as="o" hint-placeholder-count="7">
+                <button onClick="{{ o.pick }}" style="text-align: left; background: none; border: none; padding: 3px 0; font-size: 17px; color: {{ o.color }}">{{ o.label }} <span style="color: #7d7979; font-size: 14px">{{ o.n }}</span></button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 10px">Estado</div>
+            <div style="display: grid; gap: 4px">
+              <sc-for list="{{ condOptions }}" as="o" hint-placeholder-count="5">
+                <button onClick="{{ o.pick }}" style="text-align: left; background: none; border: none; padding: 3px 0; font-size: 17px; color: {{ o.color }}">{{ o.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 10px">Distancia máxima</div>
+            <div style="font-size: 19px; margin-bottom: 6px">{{ maxDistLabel }}</div>
+            <input type="range" min="0.5" max="8" step="0.5" value="{{ maxDist }}" onChange="{{ setDist }}" style="width: 100%; accent-color: #0088b0">
+          </div>
+          <div>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 10px">Orden</div>
+            <div style="display: grid; gap: 4px">
+              <sc-for list="{{ sortOptions }}" as="o" hint-placeholder-count="3">
+                <button onClick="{{ o.pick }}" style="text-align: left; background: none; border: none; padding: 3px 0; font-size: 17px; color: {{ o.color }}">{{ o.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; gap: 0">
+          <sc-for list="{{ catalog }}" as="b" hint-placeholder-count="8">
+            <div style="display: grid; grid-template-columns: 74px minmax(0,1fr) 210px; gap: 22px; border-top: 1px solid rgba(32,30,29,.16); padding: 22px 0; align-items: start">
+              <div style="height: 106px; background: {{ b.plate }}; border-radius: 1px; padding: 8px; display: flex; align-items: flex-end; font-size: 11px; line-height: 1.15; color: #f8f4f4; overflow: hidden">{{ b.short }}</div>
+              <div style="display: grid; gap: 6px">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline">
+                  <span style="font-size: 25px; line-height: 1.1">{{ b.t }}</span>
+                  <span style="font-size: 16px; color: #605d5d">{{ b.a }}</span>
+                </div>
+                <div style="font-size: 16px; line-height: 1.5; color: #444141; max-width: 46em">{{ b.desc }}</div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px">
+                  <span style="font-size: 13px; padding: 2px 8px; border-radius: 2px; background: #cbeeff; color: #004961">{{ b.cat }}</span>
+                  <span style="font-size: 13px; padding: 2px 8px; border-radius: 2px; border: 1px solid rgba(32,30,29,.3); color: #444141">{{ b.cond }}</span>
+                </div>
+              </div>
+              <div style="display: grid; gap: 6px; justify-items: start">
+                <button onClick="{{ b.selectOwner }}" style="background: none; border: none; padding: 0; font-size: 18px; color: #006786; text-align: left">{{ b.owner }}</button>
+                <div style="font-size: 14px; color: #605d5d">{{ b.barrio }} · {{ b.dist }} km · {{ b.stars }}</div>
+                <button onClick="{{ b.propose }}" style="margin-top: 6px; background: transparent; color: #201e1d; border: 1px solid #201e1d; border-radius: 2px; padding: 7px 14px; font-size: 15px" style-hover="background: #eae7e7">Proponer intercambio</button>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ catalogEmpty }}">
+            <div style="border-top: 1px solid rgba(32,30,29,.16); padding: 40px 0; font-size: 20px; color: #605d5d">Nada con esos filtros. Amplía la distancia o cambia de categoría.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isShelf }}">
+    <div style="padding: 34px 40px 60px; max-width: 1180px">
+      <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d">Mi estante</div>
+      <h1 style="font-size: 52px; line-height: 1; margin: 8px 0 0">Camila Ordóñez</h1>
+      <div style="font-size: 17px; color: #444141; margin-top: 8px">Chapinero Alto · {{ myStars }} {{ myRating }} de 5 · desde marzo de 2026</div>
+      <div style="height: 5px; background: #201e1d; margin: 20px 0 2px"></div>
+      <div style="height: 1px; background: #201e1d; margin-bottom: 30px"></div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 34px; margin-bottom: 44px">
+        <div>
+          <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 8px">Cupos</div>
+          <div style="font-size: 60px; line-height: 1; color: #0088b0">{{ usedSlots }}<span style="color: #201e1d; font-size: 30px">/{{ totalSlots }}</span></div>
+          <div style="display: flex; gap: 5px; margin-top: 12px">
+            <sc-for list="{{ slotPips }}" as="p" hint-placeholder-count="6">
+              <div style="width: 26px; height: 12px; border-radius: 1px; background: {{ p.fill }}; border: 1px solid {{ p.edge }}"></div>
+            </sc-for>
+          </div>
+          <div style="font-size: 15px; color: #444141; margin-top: 12px; max-width: 22em">{{ slotNote }}</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 8px">Intercambios</div>
+          <div style="font-size: 60px; line-height: 1">{{ myTrades }}</div>
+          <div style="font-size: 15px; color: #444141; margin-top: 12px; max-width: 22em">Cada intercambio confirmado por las dos partes abre un cupo permanente.</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 8px">Racha</div>
+          <div style="font-size: 60px; line-height: 1; color: #d6006c">4</div>
+          <div style="font-size: 15px; color: #444141; margin-top: 12px; max-width: 22em">Semanas seguidas con al menos un canje. Dos más y llegas a «Lector de barrio».</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 8px">Siguiente cupo</div>
+          <div style="font-size: 22px; line-height: 1.3; max-width: 15em">{{ nextCupoNote }}</div>
+          <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ goChat }}" style="margin-top: 14px; background: transparent; color: #201e1d; border: 1px solid #201e1d; border-radius: 2px; padding: 8px 16px; font-size: 15px" style-hover="background: #eae7e7">Ver conversación</button>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 26px">
+        <sc-for list="{{ myBooks }}" as="b" hint-placeholder-count="4">
+          <div style="border-top: 1px solid rgba(32,30,29,.16); padding-top: 16px; display: grid; gap: 8px">
+            <div style="height: 150px; background: {{ b.plate }}; border-radius: 1px; padding: 12px; display: flex; align-items: flex-end; font-size: 14px; line-height: 1.2; color: #f8f4f4">{{ b.short }}</div>
+            <div style="font-size: 21px; line-height: 1.15">{{ b.t }}</div>
+            <div style="font-size: 15px; color: #605d5d">{{ b.a }}</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <span style="font-size: 13px; padding: 2px 8px; border-radius: 2px; background: #cbeeff; color: #004961">{{ b.cat }}</span>
+              <span style="font-size: 13px; padding: 2px 8px; border-radius: 2px; border: 1px solid rgba(32,30,29,.3); color: #444141">{{ b.cond }}</span>
+            </div>
+            <div style="font-size: 14px; color: {{ b.stateColor }}">{{ b.state }}</div>
+          </div>
+        </sc-for>
+        <button onClick="{{ goPublish }}" style="border: 1px dashed rgba(32,30,29,.4); background: none; border-radius: 2px; min-height: 240px; display: grid; place-items: center; gap: 6px; padding: 20px; font-size: 19px; color: #444141" style-hover="background: #eae7e7">
+          <span style="font-size: 34px; color: #0088b0">+</span>
+          <span>{{ addSlotLabel }}</span>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isPublish }}">
+    <div style="padding: 34px 40px 70px; display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 60px; max-width: 1180px">
+      <div>
+        <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d">Nueva publicación · cupo {{ nextSlot }} de {{ totalSlots }}</div>
+        <h1 style="font-size: 48px; line-height: 1.02; margin: 8px 0 26px">Pon un libro en circulación</h1>
+        <div style="display: grid; gap: 24px; max-width: 640px">
+          <label style="display: grid; gap: 6px">
+            <span style="font-size: 15px; color: #444141">Título</span>
+            <input value="{{ formTitle }}" onChange="{{ setTitle }}" placeholder="Rayuela" style="border: 1px solid rgba(32,30,29,.35); border-radius: 2px; background: #f8f4f4; padding: 12px 14px; font-size: 19px; color: #201e1d">
+          </label>
+          <label style="display: grid; gap: 6px">
+            <span style="font-size: 15px; color: #444141">Autor</span>
+            <input value="{{ formAuthor }}" onChange="{{ setAuthor }}" placeholder="Julio Cortázar" style="border: 1px solid rgba(32,30,29,.35); border-radius: 2px; background: #f8f4f4; padding: 12px 14px; font-size: 19px; color: #201e1d">
+          </label>
+          <label style="display: grid; gap: 6px">
+            <span style="font-size: 15px; color: #444141">Descripción · por qué vale la pena pasarlo</span>
+            <textarea onChange="{{ setDesc }}" rows="4" placeholder="Edición de bolsillo, subrayada a lápiz en los capítulos del club de la serpiente." style="border: 1px solid rgba(32,30,29,.35); border-radius: 2px; background: #f8f4f4; padding: 12px 14px; font-size: 18px; line-height: 1.5; color: #201e1d; resize: vertical">{{ formDesc }}</textarea>
+          </label>
+          <div style="display: grid; gap: 8px">
+            <span style="font-size: 15px; color: #444141">Estado</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{ condChips }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.pick }}" style="border: 1px solid {{ c.edge }}; background: {{ c.bg }}; color: {{ c.fg }}; border-radius: 2px; padding: 8px 15px; font-size: 16px">{{ c.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: grid; gap: 8px">
+            <span style="font-size: 15px; color: #444141">Categoría</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="8">
+                <button onClick="{{ c.pick }}" style="border: 1px solid {{ c.edge }}; background: {{ c.bg }}; color: {{ c.fg }}; border-radius: 2px; padding: 8px 15px; font-size: 16px">{{ c.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: grid; gap: 8px">
+            <span style="font-size: 15px; color: #444141">Portada (opcional)</span>
+            <div style="border: 1px dashed rgba(32,30,29,.4); border-radius: 2px; padding: 26px; text-align: center; font-size: 16px; color: #605d5d">Arrastra una foto de la tapa. Si no hay foto, imprimimos el título como portada tipográfica.</div>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 4px">
+            <button onClick="{{ submitBook }}" style="background: #0088b0; color: #fff; border: none; border-radius: 2px; padding: 14px 28px; font-size: 18px" style-hover="background: #1186ac" style-active="background: #006786">Publicar en mi estante</button>
+            <button onClick="{{ goShelf }}" style="background: none; border: none; font-size: 17px; color: #006786">Cancelar</button>
+          </div>
+        </div>
+      </div>
+      <div style="padding-top: 40px">
+        <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 12px">Vista previa</div>
+        <div style="height: 210px; background: {{ previewPlate }}; border-radius: 1px; padding: 16px; display: flex; align-items: flex-end; font-size: 17px; line-height: 1.2; color: #f8f4f4">{{ previewShort }}</div>
+        <div style="font-size: 23px; line-height: 1.15; margin-top: 12px">{{ previewTitle }}</div>
+        <div style="font-size: 16px; color: #605d5d">{{ previewAuthor }}</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px">
+          <span style="font-size: 13px; padding: 2px 8px; border-radius: 2px; background: #cbeeff; color: #004961">{{ formCat }}</span>
+          <span style="font-size: 13px; padding: 2px 8px; border-radius: 2px; border: 1px solid rgba(32,30,29,.3); color: #444141">{{ formCond }}</span>
+        </div>
+        <div style="font-size: 15px; line-height: 1.5; color: #444141; margin-top: 20px; border-top: 1px solid rgba(32,30,29,.16); padding-top: 14px">{{ slotNote }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isChat }}">
+    <div style="display: grid; grid-template-columns: 330px minmax(0,1fr); flex: 1; align-items: stretch">
+      <div style="border-right: 1px solid rgba(32,30,29,.16); padding: 26px 24px">
+        <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 14px">Mensajes</div>
+        <div style="display: grid; gap: 2px">
+          <sc-for list="{{ threads }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.open }}" style="text-align: left; background: {{ t.bg }}; border: none; border-top: 1px solid rgba(32,30,29,.16); padding: 15px 10px; display: grid; gap: 3px">
+              <div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline">
+                <span style="font-size: 19px">{{ t.name }}</span>
+                <span style="font-size: 13px; color: #605d5d">{{ t.time }}</span>
+              </div>
+              <div style="font-size: 15px; color: #444141; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ t.last }}</div>
+              <div style="font-size: 13px; color: {{ t.stateColor }}">{{ t.state }}</div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 24px 34px 26px">
+        <div style="display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; border-bottom: 1px solid rgba(32,30,29,.16); padding-bottom: 16px">
+          <div>
+            <div style="font-size: 27px">{{ thread.name }}</div>
+            <div style="font-size: 15px; color: #605d5d">{{ thread.barrio }} · {{ thread.dist }} km · {{ thread.statusLine }}</div>
+          </div>
+          <div style="text-align: right">
+            <div style="font-size: 14px; color: #605d5d">Canje acordado</div>
+            <div style="font-size: 17px; max-width: 22em">{{ thread.deal }}</div>
+          </div>
+        </div>
+        <div style="flex: 1; display: grid; gap: 16px; align-content: start; padding: 24px 0; overflow: auto">
+          <sc-for list="{{ messages }}" as="m" hint-placeholder-count="5">
+            <div style="max-width: 62%; justify-self: {{ m.side }}; background: {{ m.bg }}; color: {{ m.fg }}; border: 1px solid {{ m.edge }}; border-radius: 2px; padding: 12px 15px; font-size: 17px; line-height: 1.45">
+              {{ m.text }}
+              <div style="font-size: 12px; color: {{ m.metaColor }}; margin-top: 6px">{{ m.time }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-top: 1px solid rgba(32,30,29,.16); padding-top: 18px; display: grid; gap: 14px">
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+            <input placeholder="Escribe un mensaje…" style="flex: 1; min-width: 240px; border: 1px solid rgba(32,30,29,.35); border-radius: 2px; background: #f8f4f4; padding: 12px 14px; font-size: 17px; color: #201e1d">
+            <button style="background: transparent; border: 1px solid #201e1d; border-radius: 2px; padding: 11px 20px; font-size: 16px" style-hover="background: #eae7e7">Enviar</button>
+          </div>
+          <sc-if value="{{ canConfirm }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap">
+              <button onClick="{{ openRating }}" style="background: #d6006c; color: #fff; border: none; border-radius: 2px; padding: 12px 22px; font-size: 17px" style-hover="background: #d82071" style-active="background: #aa0b56">Marcar intercambio como realizado</button>
+              <span style="font-size: 15px; color: #605d5d">{{ confirmNote }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ threadClosed }}">
+            <div style="font-size: 16px; color: #605d5d">Canje cerrado y calificado. Los libros ya cambiaron de estante.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}">
+    <div style="position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); background: #201e1d; color: #f8f4f4; border-radius: 2px; padding: 14px 24px; font-size: 17px; box-shadow: 0 12px 32px rgba(45,43,43,.22); z-index: 40">{{ toast }}</div>
+  </sc-if>
+
+  <sc-if value="{{ offerOpen }}">
+    <div style="position: fixed; inset: 0; background: rgba(32,30,29,.42); display: grid; place-items: center; padding: 30px; z-index: 50">
+      <div style="background: #f3f2f2; border-radius: 2px; box-shadow: 0 12px 32px rgba(45,43,43,.22); max-width: 900px; width: 100%; max-height: 88vh; overflow: auto; padding: 34px 38px 32px">
+        <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d">Propuesta de canje con {{ offerOwner }}</div>
+        <h2 style="font-size: 36px; line-height: 1.05; margin: 8px 0 22px">Uno por uno</h2>
+        <div style="display: grid; grid-template-columns: 1fr 46px 1fr; gap: 24px; align-items: start">
+          <div>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 12px">Pides</div>
+            <div style="display: grid; grid-template-columns: 66px minmax(0,1fr); gap: 14px">
+              <div style="height: 96px; background: {{ offerBookPlate }}; border-radius: 1px; padding: 8px; display: flex; align-items: flex-end; font-size: 11px; line-height: 1.15; color: #f8f4f4">{{ offerBookShort }}</div>
+              <div>
+                <div style="font-size: 21px; line-height: 1.15">{{ offerBookTitle }}</div>
+                <div style="font-size: 15px; color: #605d5d">{{ offerBookAuthor }}</div>
+                <div style="font-size: 14px; color: #444141; margin-top: 6px">{{ offerBookCond }} · {{ offerBookCat }}</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size: 34px; color: #0088b0; text-align: center; padding-top: 34px">⇄</div>
+          <div>
+            <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d; margin-bottom: 12px">Ofreces uno de los tuyos</div>
+            <div style="display: grid; gap: 2px">
+              <sc-for list="{{ myOfferables }}" as="b" hint-placeholder-count="4">
+                <button onClick="{{ b.choose }}" style="text-align: left; background: {{ b.bg }}; border: 1px solid {{ b.edge }}; border-radius: 2px; padding: 11px 13px; display: grid; gap: 2px">
+                  <span style="font-size: 18px">{{ b.t }}</span>
+                  <span style="font-size: 14px; color: #605d5d">{{ b.a }} · {{ b.cond }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: center; margin-top: 30px; flex-wrap: wrap; border-top: 1px solid rgba(32,30,29,.16); padding-top: 22px">
+          <button onClick="{{ sendOffer }}" style="background: #0088b0; color: #fff; border: none; border-radius: 2px; padding: 13px 26px; font-size: 18px" style-hover="background: #1186ac" style-active="background: #006786">Enviar propuesta</button>
+          <button onClick="{{ closeOffer }}" style="background: none; border: none; font-size: 17px; color: #006786">Cancelar</button>
+          <span style="font-size: 15px; color: #605d5d">{{ offerHint }}</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ ratingOpen }}">
+    <div style="position: fixed; inset: 0; background: rgba(32,30,29,.42); display: grid; place-items: center; padding: 30px; z-index: 50">
+      <div style="background: #f3f2f2; border-radius: 2px; box-shadow: 0 12px 32px rgba(45,43,43,.22); max-width: 560px; width: 100%; padding: 34px 38px 32px">
+        <div style="font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #605d5d">Canje cerrado</div>
+        <h2 style="font-size: 34px; line-height: 1.05; margin: 8px 0 10px">¿Cómo te fue con {{ ratingName }}?</h2>
+        <p style="font-size: 17px; line-height: 1.5; color: #444141; margin: 0 0 22px">Solo pueden calificarse las personas que completaron un intercambio. Tu nota es pública en su perfil.</p>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px">
+          <sc-for list="{{ starPicks }}" as="s" hint-placeholder-count="5">
+            <button onClick="{{ s.pick }}" style="background: none; border: none; padding: 0; font-size: 42px; line-height: 1; color: {{ s.color }}">★</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px">
+          <sc-for list="{{ ratingTags }}" as="t" hint-placeholder-count="4">
+            <button onClick="{{ t.toggle }}" style="border: 1px solid {{ t.edge }}; background: {{ t.bg }}; color: {{ t.fg }}; border-radius: 2px; padding: 7px 14px; font-size: 15px">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
+          <button onClick="{{ submitRating }}" style="background: #0088b0; color: #fff; border: none; border-radius: 2px; padding: 13px 26px; font-size: 18px" style-hover="background: #1186ac" style-active="background: #006786">Enviar calificación</button>
+          <button onClick="{{ closeRating }}" style="background: none; border: none; font-size: 17px; color: #006786">Después</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;baseSlots&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:10,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Reglas del canje&quot;},&quot;tradesPerSlot&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:3,&quot;min&quot;:1,&quot;max&quot;:10,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Reglas del canje&quot;},&quot;animatePins&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Mapa&quot;}}">
+function plateFor(i) { const p = ['#0088b0','#d6006c','#201e1d','#004961','#aa0b56','#444141','#006786','#2d2b2b']; return p[i % p.length]; }
+function stars(n) { const f = Math.round(n); return '★★★★★'.slice(0, f) + '☆☆☆☆☆'.slice(0, 5 - f); }
+
+class Component extends DCLogic {
+  state = {
+    route: 'onboarding', sel: null, offer: null, offerMine: null,
+    cat: 'Todas', cond: 'Todos', maxDist: 5, sort: 'distancia',
+    threadId: 'ana', rating: null, stars: 0, tags: [], deals: {}, extraMsgs: {},
+    closed: { samir: true },
+    trades: 6, toast: null,
+    form: { t: '', a: '', desc: '', cond: 'Bueno', cat: 'Novela' },
+    myBooks: [
+      { t: 'La vorágine', a: 'José Eustasio Rivera', cat: 'Novela', cond: 'Aceptable', state: 'Disponible' },
+      { t: 'Breve historia del tiempo', a: 'Stephen Hawking', cat: 'Ciencia', cond: 'Bueno', state: 'Disponible', resUid: 'ana' },
+      { t: 'El olvido que seremos', a: 'Héctor Abad', cat: 'Memoria', cond: 'Como nuevo', state: 'Disponible' },
+      { t: 'Cien años de soledad', a: 'Gabriel García Márquez', cat: 'Novela', cond: 'Muy leído', state: 'Disponible' },
+      { t: 'Cocina bogotana de olla', a: 'Marta Bonilla', cat: 'Oficios', cond: 'Bueno', state: 'Disponible' }
+    ]
+  };
+
+  users = [
+    { id: 'ana', name: 'Ana Restrepo', barrio: 'Chapinero Alto', dist: 0.8, x: 34, y: 30, online: true, trades: 14, rating: 4.8,
+      bio: 'Traduzco manuales técnicos; leo poesía para compensar.', spot: 'Café de la 60 con 7, tardes',
+      books: [
+        { t: 'Los detectives salvajes', a: 'Roberto Bolaño', cat: 'Novela', cond: 'Bueno', desc: 'Tapa blanda con el lomo vencido de tanto ir y venir en TransMilenio. Se lee perfecto.' },
+        { t: 'Tratado de jardinería urbana', a: 'Lucía Vélez', cat: 'Oficios', cond: 'Como nuevo', desc: 'Regalo repetido. Capítulos de balcones y sombra parcial, muy útil para Bogotá.' },
+        { t: 'Antología de Blanca Varela', a: 'Blanca Varela', cat: 'Poesía', cond: 'Aceptable', desc: 'Subrayado a lápiz. Prefiero que siga circulando antes que juntar polvo.' },
+        { t: 'El infinito en un junco', a: 'Irene Vallejo', cat: 'Ensayo', cond: 'Bueno', desc: 'Sobre bibliotecas y la terquedad de los libros por sobrevivir.' }
+      ] },
+    { id: 'julian', name: 'Julián Mora', barrio: 'La Macarena', dist: 1.4, x: 58, y: 46, online: false, trades: 9, rating: 4.5,
+      bio: 'Cocino y presto libros de cocina, con manchas incluidas.', spot: 'Parque de la Macarena, sábados en la mañana',
+      books: [
+        { t: 'Cocina criolla ilustrada', a: 'Sofía Ospina', cat: 'Oficios', cond: 'Muy leído', desc: 'Mancha honesta de ajiaco en la página 84. Las recetas funcionan.' },
+        { t: 'Sapiens', a: 'Yuval N. Harari', cat: 'Historia', cond: 'Bueno', desc: 'Lo terminé en dos semanas de lluvia. Sin subrayados.' },
+        { t: 'Rayuela', a: 'Julio Cortázar', cat: 'Novela', cond: 'Aceptable', desc: 'Edición de bolsillo, con el capítulo 7 marcado por otra persona hace años.' }
+      ] },
+    { id: 'dani', name: 'Daniela Cifuentes', barrio: 'Teusaquillo', dist: 2.1, x: 18, y: 62, online: true, trades: 21, rating: 4.9,
+      bio: 'Maestra de primaria. Cambio infantiles por lo que sea.', spot: 'Biblioteca Virgilio Barco, entrada norte',
+      books: [
+        { t: 'Donde viven los monstruos', a: 'Maurice Sendak', cat: 'Infantil', cond: 'Bueno', desc: 'Ya lo leyeron tres cursos. Aguanta uno más, o diez.' },
+        { t: 'Mujeres que corren con los lobos', a: 'C. P. Estés', cat: 'Ensayo', cond: 'Como nuevo', desc: 'Duplicado. Solo pido que lo devuelvan al mundo cuando lo terminen.' },
+        { t: 'La casa grande', a: 'Álvaro Cepeda Samudio', cat: 'Novela', cond: 'Aceptable', desc: 'Delgadito, de una sentada. Bananeras y silencio.' },
+        { t: 'Física conceptual', a: 'Paul Hewitt', cat: 'Ciencia', cond: 'Bueno', desc: 'Sirve para el colegio y para entender por qué se cae el pan del lado de la mantequilla.' },
+        { t: 'Cuentos de Chapinero', a: 'Varios autores', cat: 'Novela', cond: 'Como nuevo', desc: 'Antología local de una editorial de garaje. Vale por el prólogo.' }
+      ] },
+    { id: 'samir', name: 'Samir Peña', barrio: 'La Candelaria', dist: 3.2, x: 74, y: 70, online: true, trades: 4, rating: 4.2,
+      bio: 'Estudio filosofía y arriendo un cuarto lleno de tomos.', spot: 'Chorro de Quevedo, después de clase',
+      books: [
+        { t: 'Vigilar y castigar', a: 'Michel Foucault', cat: 'Ensayo', cond: 'Muy leído', desc: 'Anotado en tres colores distintos por tres dueños distintos.' },
+        { t: 'Cómic: Maus', a: 'Art Spiegelman', cat: 'Cómic', cond: 'Bueno', desc: 'Los dos tomos. Cuidado, no se presta para siempre a nadie.' },
+        { t: 'Manual de radio comunitaria', a: 'Colectivo Onda Corta', cat: 'Oficios', cond: 'Aceptable', desc: 'Fotocopiado y anillado, como debe ser.' }
+      ] },
+    { id: 'mile', name: 'Milena Arias', barrio: 'Galerías', dist: 4.6, x: 46, y: 14, online: false, trades: 12, rating: 4.7,
+      bio: 'Enfermera de turno nocturno; leo entre rondas.', spot: 'Panadería de la 53, cualquier día',
+      books: [
+        { t: 'El cuerpo lleva la cuenta', a: 'Bessel van der Kolk', cat: 'Ciencia', cond: 'Bueno', desc: 'Denso pero claro. Lo cambio por cualquier novela corta.' },
+        { t: 'Los abismos', a: 'Pilar Quintana', cat: 'Novela', cond: 'Como nuevo', desc: 'Lo leí en un turno de noche entero. Impecable.' },
+        { t: 'Historia doble de la costa', a: 'Orlando Fals Borda', cat: 'Historia', cond: 'Aceptable', desc: 'Tomo I. Pesa, avisa antes de venir por él.' }
+      ] }
+  ];
+
+  myRating = 4.6;
+  categories = ['Todas', 'Novela', 'Ensayo', 'Poesía', 'Historia', 'Ciencia', 'Infantil', 'Cómic', 'Oficios'];
+  conds = ['Todos', 'Como nuevo', 'Bueno', 'Aceptable', 'Muy leído'];
+  formCats = ['Novela', 'Ensayo', 'Poesía', 'Historia', 'Ciencia', 'Infantil', 'Cómic', 'Oficios'];
+  formConds = ['Como nuevo', 'Bueno', 'Aceptable', 'Muy leído'];
+  tagList = ['Puntual', 'El libro estaba como decía', 'Buena conversación', 'Recomendó otro libro'];
+
+  threadData = {
+    ana: { deal: 'Los detectives salvajes ⇄ Breve historia del tiempo', state: 'Esperando confirmación de ambos', time: '18:40',
+      msgs: [
+        { me: false, text: 'Hola Camila, vi que tienes el Hawking. Te dejo el Bolaño si te sirve.', time: '17:02' },
+        { me: true, text: 'Me sirve muchísimo. ¿Te queda bien mañana en el café de la 60?', time: '17:15' },
+        { me: false, text: 'Perfecto. A las 6:30. Llevo el libro en una bolsa de papel para la lluvia.', time: '17:31' },
+        { me: true, text: 'Hecho. Cuando nos veamos lo marcamos como realizado en la app.', time: '18:40' }
+      ] },
+    dani: { deal: 'La casa grande ⇄ La vorágine', state: 'Propuesta enviada', time: 'Ayer',
+      msgs: [
+        { me: true, text: 'Hola Daniela, te propuse La vorágine por La casa grande. Los dos son cortos, buen trato.', time: 'Ayer 20:11' },
+        { me: false, text: 'Me encanta la idea. Déjame ver si alcanzo el viernes en la Virgilio Barco.', time: 'Ayer 21:03' }
+      ] },
+    samir: { deal: 'Maus ⇄ Cien años de soledad', state: 'Canje cerrado · calificado', time: 'Mar 12',
+      msgs: [
+        { me: false, text: 'Gracias por el García Márquez, era el que me faltaba.', time: 'Mar 12' },
+        { me: true, text: 'Y Maus llegó impecable. Le puse cinco estrellas.', time: 'Mar 12' }
+      ] }
+  };
+
+  go = (r) => this.setState({ route: r, toast: null });
+  toast = (t) => { this.setState({ toast: t }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: null }), 3800); };
+
+  renderVals() {
+    const s = this.state;
+    const baseSlots = this.props.baseSlots ?? 5;
+    const perTrades = this.props.tradesPerSlot ?? 3;
+    const animate = this.props.animatePins ?? true;
+    const totalSlots = baseSlots + Math.floor(s.trades / perTrades);
+    const used = s.myBooks.length;
+    const navc = (r) => s.route === r ? '#201e1d' : '#605d5d';
+    const navl = (r) => s.route === r ? '#0088b0' : 'transparent';
+    const selUser = this.users.find(u => u.id === s.sel) || null;
+    const thread = this.users.find(u => u.id === s.threadId) || this.users[0];
+    const td = this.threadData[thread.id] || this.threadData.ana;
+
+    const openOffer = (uid, bi) => this.setState({ offer: { uid, bi }, offerMine: null });
+
+    const users = this.users.map((u, i) => ({
+      ...u, count: u.books.length, stars: stars(u.rating),
+      ink: u.online ? '#0088b0' : '#7d7979',
+      haloInk: u.online ? 'rgba(0,136,176,.30)' : 'rgba(32,30,29,.16)',
+      pulse: (u.online && animate) ? 3.4 + i * 0.6 : 0,
+      statusLine: u.online ? 'en línea ahora' : 'visto hace 2 h',
+      teaser: u.books.slice(0, 2).map(b => b.t).join(' · '),
+      select: () => this.setState({ sel: u.id, route: 'map' })
+    }));
+
+    const selBooks = selUser ? selUser.books.map((b, i) => ({
+      ...b, plate: plateFor(i + 1), short: b.t,
+      propose: () => openOffer(selUser.id, i)
+    })) : [];
+
+    let catalog = [];
+    this.users.forEach(u => u.books.forEach((b, i) => catalog.push({
+      ...b, owner: u.name, barrio: u.barrio, dist: u.dist, stars: stars(u.rating),
+      plate: plateFor(catalog.length), short: b.t,
+      selectOwner: () => this.setState({ route: 'map', sel: u.id }),
+      propose: () => openOffer(u.id, i)
+    })));
+    catalog = catalog.filter(b => (s.cat === 'Todas' || b.cat === s.cat) && (s.cond === 'Todos' || b.cond === s.cond) && b.dist <= s.maxDist);
+    if (s.sort === 'distancia') catalog.sort((a, b) => a.dist - b.dist);
+    if (s.sort === 'estado') catalog.sort((a, b) => this.formConds.indexOf(a.cond) - this.formConds.indexOf(b.cond));
+    if (s.sort === 'título') catalog.sort((a, b) => a.t.localeCompare(b.t));
+
+    const counts = {};
+    this.users.forEach(u => u.books.forEach(b => { counts[b.cat] = (counts[b.cat] || 0) + 1; }));
+    const totalBooks = this.users.reduce((n, u) => n + u.books.length, 0);
+
+    const offerUser = s.offer ? this.users.find(u => u.id === s.offer.uid) : null;
+    const offerBook = offerUser ? offerUser.books[s.offer.bi] : null;
+
+    const pendingBook = s.myBooks.find(b => b.resUid && !s.closed[b.resUid]) || null;
+    const pendingUser = pendingBook ? this.users.find(u => u.id === pendingBook.resUid) : null;
+    const nameOf = (id) => { const u = this.users.find(x => x.id === id); return u ? u.name.split(' ')[0] : ''; };
+
+    const chip = (active) => active
+      ? { edge: '#0088b0', bg: '#cbeeff', fg: '#004961' }
+      : { edge: 'rgba(32,30,29,.3)', bg: 'transparent', fg: '#444141' };
+
+    return {
+      isOnboarding: s.route === 'onboarding', isApp: s.route !== 'onboarding',
+      isMap: s.route === 'map', isCatalog: s.route === 'catalog', isShelf: s.route === 'shelf',
+      isPublish: s.route === 'publish', isChat: s.route === 'chat',
+      today: '5 de agosto de 2026',
+      allowLocation: () => this.setState({ route: 'map' }),
+      goMap: () => this.go('map'), goCatalog: () => this.go('catalog'), goChat: () => this.go('chat'),
+      goShelf: () => this.go('shelf'), goPublish: () => this.go('publish'),
+      navMapColor: navc('map'), navMapLine: navl('map'),
+      navCatColor: navc('catalog'), navCatLine: navl('catalog'),
+      navChatColor: navc('chat'), navChatLine: navl('chat'),
+      navShelfColor: navc('shelf'), navShelfLine: navl('shelf'),
+      unread: ['ana', 'dani', 'samir'].filter(id => !s.closed[id]).length,
+
+      users, nearCount: this.users.length,
+      noSelection: !selUser, hasSelection: !!selUser,
+      sel: selUser ? { ...selUser, count: selUser.books.length, stars: stars(selUser.rating), statusLine: selUser.online ? 'en línea ahora' : 'visto hace 2 h' } : {},
+      selBooks, clearSelection: () => this.setState({ sel: null }),
+
+      catalog, catalogEmpty: catalog.length === 0, catCount: catalog.length + ' de ' + totalBooks,
+      sortLabel: s.sort,
+      catOptions: this.categories.map(c => ({ label: c, n: c === 'Todas' ? totalBooks : (counts[c] || 0), color: s.cat === c ? '#0088b0' : '#201e1d', pick: () => this.setState({ cat: c }) })),
+      condOptions: this.conds.map(c => ({ label: c, color: s.cond === c ? '#0088b0' : '#201e1d', pick: () => this.setState({ cond: c }) })),
+      sortOptions: ['distancia', 'estado', 'título'].map(o => ({ label: o === 'distancia' ? 'Más cerca primero' : o === 'estado' ? 'Mejor estado primero' : 'Título A–Z', color: s.sort === o ? '#0088b0' : '#201e1d', pick: () => this.setState({ sort: o }) })),
+      maxDist: s.maxDist, maxDistLabel: s.maxDist + ' km a la redonda',
+      setDist: (e) => this.setState({ maxDist: parseFloat(e.target.value) }),
+
+      myBooks: s.myBooks.map((b, i) => ({ ...b, plate: plateFor(i), short: b.t,
+        state: (b.resUid && !s.closed[b.resUid]) ? 'Reservado con ' + nameOf(b.resUid) : 'Disponible',
+        stateColor: (b.resUid && !s.closed[b.resUid]) ? '#aa0b56' : '#605d5d' })),
+      myStars: stars(this.myRating), myRating: this.myRating, myTrades: s.trades,
+      usedSlots: used, totalSlots,
+      slotPips: Array.from({ length: totalSlots }, (_, i) => ({ fill: i < used ? '#0088b0' : 'transparent', edge: i < used ? '#0088b0' : 'rgba(32,30,29,.3)' })),
+      slotNote: used < totalSlots ? ((totalSlots - used) === 1 ? 'Te queda 1 cupo libre.' : 'Te quedan ' + (totalSlots - used) + ' cupos libres.') + ' Al cerrar ' + (perTrades - (s.trades % perTrades)) + ' canjes más se abre otro.' : 'Estante lleno. Cierra un intercambio para abrir el cupo ' + (totalSlots + 1) + '.',
+      addSlotLabel: used < totalSlots ? 'Publicar libro · cupo ' + (used + 1) : 'Sin cupos · cierra un canje',
+      hasPending: !!pendingUser,
+      nextCupoNote: pendingUser
+        ? 'Se abre al confirmar el canje con ' + pendingUser.name + '.'
+        : 'Sin canjes pendientes. Proponle uno a alguien del mapa.',
+
+      nextSlot: Math.min(used + 1, totalSlots),
+      canConfirm: !s.closed[thread.id], threadClosed: !!s.closed[thread.id],
+      confirmNote: (baseSlots + Math.floor((s.trades + 1) / perTrades)) > totalSlots
+        ? 'Al confirmarlo se abre tu cupo ' + (totalSlots + 1) + ' y podrán calificarse.'
+        : 'Al confirmarlo liberas el libro reservado, podrán calificarse y te faltarán ' + (perTrades - ((s.trades + 1) % perTrades)) + ' canjes para el cupo ' + (totalSlots + 1) + '.',
+      formTitle: s.form.t, formAuthor: s.form.a, formDesc: s.form.desc, formCat: s.form.cat, formCond: s.form.cond,
+      setTitle: (e) => this.setState({ form: { ...s.form, t: e.target.value } }),
+      setAuthor: (e) => this.setState({ form: { ...s.form, a: e.target.value } }),
+      setDesc: (e) => this.setState({ form: { ...s.form, desc: e.target.value } }),
+      condChips: this.formConds.map(c => ({ label: c, ...chip(s.form.cond === c), pick: () => this.setState({ form: { ...s.form, cond: c } }) })),
+      catChips: this.formCats.map(c => ({ label: c, ...chip(s.form.cat === c), pick: () => this.setState({ form: { ...s.form, cat: c } }) })),
+      previewPlate: plateFor(used + 2), previewShort: s.form.t || 'Portada tipográfica',
+      previewTitle: s.form.t || 'Título del libro', previewAuthor: s.form.a || 'Autor',
+      submitBook: () => {
+        if (!s.form.t) { this.toast('Falta el título del libro.'); return; }
+        if (used >= totalSlots) { this.toast('Sin cupos: cierra un intercambio primero.'); return; }
+        this.setState({ myBooks: s.myBooks.concat([{ t: s.form.t, a: s.form.a || 'Autor sin datos', cat: s.form.cat, cond: s.form.cond, state: 'Disponible' }]), form: { t: '', a: '', desc: '', cond: 'Bueno', cat: 'Novela' }, route: 'shelf' });
+        this.toast('Publicado. Ya aparece en el mapa y en el catálogo.');
+      },
+
+      threads: ['ana', 'dani', 'samir'].map(id => {
+        const u = this.users.find(x => x.id === id), d = this.threadData[id];
+        const all = d.msgs.concat(s.extraMsgs[id] || []);
+        const st = s.closed[id] ? 'Canje cerrado · calificado' : d.state;
+        return { name: u.name, time: (s.extraMsgs[id] || []).length ? 'ahora' : d.time, last: all[all.length - 1].text, state: st,
+          stateColor: st.indexOf('cerrado') >= 0 ? '#605d5d' : '#aa0b56',
+          bg: s.threadId === id ? '#eae7e7' : 'transparent',
+          open: () => this.setState({ threadId: id }) };
+      }),
+      thread: { name: thread.name, barrio: thread.barrio, dist: thread.dist, deal: s.deals[thread.id] || td.deal, statusLine: thread.online ? 'en línea ahora' : 'visto hace 2 h' },
+      messages: td.msgs.concat(s.extraMsgs[thread.id] || []).map(m => ({ text: m.text, time: m.time, side: m.me ? 'end' : 'start',
+        bg: m.me ? '#201e1d' : '#eae7e7', fg: m.me ? '#f8f4f4' : '#201e1d',
+        edge: m.me ? '#201e1d' : 'rgba(32,30,29,.16)', metaColor: m.me ? '#bab6b6' : '#605d5d' })),
+
+      offerOpen: !!s.offer,
+      offerOwner: offerUser ? offerUser.name : '',
+      offerBookTitle: offerBook ? offerBook.t : '', offerBookAuthor: offerBook ? offerBook.a : '',
+      offerBookCond: offerBook ? offerBook.cond : '', offerBookCat: offerBook ? offerBook.cat : '',
+      offerBookPlate: plateFor(s.offer ? s.offer.bi + 1 : 0), offerBookShort: offerBook ? offerBook.t : '',
+      myOfferables: s.myBooks.map((b, i) => ({ ...b, bg: s.offerMine === i ? '#cbeeff' : 'transparent', edge: s.offerMine === i ? '#0088b0' : 'rgba(32,30,29,.3)', choose: () => this.setState({ offerMine: i }) })),
+      offerHint: s.offerMine === null ? 'Elige qué libro tuyo ofreces.' : 'Si acepta, ambos libros quedan reservados hasta el encuentro.',
+      closeOffer: () => this.setState({ offer: null, offerMine: null }),
+      sendOffer: () => {
+        if (s.offerMine === null) { this.toast('Elige uno de tus libros para ofrecer.'); return; }
+        const mineBook = s.myBooks[s.offerMine];
+        const uid = offerUser ? offerUser.id : s.threadId;
+        const mine = s.myBooks.map((b, i) => i === s.offerMine
+          ? { ...b, resUid: uid }
+          : (b.resUid === uid ? { ...b, resUid: null } : b));
+        const deals = { ...s.deals }; deals[uid] = offerBook.t + ' ⇄ ' + mineBook.t;
+        const extra = { ...s.extraMsgs };
+        extra[uid] = (extra[uid] || []).concat([{ me: true, text: 'Te propongo un canje: tu «' + offerBook.t + '» por mi «' + mineBook.t + '» (' + mineBook.cond.toLowerCase() + '). ¿Te sirve?', time: 'ahora' }]);
+        this.setState({ offer: null, offerMine: null, myBooks: mine, deals, extraMsgs: extra, route: 'chat', threadId: uid });
+        this.toast('Propuesta enviada a ' + (offerUser ? offerUser.name : '') + '.');
+      },
+
+      ratingOpen: !!s.rating, ratingName: thread.name,
+      openRating: () => this.setState({ rating: thread.id, stars: 0, tags: [] }),
+      closeRating: () => this.setState({ rating: null }),
+      starPicks: [1, 2, 3, 4, 5].map(n => ({ color: n <= s.stars ? '#d6006c' : '#d7d3d3', pick: () => this.setState({ stars: n }) })),
+      ratingTags: this.tagList.map(t => ({ label: t, ...chip(s.tags.indexOf(t) >= 0), toggle: () => this.setState({ tags: s.tags.indexOf(t) >= 0 ? s.tags.filter(x => x !== t) : s.tags.concat([t]) }) })),
+      submitRating: () => {
+        if (!s.stars) { this.toast('Elige cuántas estrellas.'); return; }
+        const trades = s.trades + 1;
+        const newTotal = baseSlots + Math.floor(trades / perTrades);
+        const uid = thread.id;
+        const goneBook = s.myBooks.find(b => b.resUid === uid);
+        const gone = goneBook ? goneBook.t : null;
+        const closed = { ...s.closed }; closed[uid] = true;
+        this.setState({ rating: null, trades, route: 'shelf', closed, myBooks: s.myBooks.filter(b => b.resUid !== uid) });
+        this.toast(gone
+          ? '«' + gone + '» salió a circular. ' + (newTotal > totalSlots ? 'Se abrió tu cupo ' + newTotal + '.' : 'Cupo liberado: ' + (used - 1) + '/' + totalSlots + '.')
+          : 'Canje registrado.');
+      },
+
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+
+</script>
+</body>
+</html>
