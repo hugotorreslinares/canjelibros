@@ -59,6 +59,7 @@ export function useAppState() {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [myBooks, setMyBooks] = useState<MyBook[]>(initialMyBooks);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const [authOpen, setAuthOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
@@ -130,6 +131,44 @@ export function useAppState() {
     (uid: string, bi: number) =>
       requireAuth("Inicia sesión para proponer un intercambio.", { kind: "openOffer", uid, bi }),
     [requireAuth]
+  );
+
+  const editBook = useCallback(
+    (i: number) => {
+      if (!user) {
+        promptAuth("Inicia sesión para editar tu estante.");
+        return;
+      }
+      const b = myBooks[i];
+      if (!b) return;
+      setForm({ t: b.t, a: b.a, desc: "", cond: b.cond, cat: b.cat });
+      setEditingIndex(i);
+      go("publish");
+    },
+    [user, promptAuth, myBooks, go]
+  );
+
+  const deleteBook = useCallback(
+    (i: number) => {
+      if (!user) {
+        promptAuth("Inicia sesión para eliminar un libro de tu estante.");
+        return;
+      }
+      const b = myBooks[i];
+      if (!b) return;
+      if (b.resUid && !closed[b.resUid]) {
+        showToast("No puedes eliminar un libro reservado en un intercambio activo.");
+        return;
+      }
+      if (!window.confirm(`¿Eliminar "${b.t}" de tu estante?`)) return;
+      setMyBooks((prev) => prev.filter((_, idx) => idx !== i));
+      if (editingIndex === i) {
+        setEditingIndex(null);
+        setForm(EMPTY_FORM);
+      }
+      showToast("Libro eliminado de tu estante.");
+    },
+    [user, promptAuth, myBooks, closed, showToast, editingIndex]
   );
 
   const vals = useMemo(() => {
@@ -221,6 +260,9 @@ export function useAppState() {
       short: b.t,
       state: b.resUid && !closed[b.resUid] ? `Reservado con ${nameOf(b.resUid)}` : "Disponible",
       stateColor: b.resUid && !closed[b.resUid] ? "#aa0b56" : "#605d5d",
+      canRemove: !(b.resUid && !closed[b.resUid]),
+      edit: () => editBook(i),
+      remove: () => deleteBook(i),
     }));
 
     const slotsLeft = totalSlots - used;
@@ -281,7 +323,7 @@ export function useAppState() {
       threads,
       messages,
     };
-  }, [route, sel, threadId, cat, cond, maxDist, sort, trades, myBooks, closed, extraMsgs, offer, openOffer]);
+  }, [route, sel, threadId, cat, cond, maxDist, sort, trades, myBooks, closed, extraMsgs, offer, openOffer, editBook, deleteBook]);
 
   const submitBook = useCallback(() => {
     if (!user) {
@@ -292,6 +334,18 @@ export function useAppState() {
       showToast("Falta el título del libro.");
       return;
     }
+    if (editingIndex !== null) {
+      setMyBooks((prev) =>
+        prev.map((b, i) =>
+          i === editingIndex ? { ...b, t: form.t, a: form.a || "Autor sin datos", cat: form.cat, cond: form.cond } : b
+        )
+      );
+      setEditingIndex(null);
+      setForm(EMPTY_FORM);
+      setRoute("shelf");
+      showToast("Cambios guardados.");
+      return;
+    }
     if (vals.used >= vals.totalSlots) {
       showToast("Sin cupos: cierra un intercambio primero.");
       return;
@@ -300,7 +354,7 @@ export function useAppState() {
     setForm(EMPTY_FORM);
     setRoute("shelf");
     showToast("Publicado. Ya aparece en el mapa y en el catálogo.");
-  }, [user, promptAuth, form, vals.used, vals.totalSlots, showToast]);
+  }, [user, promptAuth, form, editingIndex, vals.used, vals.totalSlots, showToast]);
 
   const sendOffer = useCallback(() => {
     if (!user) {
@@ -445,6 +499,7 @@ export function useAppState() {
 
     publishView: {
       isPublish: route === "publish",
+      isEditing: editingIndex !== null,
       nextSlot: Math.min(vals.used + 1, vals.totalSlots),
       totalSlots: vals.totalSlots,
       form,
@@ -453,13 +508,17 @@ export function useAppState() {
       setDesc: (v: string) => setForm((f) => ({ ...f, desc: v })),
       condChips: formConds.map((c) => ({ label: c, active: form.cond === c, pick: () => setForm((f) => ({ ...f, cond: c })) })),
       catChips: formCats.map((c) => ({ label: c, active: form.cat === c, pick: () => setForm((f) => ({ ...f, cat: c })) })),
-      previewPlate: plateFor(vals.used + 2),
+      previewPlate: plateFor(editingIndex !== null ? editingIndex : vals.used + 2),
       previewShort: form.t || "Portada tipográfica",
       previewTitle: form.t || "Título del libro",
       previewAuthor: form.a || "Autor",
       slotNote: vals.slotNote,
       submitBook,
-      cancel: () => go("shelf"),
+      cancel: () => {
+        setEditingIndex(null);
+        setForm(EMPTY_FORM);
+        go("shelf");
+      },
     },
 
     chatView: {

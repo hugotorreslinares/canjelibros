@@ -7,6 +7,7 @@ interface Chip {
 }
 
 interface PublishViewProps {
+  isEditing: boolean;
   nextSlot: number;
   totalSlots: number;
   form: { t: string; a: string; desc: string; cond: string; cat: string };
@@ -25,6 +26,7 @@ interface PublishViewProps {
 }
 
 export function PublishView({
+  isEditing,
   nextSlot,
   totalSlots,
   form,
@@ -45,9 +47,11 @@ export function PublishView({
     <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[70px] grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_320px] gap-[60px] max-w-[1180px]">
       <div>
         <div className={sectionLabel}>
-          Nueva publicación · cupo {nextSlot} de {totalSlots}
+          {isEditing ? "Editando publicación" : `Nueva publicación · cupo ${nextSlot} de ${totalSlots}`}
         </div>
-        <h1 className="text-[36px] sm:text-[48px] leading-[1.02] mt-[8px] mb-[26px]">Pon un libro en circulación</h1>
+        <h1 className="text-[36px] sm:text-[48px] leading-[1.02] mt-[8px] mb-[26px]">
+          {isEditing ? "Edita los datos de tu libro" : "Pon un libro en circulación"}
+        </h1>
         <div className="grid gap-[24px] max-w-[640px]">
           <label className="grid gap-[6px]">
             <span className="text-[15px] text-[#444141]">Título</span>
@@ -95,7 +99,7 @@ export function PublishView({
           </div>
           <div className="flex gap-[14px] items-center flex-wrap mt-[4px]">
             <button onClick={submitBook} className={primaryBtn}>
-              Publicar en mi estante
+              {isEditing ? "Guardar cambios" : "Publicar en mi estante"}
             </button>
             <button onClick={cancel} className={linkBtn}>
               Cancelar
