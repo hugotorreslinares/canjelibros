@@ -1,4 +1,4 @@
-import { condPill, divider, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
+import { condPill, divider, linkBtn, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
 
 interface ShelfBook {
   t: string;
@@ -9,6 +9,9 @@ interface ShelfBook {
   short: string;
   state: string;
   stateColor: string;
+  canRemove: boolean;
+  edit: () => void;
+  remove: () => void;
 }
 
 interface ShelfViewProps {
@@ -113,6 +116,19 @@ export function ShelfView({
             </div>
             <div style={{ color: b.stateColor }} className="text-[14px]">
               {b.state}
+            </div>
+            <div className="flex gap-[14px] items-center mt-[2px]">
+              <button onClick={b.edit} className={linkBtn}>
+                Editar
+              </button>
+              <button
+                onClick={b.remove}
+                disabled={!b.canRemove}
+                title={b.canRemove ? undefined : "Reservado en un intercambio activo"}
+                className="bg-transparent border-none p-0 text-[15px] text-[#aa0b56] hover:text-[#d6006c] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:text-[#605d5d]"
+              >
+                Eliminar
+              </button>
             </div>
           </div>
         ))}

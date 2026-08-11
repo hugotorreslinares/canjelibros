@@ -12,7 +12,19 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git check-ignore *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(awk -F= '{print $1}' .env.local)",
+      "Bash(git grep *)",
+      "Bash(npm audit *)",
+      "mcp__47a4439b-301b-4569-b77c-090dd6df4d81__list_teams",
+      "Bash(vercel whoami *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --base main --head feat/shelf-edit-delete --title 'Allow editing and deleting books from the shelf' --body ' *)",
+      "Bash(gh auth *)",
+      "Bash(env)",
+      "Bash(git config *)"
     ]
   }
 }
