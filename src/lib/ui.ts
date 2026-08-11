@@ -16,8 +16,9 @@ export const chip = (active: boolean) =>
     ? "border border-[#0088b0] bg-[#cbeeff] text-[#004961] rounded-[2px] px-[15px] py-[8px] text-[16px]"
     : "border border-[#201e1d]/30 bg-transparent text-[#444141] rounded-[2px] px-[15px] py-[8px] text-[16px]";
 
+// z-[1100]: above Leaflet's own panes/controls, which reach z-index 1000 (LeafletMap.tsx).
 export const modalOverlay =
-  "fixed inset-0 z-50 grid place-items-center bg-[#201e1d]/42 p-[30px]";
+  "fixed inset-0 z-[1100] grid place-items-center bg-[#201e1d]/42 p-[30px]";
 
 export const modalPanel =
   "w-full bg-[#f3f2f2] rounded-[2px] shadow-[0_12px_32px_rgba(45,43,43,.22)] max-h-[88vh] overflow-auto";

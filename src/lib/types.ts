@@ -1,24 +1,21 @@
-export interface CatalogBook {
+export interface Book {
+  id: string;
+  ownerId: string;
   t: string;
   a: string;
   cat: string;
   cond: string;
   desc: string;
+  resUid: string | null;
+  createdAt: number;
 }
 
-export interface MyBook {
-  t: string;
-  a: string;
-  cat: string;
-  cond: string;
-  resUid?: string | null;
-}
+export type NewBook = Pick<Book, "t" | "a" | "cat" | "cond" | "desc">;
 
-export interface AppUser {
+export interface Reader {
   id: string;
   name: string;
   barrio: string;
-  dist: number;
   lat: number;
   lng: number;
   online: boolean;
@@ -26,21 +23,35 @@ export interface AppUser {
   rating: number;
   bio: string;
   spot: string;
-  books: CatalogBook[];
 }
 
-export interface ThreadMessage {
-  me: boolean;
+export interface ChatThread {
+  id: string;
+  participants: [string, string];
+  dealText: string;
+  lastMessage: string;
+  lastMessageAt: number;
+  closed: boolean;
+  fromUid: string;
+  toUid: string;
+  fromBookId: string;
+  toBookId: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
   text: string;
-  time: string;
+  createdAt: number;
 }
 
-export interface ThreadEntry {
-  deal: string;
-  state: string;
-  time: string;
-  msgs: ThreadMessage[];
+export interface Rating {
+  id: string;
+  raterUid: string;
+  ratedUid: string;
+  stars: number;
+  createdAt: number;
 }
 
-export type Route = "onboarding" | "map" | "catalog" | "shelf" | "publish" | "chat";
+export type Route = "map" | "catalog" | "shelf" | "publish" | "chat";
 export type SortOption = "distancia" | "estado" | "título";

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { divider, input, outlineBtn, sectionLabel } from "@/lib/ui";
 
 interface ThreadSummary {
@@ -21,16 +22,50 @@ interface Message {
 }
 
 interface ChatViewProps {
+  hasThreads: boolean;
   threads: ThreadSummary[];
-  thread: { name: string; barrio: string; dist: number; deal: string; statusLine: string };
+  thread: { id: string; name: string; barrio: string; dist: number; deal: string; statusLine: string };
   messages: Message[];
   canConfirm: boolean;
   threadClosed: boolean;
   confirmNote: string;
   openRating: () => void;
+  sendMessage: (text: string) => void;
 }
 
-export function ChatView({ threads, thread, messages, canConfirm, threadClosed, confirmNote, openRating }: ChatViewProps) {
+export function ChatView({
+  hasThreads,
+  threads,
+  thread,
+  messages,
+  canConfirm,
+  threadClosed,
+  confirmNote,
+  openRating,
+  sendMessage,
+}: ChatViewProps) {
+  const [draft, setDraft] = useState("");
+
+  const send = () => {
+    const text = draft.trim();
+    if (!text) return;
+    sendMessage(text);
+    setDraft("");
+  };
+  if (!hasThreads) {
+    return (
+      <div className="flex-1 grid place-items-center px-[24px] py-[60px] text-center">
+        <div className="max-w-[420px]">
+          <div className={sectionLabel}>Mensajes</div>
+          <h2 className="text-[28px] leading-[1.2] mt-[8px] mb-[10px]">Todavía no tienes conversaciones</h2>
+          <p className="text-[16px] leading-[1.5] text-[#444141]">
+            Cuando propongas o recibas un intercambio, la conversación aparece aquí.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:[grid-template-columns:330px_minmax(0,1fr)] flex-1 items-stretch">
       <div className="border-b md:border-b-0 md:border-r border-[#201e1d]/16 px-[24px] py-[26px]">
@@ -85,8 +120,21 @@ export function ChatView({ threads, thread, messages, canConfirm, threadClosed, 
         </div>
         <div className={`border-t ${divider} pt-[18px] grid gap-[14px]`}>
           <div className="flex gap-[12px] items-center flex-wrap">
-            <input placeholder="Escribe un mensaje…" className={`${input} flex-1 min-w-[240px]`} />
-            <button className={outlineBtn}>Enviar</button>
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  send();
+                }
+              }}
+              placeholder="Escribe un mensaje…"
+              className={`${input} flex-1 min-w-[240px]`}
+            />
+            <button onClick={send} disabled={!draft.trim()} className={outlineBtn}>
+              Enviar
+            </button>
           </div>
           {canConfirm && (
             <div className="flex gap-[14px] items-center flex-wrap">
