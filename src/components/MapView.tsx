@@ -44,6 +44,8 @@ interface MapViewProps {
     name: string;
     barrio: string;
     dist: number;
+    lat: number;
+    lng: number;
     starsLabel: string;
     rating: number;
     trades: number;
@@ -97,7 +99,7 @@ export function MapView({ users, noSelection, hasSelection, sel, selBooks, clear
   return (
     <div className="grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_400px] flex-1 items-stretch">
       <div className="relative overflow-hidden bg-[#f3f2f2] min-h-[500px] lg:min-h-[640px]">
-        <LeafletMap users={users} />
+        <LeafletMap users={users} selected={sel ? { lat: sel.lat, lng: sel.lng } : null} />
 
         <div className="absolute left-[24px] bottom-[24px] bg-[#f8f4f4]/92 border border-[#201e1d]/16 rounded-[2px] px-[16px] py-[12px] max-w-[300px] pointer-events-none z-[1000]">
           <div className="text-[12px] tracking-[.16em] uppercase text-[#605d5d] mb-[6px]">Tu zona</div>
