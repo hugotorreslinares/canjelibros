@@ -26,19 +26,11 @@ NEXT_PUBLIC_FIREBASE_APP_ID=
 
 Sin estas variables, la app carga igual pero los botones de inicio de sesión mostrarán un error explicando que falta configurar Firebase.
 
-## Configurar el mapa (Google Maps)
+## Mapa
 
-1. En [Google Cloud Console](https://console.cloud.google.com/google/maps-apis), crea o elige un proyecto y habilita **Maps JavaScript API**.
-2. Crea una **API key** (restríngela a tu dominio y a Maps JavaScript API).
-3. Opcional: crea un **Map ID** en *Google Maps Platform → Map Management* para poder personalizar el estilo del mapa; si no creas uno, se usa el `DEMO_MAP_ID` público de Google (solo para desarrollo).
-4. Agrega los valores a `.env.local`:
+La vista de mapa usa [Leaflet](https://leafletjs.com/) con tiles de [OpenStreetMap](https://www.openstreetmap.org/copyright): no requiere API key ni cuenta de facturación. Los pines usan las coordenadas reales de cada barrio en Bogotá.
 
-```
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
-NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=
-```
-
-Sin `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, la vista de mapa muestra un mapa ilustrativo estático en su lugar.
+Para producción con más tráfico, conviene revisar la [política de uso de tiles de OSM](https://operations.osmfoundation.org/policies/tiles/) y considerar un proveedor con capa gratuita más generosa (por ejemplo MapTiler o Stadia Maps) cambiando la URL del `TileLayer` en [src/components/LeafletMap.tsx](src/components/LeafletMap.tsx).
 
 ## Desarrollo
 

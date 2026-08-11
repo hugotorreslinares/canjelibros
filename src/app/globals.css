@@ -46,3 +46,8 @@ button {
     opacity: 1;
   }
 }
+
+.leaflet-div-icon.cambialibros-marker {
+  background: transparent;
+  border: none;
+}

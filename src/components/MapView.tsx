@@ -1,6 +1,10 @@
-import { APIProvider, AdvancedMarker, Map } from "@vis.gl/react-google-maps";
-import { BOGOTA_CENTER, GOOGLE_MAPS_API_KEY, GOOGLE_MAPS_MAP_ID, isGoogleMapsConfigured } from "@/lib/google-maps";
+import dynamic from "next/dynamic";
 import { condPill, divider, sectionLabel, smallPrimaryBtn, tagPill } from "@/lib/ui";
+
+const LeafletMap = dynamic(() => import("./LeafletMap").then((m) => m.LeafletMap), {
+  ssr: false,
+  loading: () => <MapSkeleton />,
+});
 
 interface MapUser {
   id: string;
@@ -53,36 +57,7 @@ interface MapViewProps {
   nearCount: number;
 }
 
-function MapPin({ u }: { u: MapUser }) {
-  return (
-    <button
-      onClick={u.select}
-      className="bg-transparent border-none p-0 grid justify-items-center gap-[6px] cursor-pointer"
-    >
-      <div className="relative w-[132px] h-[132px] grid place-items-center">
-        <div
-          style={{
-            background: `radial-gradient(circle, ${u.haloInk} 0%, rgba(0,136,176,0) 68%)`,
-            animation: u.pulse ? `breathe ${u.pulse}s ease-in-out infinite` : undefined,
-          }}
-          className="absolute inset-0 rounded-full blur-[7px]"
-        />
-        <div
-          style={{ borderColor: u.ink, color: u.ink }}
-          className="relative w-[46px] h-[46px] rounded-full bg-[#f8f4f4] border-[1.5px] grid place-items-center text-[19px] shadow-[0_3px_10px_rgba(45,43,43,.16)]"
-        >
-          {u.count}
-        </div>
-      </div>
-      <div className="bg-[#f8f4f4] border border-[#201e1d]/16 rounded-[2px] px-[9px] py-[4px] grid gap-[1px] justify-items-center shadow-[0_1px_2px_rgba(45,43,43,.14)]">
-        <span className="text-[15px] text-[#201e1d]">{u.name}</span>
-        <span className="text-[12px] text-[#605d5d]">{u.statusLine}</span>
-      </div>
-    </button>
-  );
-}
-
-function StaticFallbackMap() {
+function MapSkeleton() {
   return (
     <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 w-full h-full">
       <g stroke="#201e1d" strokeOpacity=".13" fill="none">
@@ -122,34 +97,9 @@ export function MapView({ users, noSelection, hasSelection, sel, selBooks, clear
   return (
     <div className="grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_400px] flex-1 items-stretch">
       <div className="relative overflow-hidden bg-[#f3f2f2] min-h-[500px] lg:min-h-[640px]">
-        {isGoogleMapsConfigured ? (
-          <APIProvider apiKey={GOOGLE_MAPS_API_KEY as string}>
-            <Map
-              mapId={GOOGLE_MAPS_MAP_ID}
-              defaultCenter={BOGOTA_CENTER}
-              defaultZoom={13}
-              disableDefaultUI
-              zoomControl
-              gestureHandling="greedy"
-              className="absolute inset-0 w-full h-full"
-            >
-              {users.map((u) => (
-                <AdvancedMarker key={u.id} position={{ lat: u.lat, lng: u.lng }}>
-                  <MapPin u={u} />
-                </AdvancedMarker>
-              ))}
-            </Map>
-          </APIProvider>
-        ) : (
-          <>
-            <StaticFallbackMap />
-            <div className="absolute right-[24px] top-[24px] bg-[#f8f4f4]/92 border border-[#201e1d]/16 rounded-[2px] px-[14px] py-[10px] max-w-[280px] text-[13px] leading-[1.4] text-[#605d5d]">
-              Mapa de ejemplo. Configura <code className="text-[#201e1d]">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> para ver el mapa real de Google.
-            </div>
-          </>
-        )}
+        <LeafletMap users={users} />
 
-        <div className="absolute left-[24px] bottom-[24px] bg-[#f8f4f4]/92 border border-[#201e1d]/16 rounded-[2px] px-[16px] py-[12px] max-w-[300px] pointer-events-none">
+        <div className="absolute left-[24px] bottom-[24px] bg-[#f8f4f4]/92 border border-[#201e1d]/16 rounded-[2px] px-[16px] py-[12px] max-w-[300px] pointer-events-none z-[1000]">
           <div className="text-[12px] tracking-[.16em] uppercase text-[#605d5d] mb-[6px]">Tu zona</div>
           <div className="text-[16px] leading-[1.4]">Chapinero Alto · radio de 600 m. Nadie ve tu dirección exacta.</div>
         </div>
