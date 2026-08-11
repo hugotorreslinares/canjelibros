@@ -19,8 +19,8 @@ export interface AppUser {
   name: string;
   barrio: string;
   dist: number;
-  x: number;
-  y: number;
+  lat: number;
+  lng: number;
   online: boolean;
   trades: number;
   rating: number;
