@@ -24,7 +24,9 @@
       "Bash(gh pr create --base main --head feat/shelf-edit-delete --title 'Allow editing and deleting books from the shelf' --body ' *)",
       "Bash(gh auth *)",
       "Bash(env)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(firebase --version)",
+      "Bash(firebase projects:list)"
     ]
   }
 }

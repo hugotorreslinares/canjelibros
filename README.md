@@ -26,6 +26,19 @@ NEXT_PUBLIC_FIREBASE_APP_ID=
 
 Sin estas variables, la app carga igual pero los botones de inicio de sesión mostrarán un error explicando que falta configurar Firebase.
 
+## Configurar Firestore (base de datos)
+
+Los lectores y sus libros se guardan en Firestore, en el mismo proyecto de Firebase de arriba (no requiere variables de entorno adicionales).
+
+1. En la [consola de Firebase](https://console.firebase.google.com/) → **Build → Firestore Database → Create database**. Elige modo producción y la región que prefieras. **Este paso es obligatorio**: si no se crea la base de datos, el mapa/catálogo/estante quedan vacíos y la consola del navegador muestra `Database '(default)' not found`.
+2. Publica las reglas de seguridad de [`firestore.rules`](firestore.rules) (pestaña **Reglas** en Firestore, o `firebase deploy --only firestore:rules` si usas la CLI). **Si ya las habías publicado antes, vuelve a pegarlas** — cambiaron (se agregó `ratings` y la condición para transferir libros al cerrar un canje). Resumen: cualquiera puede leer lectores/libros/calificaciones; cada usuario solo puede escribir su propio perfil (`readers/{uid}`) y sus propios libros (`books` con `ownerId == uid`), salvo para reclamar un libro que quedó reservado a su nombre (necesario para que el intercambio transfiera el libro al cerrar).
+3. Colecciones que crea la app automáticamente (no hace falta crearlas a mano):
+   - `readers/{uid}`: perfil del lector (nombre, barrio, lat/lng, bio, punto de encuentro, intercambios). Se crea la primera vez que alguien inicia sesión, con su ubicación real (si da permiso de geolocalización) o el centro de Bogotá.
+   - `books/{bookId}`: cada libro publicado (`ownerId`, título, autor, categoría, estado, descripción, `resUid` si está reservado para un intercambio).
+   - `threads/{threadId}`: una conversación por par de lectores (`threadId` = sus dos uids ordenados y unidos con `_`), con `participants`, `fromUid`/`toUid` (quién propuso, quién recibe), `fromBookId`/`toBookId` (qué libro pone cada quien), `dealText`, `lastMessage`, `closed`. Solo los dos participantes pueden leer/escribir.
+   - `threads/{threadId}/messages/{messageId}`: mensajes de esa conversación (`senderId`, `text`, `createdAt`), mismo control de acceso que el hilo.
+   - `ratings/{ratingId}`: una calificación (`raterUid`, `ratedUid`, `stars`). Cualquiera puede leer; solo se puede crear la propia (nunca editar ni borrar). La calificación que se ve en el perfil de un lector es el promedio de sus `ratings`, calculado en el cliente — no un campo que alguien más pueda sobreescribir en su perfil.
+
 ## Mapa
 
 La vista de mapa usa [Leaflet](https://leafletjs.com/) con tiles de [OpenStreetMap](https://www.openstreetmap.org/copyright): no requiere API key ni cuenta de facturación. Los pines usan las coordenadas reales de cada barrio en Bogotá.
@@ -46,4 +59,12 @@ Abre [http://localhost:3000](http://localhost:3000).
 - Publicar un libro (botón "Publicar libro" / "+" en Mi estante).
 - Proponer un intercambio (botón "Proponer intercambio" en el mapa o el catálogo).
 
-El resto de la navegación (mapa, catálogo, mensajes de ejemplo) es de solo lectura sin cuenta. Los datos de usuarios, libros y conversaciones son datos de ejemplo en memoria (no hay backend de datos todavía); solo la autenticación está conectada a un servicio real (Firebase).
+El resto de la navegación (mapa, catálogo) es de solo lectura sin cuenta.
+
+## Qué es real y qué sigue siendo de ejemplo
+
+Todo lo relevante para el uso real de la app ya está en Firestore: perfiles de lectores, libros (publicar/editar/eliminar/reservar), conversaciones y mensajes, y el cierre de un intercambio. Nada de esto se pierde al recargar ni depende de quién sigue con sesión abierta en la pestaña.
+
+Cómo se cierra un intercambio: solo quien **recibió** la propuesta puede pulsar "Marcar intercambio como realizado" (quien propuso no ve ese botón). Al confirmarlo: el libro que ofreció quien propuso pasa al estante de quien recibió, el libro pedido pasa al estante de quien propuso, se guarda una calificación real (`ratings`) a nombre de quien propuso, y sube en 1 el contador de intercambios de quien confirma.
+
+Limitación conocida: el contador de intercambios (`readers/{uid}.trades`) solo sube para quien confirma el cierre, no para ambas partes — cada usuario solo puede escribir su propio documento en Firestore, así que no hay forma de que quien confirma le sume un intercambio a la otra persona sin un backend con permisos de administrador (fuera del alcance actual).

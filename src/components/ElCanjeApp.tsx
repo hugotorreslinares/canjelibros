@@ -7,7 +7,6 @@ import { ChatView } from "./ChatView";
 import { Header } from "./Header";
 import { MapView } from "./MapView";
 import { OfferModal } from "./OfferModal";
-import { Onboarding } from "./Onboarding";
 import { PublishView } from "./PublishView";
 import { RatingModal } from "./RatingModal";
 import { ShelfView } from "./ShelfView";
@@ -18,18 +17,12 @@ export function ElCanjeApp() {
 
   return (
     <div className="flex-1 flex flex-col">
-      {state.isOnboarding && <Onboarding {...state.onboarding} />}
-
-      {state.isApp && (
-        <div className="flex-1 flex flex-col">
-          <Header {...state.header} />
-          {state.mapView.isMap && <MapView {...state.mapView} />}
-          {state.catalogView.isCatalog && <CatalogView {...state.catalogView} />}
-          {state.shelfView.isShelf && <ShelfView {...state.shelfView} />}
-          {state.publishView.isPublish && <PublishView {...state.publishView} />}
-          {state.chatView.isChat && <ChatView {...state.chatView} />}
-        </div>
-      )}
+      <Header {...state.header} />
+      {state.mapView.isMap && <MapView {...state.mapView} />}
+      {state.catalogView.isCatalog && <CatalogView {...state.catalogView} />}
+      {state.shelfView.isShelf && <ShelfView {...state.shelfView} />}
+      {state.publishView.isPublish && <PublishView {...state.publishView} />}
+      {state.chatView.isChat && <ChatView key={state.chatView.thread.id} {...state.chatView} />}
 
       <Toast {...state.toast} />
       <OfferModal {...state.offerModal} />

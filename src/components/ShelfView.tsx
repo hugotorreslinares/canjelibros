@@ -15,6 +15,9 @@ interface ShelfBook {
 }
 
 interface ShelfViewProps {
+  signedIn: boolean;
+  readerName: string;
+  readerBarrio: string;
   myBooks: ShelfBook[];
   myStars: string;
   myRating: number;
@@ -31,6 +34,9 @@ interface ShelfViewProps {
 }
 
 export function ShelfView({
+  signedIn,
+  readerName,
+  readerBarrio,
   myBooks,
   myStars,
   myRating,
@@ -45,12 +51,27 @@ export function ShelfView({
   goPublish,
   goChat,
 }: ShelfViewProps) {
+  if (!signedIn) {
+    return (
+      <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[720px]">
+        <div className={sectionLabel}>Mi estante</div>
+        <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-[18px]">Inicia sesión para ver tu estante</h1>
+        <p className="text-[17px] leading-[1.5] text-[#444141]">
+          Tu estante y tus libros publicados están ligados a tu cuenta. Inicia sesión para verlos y para publicar.
+        </p>
+        <button onClick={goPublish} className="border border-[#201e1d] rounded-[2px] px-[22px] py-[13px] text-[17px] mt-[24px] hover:bg-[#eae7e7]">
+          Iniciar sesión
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[1180px]">
       <div className={sectionLabel}>Mi estante</div>
-      <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-0">Camila Ordóñez</h1>
+      <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-0">{readerName}</h1>
       <div className="text-[17px] text-[#444141] mt-[8px]">
-        Chapinero Alto · {myStars} {myRating} de 5 · desde marzo de 2026
+        {readerBarrio} · {myStars} {myRating} de 5
       </div>
       <div className="h-[5px] bg-[#201e1d] mt-[20px] mb-[2px]" />
       <div className="h-px bg-[#201e1d] mb-[30px]" />

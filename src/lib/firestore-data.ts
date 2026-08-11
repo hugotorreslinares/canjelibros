@@ -1,0 +1,265 @@
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  increment,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  addDoc,
+  where,
+  type Unsubscribe,
+} from "firebase/firestore";
+import type { User } from "firebase/auth";
+import { db, FirebaseNotConfiguredError } from "./firebase";
+import { BOGOTA_CENTER } from "./geo-constants";
+import type { Book, ChatMessage, ChatThread, NewBook, Rating, Reader } from "./types";
+
+const READERS = "readers";
+const BOOKS = "books";
+const THREADS = "threads";
+const MESSAGES = "messages";
+const RATINGS = "ratings";
+
+export function threadIdFor(uidA: string, uidB: string): string {
+  return [uidA, uidB].sort().join("_");
+}
+
+export async function ensureReaderProfile(user: User, coords?: { lat: number; lng: number }): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const ref = doc(db, READERS, user.uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) return;
+  const name = user.displayName || user.email?.split("@")[0] || "Lector nuevo";
+  await setDoc(ref, {
+    name,
+    barrio: "Bogotá",
+    lat: coords?.lat ?? BOGOTA_CENTER.lat,
+    lng: coords?.lng ?? BOGOTA_CENTER.lng,
+    online: true,
+    trades: 0,
+    rating: 5,
+    bio: "",
+    spot: "",
+    createdAt: serverTimestamp(),
+  });
+}
+
+export function subscribeReaders(cb: (readers: Reader[]) => void, onError?: (err: unknown) => void): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  return onSnapshot(
+    collection(db, READERS),
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            name: data.name ?? "",
+            barrio: data.barrio ?? "",
+            lat: data.lat ?? BOGOTA_CENTER.lat,
+            lng: data.lng ?? BOGOTA_CENTER.lng,
+            online: data.online ?? true,
+            trades: data.trades ?? 0,
+            rating: data.rating ?? 5,
+            bio: data.bio ?? "",
+            spot: data.spot ?? "",
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("readers subscription failed", err);
+      onError?.(err);
+    }
+  );
+}
+
+export function subscribeBooks(cb: (books: Book[]) => void, onError?: (err: unknown) => void): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  return onSnapshot(
+    collection(db, BOOKS),
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            ownerId: data.ownerId,
+            t: data.t ?? "",
+            a: data.a ?? "",
+            cat: data.cat ?? "",
+            cond: data.cond ?? "",
+            desc: data.desc ?? "",
+            resUid: data.resUid ?? null,
+            createdAt: data.createdAt?.toMillis?.() ?? 0,
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("books subscription failed", err);
+      onError?.(err);
+    }
+  );
+}
+
+export async function createBook(ownerId: string, book: NewBook): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await addDoc(collection(db, BOOKS), { ...book, ownerId, resUid: null, createdAt: serverTimestamp() });
+}
+
+export async function updateBook(bookId: string, patch: Partial<NewBook>): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, BOOKS, bookId), patch);
+}
+
+export async function reserveBook(bookId: string, resUid: string | null): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, BOOKS, bookId), { resUid });
+}
+
+// Transfers a book to `newOwnerId` and clears its reservation. Firestore rules allow this
+// write in two cases: the caller already owns the book (giving it away), or the book is
+// currently reserved for the caller and the caller is claiming it (receiving it) — see
+// firestore.rules for the exact "claim" condition.
+export async function transferBook(bookId: string, newOwnerId: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, BOOKS, bookId), { ownerId: newOwnerId, resUid: null });
+}
+
+export async function deleteBook(bookId: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await deleteDoc(doc(db, BOOKS, bookId));
+}
+
+export async function bumpReaderTrades(uid: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, READERS, uid), { trades: increment(1) });
+}
+
+export function subscribeMyThreads(
+  uid: string,
+  cb: (threads: ChatThread[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const q = query(collection(db, THREADS), where("participants", "array-contains", uid));
+  return onSnapshot(
+    q,
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            participants: data.participants,
+            dealText: data.dealText ?? "",
+            lastMessage: data.lastMessage ?? "",
+            lastMessageAt: data.lastMessageAt?.toMillis?.() ?? 0,
+            closed: data.closed ?? false,
+            fromUid: data.fromUid ?? "",
+            toUid: data.toUid ?? "",
+            fromBookId: data.fromBookId ?? "",
+            toBookId: data.toBookId ?? "",
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("threads subscription failed", err);
+      onError?.(err);
+    }
+  );
+}
+
+export function subscribeThreadMessages(
+  threadId: string,
+  cb: (messages: ChatMessage[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const q = query(collection(db, THREADS, threadId, MESSAGES), orderBy("createdAt", "asc"));
+  return onSnapshot(
+    q,
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            senderId: data.senderId,
+            text: data.text ?? "",
+            createdAt: data.createdAt?.toMillis?.() ?? 0,
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("thread messages subscription failed", err);
+      onError?.(err);
+    }
+  );
+}
+
+export async function openThread(
+  fromUid: string,
+  toUid: string,
+  fromBookId: string,
+  toBookId: string,
+  dealText: string
+): Promise<string> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const id = threadIdFor(fromUid, toUid);
+  await setDoc(
+    doc(db, THREADS, id),
+    { participants: [fromUid, toUid].sort(), fromUid, toUid, fromBookId, toBookId, dealText, closed: false },
+    { merge: true }
+  );
+  return id;
+}
+
+export async function sendThreadMessage(threadId: string, senderId: string, text: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await addDoc(collection(db, THREADS, threadId, MESSAGES), { senderId, text, createdAt: serverTimestamp() });
+  await setDoc(doc(db, THREADS, threadId), { lastMessage: text, lastMessageAt: serverTimestamp() }, { merge: true });
+}
+
+export async function closeThread(threadId: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await setDoc(doc(db, THREADS, threadId), { closed: true }, { merge: true });
+}
+
+export async function addRating(raterUid: string, ratedUid: string, stars: number): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await addDoc(collection(db, RATINGS), { raterUid, ratedUid, stars, createdAt: serverTimestamp() });
+}
+
+export function subscribeRatings(cb: (ratings: Rating[]) => void, onError?: (err: unknown) => void): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  return onSnapshot(
+    collection(db, RATINGS),
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            raterUid: data.raterUid,
+            ratedUid: data.ratedUid,
+            stars: data.stars ?? 0,
+            createdAt: data.createdAt?.toMillis?.() ?? 0,
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("ratings subscription failed", err);
+      onError?.(err);
+    }
+  );
+}
