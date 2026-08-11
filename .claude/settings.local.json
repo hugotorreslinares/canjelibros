@@ -10,7 +10,8 @@
       "Bash(npx eslint *)",
       "Bash(npm run *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git check-ignore *)"
     ]
   }
 }
