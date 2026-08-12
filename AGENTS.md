@@ -25,7 +25,7 @@ Read this before exploring the codebase — it's the map so you don't have to re
 
 ## Data model (Firestore)
 
-- `readers/{uid}`: name, barrio, lat, lng, online, trades, bio, spot. Auto-created on first sign-in (real geolocation, falls back to Bogotá center). `rating` field exists but is a dead legacy default (5, never updated) — display rating is computed client-side from `ratings`, see below. Don't reintroduce reads of `reader.rating` for display.
+- `readers/{uid}`: name, barrio, lat, lng, online, trades, bio, spot, interests (string[], category names from `formCats` — used for future recommendations, edited from Mi estante's chip toggles). Auto-created on first sign-in (real geolocation, falls back to Bogotá center). `rating` field exists but is a dead legacy default (5, never updated) — display rating is computed client-side from `ratings`, see below. Don't reintroduce reads of `reader.rating` for display.
 - `books/{bookId}`: ownerId, t, a, cat, cond, desc, resUid (reservation target or null), createdAt.
 - `threads/{threadId}`: one per reader pair, id = `[uidA, uidB].sort().join('_')` (see `threadIdFor` in `firestore-data.ts`) — participants, fromUid/toUid (proposer/recipient), fromBookId/toBookId (the two books in play), dealText, lastMessage, closed. Only the two participants can read/write.
 - `threads/{threadId}/messages/{messageId}`: senderId, text, createdAt. Same access as the parent thread.

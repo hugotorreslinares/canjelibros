@@ -6,11 +6,13 @@ import { plateFor, stars } from "@/lib/design-utils";
 import { distanceKm } from "@/lib/geo";
 import {
   addRating,
+  addReaderInterest,
   bumpReaderTrades,
   closeThread,
   createBook,
   deleteBook as deleteBookDoc,
   openThread,
+  removeReaderInterest,
   reserveBook,
   sendThreadMessage,
   transferBook,
@@ -227,6 +229,22 @@ export function useAppState() {
     [user, promptAuth, myBooks, myThreads, showToast, editingBookId]
   );
 
+  const toggleInterest = useCallback(
+    async (cat: string) => {
+      if (!user) {
+        promptAuth("Inicia sesión para elegir tus categorías de interés.");
+        return;
+      }
+      const isActive = (myReader?.interests ?? []).includes(cat);
+      try {
+        await (isActive ? removeReaderInterest(user.uid, cat) : addReaderInterest(user.uid, cat));
+      } catch {
+        showToast("No se pudo guardar. Intenta de nuevo.");
+      }
+    },
+    [user, promptAuth, myReader, showToast]
+  );
+
   const vals = useMemo(() => {
     const totalSlots = BASE_SLOTS + Math.floor((myReader?.trades ?? 0) / TRADES_PER_SLOT);
     const used = myBooks.length;
@@ -271,7 +289,7 @@ export function useAppState() {
           }))
       : [];
 
-    let catalog: Array<{
+    const catalogAll: Array<{
       id: string;
       t: string;
       a: string;
@@ -284,6 +302,7 @@ export function useAppState() {
       starsLabel: string;
       plate: string;
       short: string;
+      createdAt: number;
       selectOwner: () => void;
       propose: () => void;
     }> = [];
@@ -291,7 +310,7 @@ export function useAppState() {
       books
         .filter((b) => b.ownerId === r.id)
         .forEach((b) => {
-          catalog.push({
+          catalogAll.push({
             id: b.id,
             t: b.t,
             a: b.a,
@@ -302,8 +321,9 @@ export function useAppState() {
             barrio: r.barrio,
             dist: readerDist(r),
             starsLabel: stars(avgRatingFor(r.id)),
-            plate: plateFor(catalog.length),
+            plate: plateFor(catalogAll.length),
             short: b.t,
+            createdAt: b.createdAt,
             selectOwner: () => {
               setRoute("map");
               setSel(r.id);
@@ -312,12 +332,23 @@ export function useAppState() {
           });
         });
     });
-    catalog = catalog.filter(
+    const catalog = catalogAll.filter(
       (b) => (cat === "Todas" || b.cat === cat) && (cond === "Todos" || b.cond === cond) && (!myReader || b.dist <= maxDist)
     );
     if (sort === "distancia") catalog.sort((a, b) => a.dist - b.dist);
     if (sort === "estado") catalog.sort((a, b) => formConds.indexOf(a.cond) - formConds.indexOf(b.cond));
     if (sort === "título") catalog.sort((a, b) => a.t.localeCompare(b.t));
+
+    const myInterests = myReader?.interests ?? [];
+    const interestMatches = catalogAll
+      .filter((b) => myInterests.includes(b.cat))
+      .sort((a, b) => b.createdAt - a.createdAt);
+    const latestBooks = catalogAll.slice().sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
+    const recommended = !myUid
+      ? { title: "Recién publicados", items: latestBooks }
+      : interestMatches.length > 0
+        ? { title: "Recomendados para ti", items: interestMatches.slice(0, 8) }
+        : { title: "Recién publicados", items: latestBooks };
 
     const counts: Record<string, number> = {};
     let totalBooks = 0;
@@ -417,6 +448,7 @@ export function useAppState() {
       catCount: `${catalog.length} de ${totalBooks}`,
       counts,
       totalBooks,
+      recommended,
       offerUser,
       offerBook,
       pendingBook,
@@ -599,6 +631,7 @@ export function useAppState() {
       items: vals.catalog,
       empty: vals.catalogEmpty,
       count: vals.catCount,
+      recommended: vals.recommended,
       sortLabel: sort,
       catOptions: categories.map((c) => ({
         label: c,
@@ -635,6 +668,11 @@ export function useAppState() {
       nextCupoNote: vals.pendingUser
         ? `Se abre al confirmar el canje con ${vals.pendingUser.name}.`
         : "Sin canjes pendientes. Proponle uno a alguien del mapa.",
+      interestOptions: formCats.map((c) => ({
+        label: c,
+        active: (myReader?.interests ?? []).includes(c),
+        toggle: () => toggleInterest(c),
+      })),
       goPublish,
       goChat: () => go("chat"),
     },

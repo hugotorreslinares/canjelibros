@@ -1,4 +1,6 @@
 import {
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -45,8 +47,21 @@ export async function ensureReaderProfile(user: User, coords?: { lat: number; ln
     rating: 5,
     bio: "",
     spot: "",
+    interests: [],
     createdAt: serverTimestamp(),
   });
+}
+
+// Atomic add/remove on the array (not a read-modify-write of the whole list): two rapid
+// toggles on different categories would otherwise race and silently lose one of them.
+export async function addReaderInterest(uid: string, cat: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, READERS, uid), { interests: arrayUnion(cat) });
+}
+
+export async function removeReaderInterest(uid: string, cat: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, READERS, uid), { interests: arrayRemove(cat) });
 }
 
 export function subscribeReaders(cb: (readers: Reader[]) => void, onError?: (err: unknown) => void): Unsubscribe {
@@ -68,6 +83,7 @@ export function subscribeReaders(cb: (readers: Reader[]) => void, onError?: (err
             rating: data.rating ?? 5,
             bio: data.bio ?? "",
             spot: data.spot ?? "",
+            interests: data.interests ?? [],
           };
         })
       );

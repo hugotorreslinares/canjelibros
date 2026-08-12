@@ -23,6 +23,7 @@ export interface Reader {
   rating: number;
   bio: string;
   spot: string;
+  interests: string[];
 }
 
 export interface ChatThread {
