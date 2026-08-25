@@ -2,7 +2,7 @@
 
 Plan para cerrar los hallazgos de [DESIGN-AUDIT.md](DESIGN-AUDIT.md) apoyándonos en shadcn/ui. Cada tarea cita el identificador del hallazgo que cierra (`4.1`, `5.2`, …) para poder verificar al final que no quedó nada suelto.
 
-Estado: **dirección A elegida** («Papel y tinta»). Fase 0 hecha, fase 2 hecha, fase 3 a medias — ver §7.1.
+Estado: **dirección A elegida** («Papel y tinta»). Fases 0 a 4 hechas — ver §7.1.
 
 ## 1. La decisión de fondo, antes de instalar nada
 
@@ -202,19 +202,19 @@ Las fases 0 a 3 son las que cambian la primera impresión. De la 4 en adelante e
 
 ### 7.1 Estado al 25 de agosto de 2026
 
-Hecho:
+**Fases 0 a 4 hechas.** `shadcn init` con base Radix; tokens de la dirección A en `globals.css` (escala de seis pasos, rejilla de 4 px, radio de 2 px, Source Serif 4 + Archivo); `src/lib/ui.ts` eliminado y sin consumidores; encabezado de una sola fila con `sheet` en móvil, `<main>` y `aria-current`; `sonner` en lugar del aviso propio; `QueryState` con esqueleto, error y vacío en catálogo y panel de lectores; los tres modales sobre `dialog` y los borrados sobre `alert-dialog`.
 
-- **Fase 0.** `shadcn init` con base Radix, tokens de la dirección A en `globals.css` (color, escala de seis pasos, radio de 2 px, Source Serif 4 + Archivo por `@theme inline`), `--primary` a `#00769a` para cumplir AA.
-- **Fase 2.** Encabezado de una sola fila con menú en `sheet` bajo `md`, landmark `<main>` y `aria-current` en la navegación. En móvil pasó de **243 px a 65 px** de alto.
-- **Fase 3, primera mitad.** `Toast.tsx` reemplazado por `sonner`: portal propio por encima de los modales y anuncio por `aria-live`.
-- **Hallazgo 4.1 completo.** `readerDist` devuelve `null` sin ubicación y la interfaz no escribe nada en vez de «0 km» — en mapa, catálogo y cabecera del chat. Con `null` el orden por distancia cae a lo más reciente.
-- **Hallazgos 4.2 y parte de 4.5.** El barrio y el encabezado del mapa salen del estado real; se fue el «Chapinero Alto» escrito a mano.
+Hallazgos cerrados: 1.1–1.4, 2.1–2.4, 3.1, 3.2, 4.1–4.5, 5.1–5.4, 6.1, 6.2, 8.1 (versión provisional), 8.3, y el contraste del botón principal.
 
-Pendiente inmediato:
+Medido en catálogo y mapa: encabezado móvil de **65 px** (eran 243), **seis** tamaños de letra (eran doce), **cero** elementos propios bajo 44 px, y ningún «0 km» inventado.
 
-- **Fase 1 sin empezar:** las vistas siguen con valores arbitrarios en píxeles y `src/lib/ui.ts` sigue vivo. En la pantalla del mapa quedan 11 tamaños de letra distintos, contra la meta de 6.
-- **Fase 3, segunda mitad:** `QueryState`, `skeleton`, `empty` y `alert` — cargando, error y vacío siguen viéndose igual.
-- Los tres modales (fase 4) siguen escritos a mano, sin `role="dialog"` ni foco atrapado.
+**Pendiente:**
+
+- **Fase 6** — portadas: las placas tipográficas siguen con tres tonos casi negros que parecen imágenes rotas (7.2) y el título dentro de la placa se corta a 74 px (7.3). El recuadro ya es 2:3.
+- **Fase 7** — el chat baja al último mensaje con un `scrollIntoView` provisional; falta `message-scroller`, que además suelta el seguimiento cuando el lector sube a releer.
+- **Fase 8** — pines del mapa: las etiquetas siguen encaballándose (3.3).
+- **Fase 9** — rutas reales de Next (8.4).
+- Fuera de interfaz, y bloqueando 4.5 del todo: el latido de presencia y el conteo de canjes del otro lado, que están en [PLAN.md](PLAN.md).
 
 ## 8. Cómo verificamos cada fase
 
