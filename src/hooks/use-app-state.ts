@@ -574,7 +574,7 @@ export function useAppState() {
         plate: plateFor(myBooks.indexOf(b)),
         short: b.t,
         state: activelyReserved ? `Reservado con ${nameOf(b.resUid as string)}` : "Disponible",
-        stateColor: activelyReserved ? "#aa0b56" : "#605d5d",
+        reserved: activelyReserved,
         canRemove: !activelyReserved,
         edit: () => editBook(b.id),
         remove: () => deleteBook(b.id),
@@ -620,7 +620,7 @@ export function useAppState() {
           time: formatTime(t.lastMessageAt),
           last: t.lastMessage || t.dealText,
           state: st,
-          stateColor: st.indexOf("cerrado") >= 0 ? "#605d5d" : "#aa0b56",
+          closed: t.closed,
           active: t.id === activeThreadId,
           open: () => setThreadId(t.id),
         };
@@ -630,9 +630,7 @@ export function useAppState() {
       text: m.text,
       time: formatTime(m.createdAt),
       side: m.senderId === myUid ? ("end" as const) : ("start" as const),
-      bg: m.senderId === myUid ? "#201e1d" : "#eae7e7",
-      fg: m.senderId === myUid ? "#f8f4f4" : "#201e1d",
-      metaColor: m.senderId === myUid ? "#bab6b6" : "#605d5d",
+      mine: m.senderId === myUid,
     }));
 
     return {

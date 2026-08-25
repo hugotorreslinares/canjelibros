@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { divider, input, outlineBtn, sectionLabel } from "@/lib/ui";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ThreadSummary {
   id: string;
@@ -7,7 +7,7 @@ interface ThreadSummary {
   time: string;
   last: string;
   state: string;
-  stateColor: string;
+  closed: boolean;
   active: boolean;
   open: () => void;
 }
@@ -16,9 +16,7 @@ interface Message {
   text: string;
   time: string;
   side: "start" | "end";
-  bg: string;
-  fg: string;
-  metaColor: string;
+  mine: boolean;
 }
 
 interface ChatViewProps {
@@ -45,6 +43,14 @@ export function ChatView({
   sendMessage,
 }: ChatViewProps) {
   const [draft, setDraft] = useState("");
+  const endRef = useRef<HTMLDivElement>(null);
+
+  // Sin esto el mensaje recién enviado queda fuera de vista en una conversación
+  // larga. Provisional: la fase 7 lo cambia por message-scroller, que además
+  // suelta el seguimiento cuando el lector sube a releer.
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "end" });
+  }, [messages.length]);
 
   const send = () => {
     const text = draft.trim();
@@ -52,13 +58,14 @@ export function ChatView({
     sendMessage(text);
     setDraft("");
   };
+
   if (!hasThreads) {
     return (
-      <div className="flex-1 grid place-items-center px-[24px] py-[60px] text-center">
+      <div className="flex-1 grid place-items-center px-6 py-16 text-center">
         <div className="max-w-[420px]">
-          <div className={sectionLabel}>Mensajes</div>
-          <h2 className="text-[28px] leading-[1.2] mt-[8px] mb-[10px]">Todavía no tienes conversaciones</h2>
-          <p className="text-[16px] leading-[1.5] text-[#444141]">
+          <h2 className="font-sans text-label uppercase text-muted-foreground">Mensajes</h2>
+          <p className="font-serif text-title mt-2 mb-2.5">Todavía no tienes conversaciones</p>
+          <p className="font-serif text-body text-foreground/85">
             Cuando propongas o recibas un intercambio, la conversación aparece aquí.
           </p>
         </div>
@@ -68,59 +75,66 @@ export function ChatView({
 
   return (
     <div className="grid grid-cols-1 md:[grid-template-columns:330px_minmax(0,1fr)] flex-1 items-stretch">
-      <div className="border-b md:border-b-0 md:border-r border-[#201e1d]/16 px-[24px] py-[26px]">
-        <div className={`${sectionLabel} mb-[14px]`}>Mensajes</div>
-        <div className="grid gap-[2px]">
+      <div className="border-b md:border-b-0 md:border-r border-border px-6 py-6">
+        <h2 className="font-sans text-label uppercase text-muted-foreground mb-3.5">Mensajes</h2>
+        <div className="flex flex-col">
           {threads.map((t) => (
             <button
               key={t.id}
               onClick={t.open}
-              className={`text-left border-none border-t ${divider} px-[10px] py-[15px] grid gap-[3px] ${
-                t.active ? "bg-[#eae7e7]" : "bg-transparent"
+              aria-current={t.active ? "true" : undefined}
+              className={`text-left border-none border-t border-border px-2.5 py-3.5 flex flex-col gap-1 ${
+                t.active ? "bg-muted" : "bg-transparent"
               }`}
             >
-              <div className="flex justify-between gap-[10px] items-baseline">
-                <span className="text-[19px]">{t.name}</span>
-                <span className="text-[13px] text-[#605d5d]">{t.time}</span>
-              </div>
-              <div className="text-[15px] text-[#444141] overflow-hidden text-ellipsis whitespace-nowrap">{t.last}</div>
-              <div style={{ color: t.stateColor }} className="text-[13px]">
+              <span className="flex justify-between gap-2.5 items-baseline">
+                <span className="font-serif text-subtitle">{t.name}</span>
+                <span className="font-sans text-small text-muted-foreground">{t.time}</span>
+              </span>
+              <span className="font-serif text-small text-foreground/85 truncate">{t.last}</span>
+              <span className={`font-sans text-small ${t.closed ? "text-muted-foreground" : "text-destructive"}`}>
                 {t.state}
-              </div>
+              </span>
             </button>
           ))}
         </div>
       </div>
-      <div className="flex flex-col px-[20px] sm:px-[34px] pt-[24px] pb-[26px]">
-        <div className={`flex justify-between gap-[20px] items-start border-b ${divider} pb-[16px]`}>
+
+      <div className="flex flex-col px-5 sm:px-8 pt-6 pb-6">
+        <div className="flex justify-between gap-5 items-start border-b border-border pb-4">
           <div>
-            <div className="text-[27px]">{thread.name}</div>
-            <div className="text-[15px] text-[#605d5d]">
+            <h2 className="font-serif text-title m-0">{thread.name}</h2>
+            <p className="font-sans text-small text-muted-foreground">
               {thread.barrio}
               {thread.dist !== null && <> · {thread.dist} km</>} · {thread.statusLine}
-            </div>
+            </p>
           </div>
           <div className="text-right">
-            <div className="text-[14px] text-[#605d5d]">Canje acordado</div>
-            <div className="text-[17px] max-w-[22em]">{thread.deal}</div>
+            <p className="font-sans text-label uppercase text-muted-foreground">Canje acordado</p>
+            <p className="font-serif text-body max-w-[22em]">{thread.deal}</p>
           </div>
         </div>
-        <div className="flex-1 grid gap-[16px] content-start py-[24px] overflow-auto">
+
+        <div className="flex-1 flex flex-col gap-4 py-6 overflow-auto">
           {messages.map((m, i) => (
             <div
               key={i}
-              style={{ background: m.bg, color: m.fg, justifySelf: m.side }}
-              className="max-w-[62%] border border-[#201e1d]/16 rounded-[2px] px-[15px] py-[12px] text-[17px] leading-[1.45]"
+              style={{ alignSelf: m.side }}
+              className={`max-w-[62%] border rounded-sm px-4 py-3 font-serif text-body ${
+                m.mine ? "bg-foreground text-background border-foreground" : "bg-card text-foreground border-border"
+              }`}
             >
               {m.text}
-              <div style={{ color: m.metaColor }} className="text-[12px] mt-[6px]">
+              <div className={`font-sans text-label mt-1.5 ${m.mine ? "text-background/70" : "text-muted-foreground"}`}>
                 {m.time}
               </div>
             </div>
           ))}
+          <div ref={endRef} />
         </div>
-        <div className={`border-t ${divider} pt-[18px] grid gap-[14px]`}>
-          <div className="flex gap-[12px] items-center flex-wrap">
+
+        <div className="border-t border-border pt-4 flex flex-col gap-3.5">
+          <div className="flex gap-3 items-center flex-wrap">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
@@ -131,25 +145,27 @@ export function ChatView({
                 }
               }}
               placeholder="Escribe un mensaje…"
-              className={`${input} flex-1 min-w-[240px]`}
+              aria-label="Mensaje"
+              className="flex-1 min-w-[240px] border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder"
             />
-            <button onClick={send} disabled={!draft.trim()} className={outlineBtn}>
+            {/* Enviar es lo que se hace cien veces: va lleno. Confirmar el canje
+                transfiere los dos libros y no se deshace: va secundario. */}
+            <Button onClick={send} disabled={!draft.trim()}>
               Enviar
-            </button>
+            </Button>
           </div>
           {canConfirm && (
-            <div className="flex gap-[14px] items-center flex-wrap">
-              <button
-                onClick={openRating}
-                className="bg-[#d6006c] text-white border-none rounded-[2px] px-[22px] py-[12px] text-[17px] transition-colors hover:bg-[#d82071] active:bg-[#aa0b56]"
-              >
+            <div className="flex gap-3.5 items-center flex-wrap">
+              <Button variant="outline" onClick={openRating}>
                 Marcar intercambio como realizado
-              </button>
-              <span className="text-[15px] text-[#605d5d]">{confirmNote}</span>
+              </Button>
+              <span className="font-sans text-small text-muted-foreground">{confirmNote}</span>
             </div>
           )}
           {threadClosed && (
-            <div className="text-[16px] text-[#605d5d]">Canje cerrado y calificado. Los libros ya cambiaron de estante.</div>
+            <p className="font-sans text-small text-muted-foreground">
+              Canje cerrado y calificado. Los libros ya cambiaron de estante.
+            </p>
           )}
         </div>
       </div>

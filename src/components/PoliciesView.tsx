@@ -1,4 +1,4 @@
-import { divider, sectionLabel, smallOutlineBtn } from "@/lib/ui";
+import { Button } from "@/components/ui/button";
 
 interface PoliciesViewProps {
   goMap: () => void;
@@ -28,7 +28,7 @@ const RULES = [
 export function PoliciesView({ goMap }: PoliciesViewProps) {
   return (
     <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[820px]">
-      <div className={sectionLabel}>Políticas del sitio</div>
+      <div className="font-sans text-label uppercase text-muted-foreground">Políticas del sitio</div>
       <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-0">Qué se puede publicar en El Canje</h1>
       <p className="text-[17px] leading-[1.5] text-[#444141] mt-[12px]">
         Última actualización: 25 de agosto de 2026 · Aplica a todo el contenido publicado en el mapa, el catálogo y los
@@ -54,7 +54,7 @@ export function PoliciesView({ goMap }: PoliciesViewProps) {
         </p>
         <ul className="grid gap-[12px]">
           {PROHIBITED.map((item) => (
-            <li key={item} className={`border-t ${divider} pt-[12px] text-[17px] leading-[1.5] text-[#444141]`}>
+            <li key={item} className="border-t border-border pt-3 font-serif text-body text-foreground/85">
               {item}
             </li>
           ))}
@@ -70,7 +70,7 @@ export function PoliciesView({ goMap }: PoliciesViewProps) {
         <h2 className="text-[28px] leading-[1.15] mb-[10px]">3. Reglas de convivencia</h2>
         <ul className="grid gap-[12px]">
           {RULES.map((item) => (
-            <li key={item} className={`border-t ${divider} pt-[12px] text-[17px] leading-[1.5] text-[#444141]`}>
+            <li key={item} className="border-t border-border pt-3 font-serif text-body text-foreground/85">
               {item}
             </li>
           ))}
@@ -97,9 +97,9 @@ export function PoliciesView({ goMap }: PoliciesViewProps) {
         </p>
       </section>
 
-      <button onClick={goMap} className={smallOutlineBtn}>
+      <Button variant="outline" onClick={goMap}>
         Volver al mapa
-      </button>
+      </Button>
     </div>
   );
 }

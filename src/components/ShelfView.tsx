@@ -1,4 +1,5 @@
-import { chip, condPill, divider, linkBtn, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { BookCover } from "./BookCover";
 
 interface ShelfBook {
@@ -10,7 +11,7 @@ interface ShelfBook {
   plate: string;
   short: string;
   state: string;
-  stateColor: string;
+  reserved: boolean;
   canRemove: boolean;
   edit: () => void;
   remove: () => void;
@@ -42,6 +43,10 @@ interface ShelfViewProps {
   goChat: () => void;
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <h2 className="font-sans text-label uppercase text-muted-foreground">{children}</h2>;
+}
+
 export function ShelfView({
   signedIn,
   readerName,
@@ -63,126 +68,127 @@ export function ShelfView({
 }: ShelfViewProps) {
   if (!signedIn) {
     return (
-      <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[720px]">
-        <div className={sectionLabel}>Mi estante</div>
-        <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-[18px]">Inicia sesión para ver tu estante</h1>
-        <p className="text-[17px] leading-[1.5] text-[#444141]">
+      <div className="px-6 sm:px-10 pt-8 pb-16 max-w-[720px]">
+        <SectionLabel>Mi estante</SectionLabel>
+        <h1 className="font-serif text-display mt-2 mb-4">Inicia sesión para ver tu estante</h1>
+        <p className="font-serif text-body text-foreground/85">
           Tu estante y tus libros publicados están ligados a tu cuenta. Inicia sesión para verlos y para publicar.
         </p>
-        <button onClick={goPublish} className="border border-[#201e1d] rounded-[2px] px-[22px] py-[13px] text-[17px] mt-[24px] hover:bg-[#eae7e7]">
+        <Button variant="outline" onClick={goPublish} className="mt-6">
           Iniciar sesión
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[1180px]">
-      <div className={sectionLabel}>Mi estante</div>
-      <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-0">{readerName}</h1>
-      <div className="text-[17px] text-[#444141] mt-[8px]">
+    <div className="px-6 sm:px-10 pt-8 pb-16 max-w-[1180px]">
+      <SectionLabel>Mi estante</SectionLabel>
+      <h1 className="font-serif text-display mt-2 mb-0">{readerName}</h1>
+      <p className="font-serif text-body text-foreground/85 mt-2">
         {readerBarrio} · {myStars} {myRating} de 5
-      </div>
-      <div className="h-[5px] bg-[#201e1d] mt-[20px] mb-[2px]" />
-      <div className="h-px bg-[#201e1d] mb-[30px]" />
+      </p>
+      <div className="h-[5px] bg-foreground mt-5 mb-0.5" />
+      <div className="h-px bg-foreground mb-8" />
 
-      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] gap-[34px] mb-[44px]">
+      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] gap-8 mb-11">
         <div>
-          <div className={`${sectionLabel} mb-[8px]`}>Cupos</div>
-          <div className="text-[60px] leading-none text-[#0088b0]">
+          <SectionLabel>Cupos</SectionLabel>
+          <p className="font-serif text-[60px] leading-none text-primary mt-2">
             {usedSlots}
-            <span className="text-[#201e1d] text-[30px]">/{totalSlots}</span>
-          </div>
-          <div className="flex gap-[5px] mt-[12px]">
+            <span className="text-foreground text-title">/{totalSlots}</span>
+          </p>
+          <div className="flex gap-1.5 mt-3" role="img" aria-label={`${usedSlots} de ${totalSlots} cupos usados`}>
             {slotPips.map((p, i) => (
               <div
                 key={i}
-                className={`w-[26px] h-[12px] rounded-[1px] border ${
-                  p.filled ? "bg-[#0088b0] border-[#0088b0]" : "bg-transparent border-[#201e1d]/30"
-                }`}
+                className={`w-6 h-3 rounded-sm border ${p.filled ? "bg-primary border-primary" : "bg-transparent border-border-strong"}`}
               />
             ))}
           </div>
-          <div className="text-[15px] text-[#444141] mt-[12px] max-w-[22em]">{slotNote}</div>
+          <p className="font-sans text-small text-foreground/85 mt-3 max-w-[22em]">{slotNote}</p>
         </div>
         <div>
-          <div className={`${sectionLabel} mb-[8px]`}>Intercambios</div>
-          <div className="text-[60px] leading-none">{myTrades}</div>
-          <div className="text-[15px] text-[#444141] mt-[12px] max-w-[22em]">
+          <SectionLabel>Intercambios</SectionLabel>
+          <p className="font-serif text-[60px] leading-none mt-2">{myTrades}</p>
+          <p className="font-sans text-small text-foreground/85 mt-3 max-w-[22em]">
             Cada intercambio confirmado por las dos partes abre un cupo permanente.
-          </div>
+          </p>
         </div>
         <div>
-          <div className={`${sectionLabel} mb-[8px]`}>Racha</div>
-          <div className="text-[60px] leading-none text-[#d6006c]">4</div>
-          <div className="text-[15px] text-[#444141] mt-[12px] max-w-[22em]">
-            Semanas seguidas con al menos un canje. Dos más y llegas a «Lector de barrio».
-          </div>
-        </div>
-        <div>
-          <div className={`${sectionLabel} mb-[8px]`}>Siguiente cupo</div>
-          <div className="text-[22px] leading-[1.3] max-w-[15em]">{nextCupoNote}</div>
+          <SectionLabel>Siguiente cupo</SectionLabel>
+          <p className="font-serif text-subtitle mt-2 max-w-[15em]">{nextCupoNote}</p>
           {hasPending && (
-            <button onClick={goChat} className={`${smallOutlineBtn} mt-[14px]`}>
+            <Button variant="outline" size="sm" onClick={goChat} className="mt-3">
               Ver conversación
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
-      <div className={`border-t ${divider} pt-[24px] mb-[44px]`}>
-        <div className={`${sectionLabel} mb-[10px]`}>Categorías que te interesan</div>
-        <p className="text-[15px] text-[#444141] mb-[14px] max-w-[40em]">
+      <div className="border-t border-border pt-6 mb-11">
+        <SectionLabel>Categorías que te interesan</SectionLabel>
+        <p className="font-serif text-body text-foreground/85 mt-2 mb-4 max-w-[40em]">
           Úsalas para que te recomendemos lectores y libros afines. Toca para agregar o quitar.
         </p>
-        <div className="flex flex-wrap gap-[8px]">
+        <div className="flex flex-wrap gap-2">
           {interestOptions.map((o) => (
-            <button key={o.label} onClick={o.toggle} className={chip(o.active)}>
+            <button
+              key={o.label}
+              onClick={o.toggle}
+              aria-pressed={o.active}
+              className={`h-11 px-4 rounded-sm border font-sans text-small transition-colors ${
+                o.active
+                  ? "border-primary bg-accent text-accent-foreground"
+                  : "border-border-strong bg-transparent text-foreground/85 hover:bg-muted"
+              }`}
+            >
               {o.label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))] gap-[26px]">
+      <div className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-6">
         {myBooks.map((b, i) => (
-          <div key={i} className={`border-t ${divider} pt-[16px] grid gap-[8px]`}>
+          <article key={i} className="border-t border-border pt-4 flex flex-col gap-2">
             <BookCover
               cover={b.cover}
               plate={b.plate}
               title={b.short}
-              className="h-[150px] w-full rounded-[1px]"
-              textClassName="p-[12px] text-[14px] leading-[1.2]"
+              className="h-[264px] w-full rounded-sm"
+              textClassName="p-3 text-body leading-tight"
             />
-            <div className="text-[21px] leading-[1.15]">{b.t}</div>
-            <div className="text-[15px] text-[#605d5d]">{b.a}</div>
-            <div className="flex gap-[8px] flex-wrap">
-              <span className={tagPill}>{b.cat}</span>
-              <span className={condPill}>{b.cond}</span>
+            <h3 className="font-serif text-subtitle m-0">{b.t}</h3>
+            <p className="font-sans text-small text-muted-foreground">{b.a}</p>
+            <div className="flex gap-2 flex-wrap">
+              <Badge variant="secondary">{b.cat}</Badge>
+              <Badge variant="outline">{b.cond}</Badge>
             </div>
-            <div style={{ color: b.stateColor }} className="text-[14px]">
+            <p className={`font-sans text-small ${b.reserved ? "text-destructive" : "text-muted-foreground"}`}>
               {b.state}
-            </div>
-            <div className="flex gap-[14px] items-center mt-[2px]">
-              <button onClick={b.edit} className={linkBtn}>
+            </p>
+            <div className="flex gap-1 items-center mt-0.5">
+              <Button variant="link" onClick={b.edit} className="px-0">
                 Editar
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={b.remove}
                 disabled={!b.canRemove}
                 title={b.canRemove ? undefined : "Reservado en un intercambio activo"}
-                className="bg-transparent border-none p-0 text-[15px] text-[#aa0b56] hover:text-[#d6006c] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:text-[#605d5d]"
+                className="text-destructive hover:text-destructive"
               >
                 Eliminar
-              </button>
+              </Button>
             </div>
-          </div>
+          </article>
         ))}
         <button
           onClick={goPublish}
-          className="border border-dashed border-[#201e1d]/40 bg-transparent rounded-[2px] min-h-[240px] grid place-items-center gap-[6px] p-[20px] text-[19px] text-[#444141] hover:bg-[#eae7e7]"
+          className="border border-dashed border-border-strong bg-transparent rounded-sm min-h-[240px] grid place-items-center gap-1.5 p-5 font-serif text-body text-foreground/85 hover:bg-muted"
         >
-          <span className="text-[34px] text-[#0088b0]">+</span>
+          <span className="text-[34px] text-primary leading-none">+</span>
           <span>{addSlotLabel}</span>
         </button>
       </div>

@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
-import { condPill, divider, sectionLabel, smallPrimaryBtn, tagPill } from "@/lib/ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { BookCover } from "./BookCover";
 import { ReaderListSkeleton } from "./BookGridSkeleton";
 import { QueryState } from "./QueryState";
@@ -130,7 +131,7 @@ export function MapView({
       <aside className="border-l-0 lg:border-l border-[#201e1d]/16 px-[24px] lg:px-[30px] pt-[28px] pb-[40px] overflow-auto">
         {noSelection && (
           <div>
-            <div className={sectionLabel}>Cerca de ti</div>
+            <div className="font-sans text-label uppercase text-muted-foreground">Cerca de ti</div>
             <h2 className="text-[34px] leading-[1.05] my-[8px] mb-[14px]">
               {loading ? "Buscando lectores…" : error ? "Lectores cerca de ti" : nearHeading}
             </h2>
@@ -151,7 +152,7 @@ export function MapView({
                 <button
                   key={u.id}
                   onClick={u.select}
-                  className={`text-left bg-transparent border-none border-t ${divider} pt-[16px] grid gap-[4px] hover:bg-[#eae7e7]`}
+                  className="text-left bg-transparent border-none border-t border-border pt-4 grid gap-1 hover:bg-muted"
                 >
                   <div className="flex justify-between items-baseline gap-[12px]">
                     <span className="text-[21px]">{u.name}</span>
@@ -172,7 +173,7 @@ export function MapView({
             <button onClick={clearSelection} className="bg-transparent border-none p-0 pb-[18px] text-[15px] text-[#006786] hover:text-[#d6006c]">
               ← Volver a la lista
             </button>
-            <div className={sectionLabel}>
+            <div className="font-sans text-label uppercase text-muted-foreground">
               {sel.barrio}
               {sel.dist !== null && <> · {sel.dist} km</>}
             </div>
@@ -181,13 +182,13 @@ export function MapView({
               {sel.starsLabel} {sel.rating} de 5 · {sel.trades} intercambios · {sel.statusLine}
             </div>
             <div className="text-[16px] leading-[1.5] text-[#444141] mb-[8px] italic">{sel.bio}</div>
-            <div className={`text-[14px] text-[#605d5d] border-t ${divider} pt-[10px] mb-[22px]`}>
+            <div className="font-sans text-small text-muted-foreground border-t border-border pt-2.5 mb-6">
               Punto de encuentro que propone: {sel.spot}
             </div>
-            <div className={`${sectionLabel} mb-[14px]`}>Su estante · {sel.count} disponibles</div>
+            <div className="font-sans text-label uppercase text-muted-foreground mb-3.5">Su estante · {sel.count} disponibles</div>
             <div className="grid gap-[20px]">
               {selBooks.map((b, i) => (
-                <div key={i} className={`grid grid-cols-[56px_minmax(0,1fr)] gap-[14px] border-t ${divider} pt-[16px]`}>
+                <div key={i} className="grid grid-cols-[56px_minmax(0,1fr)] gap-3.5 border-t border-border pt-4">
                   <BookCover
                     cover={b.cover}
                     plate={b.plate}
@@ -200,12 +201,12 @@ export function MapView({
                     <div className="text-[15px] text-[#605d5d]">{b.a}</div>
                     <div className="text-[15px] leading-[1.45] text-[#444141]">{b.desc}</div>
                     <div className="flex gap-[8px] flex-wrap mt-[3px]">
-                      <span className={tagPill}>{b.cat}</span>
-                      <span className={condPill}>{b.cond}</span>
+                      <Badge variant="secondary">{b.cat}</Badge>
+                      <Badge variant="outline">{b.cond}</Badge>
                     </div>
-                    <button onClick={b.propose} className={`${smallPrimaryBtn} justify-self-start mt-[8px]`}>
-                      Proponer intercambio
-                    </button>
+                    <Button onClick={b.propose} className="justify-self-start mt-2">
+                      Proponer canje
+                    </Button>
                   </div>
                 </div>
               ))}
