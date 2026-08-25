@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { plateFor, stars } from "@/lib/design-utils";
 import { distanceKm } from "@/lib/geo";
@@ -132,7 +133,6 @@ export function useAppState() {
   const [rating, setRating] = useState<string | null>(null);
   const [starsPicked, setStarsPicked] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [editingBookId, setEditingBookId] = useState<string | null>(null);
   const [modQuery, setModQuery] = useState("");
@@ -167,17 +167,16 @@ export function useAppState() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // Sonner se monta en un portal por encima de los modales y anuncia el mensaje
+  // por aria-live. El aviso anterior vivía en z-40 y quedaba tapado por la capa
+  // del modal, así que «Elige cuántas estrellas» no se veía nunca.
   const showToast = useCallback((t: string) => {
-    setToastMsg(t);
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToastMsg(null), 3800);
+    toast(t);
   }, []);
 
   const go = useCallback((r: Route) => {
     setRoute(r);
-    setToastMsg(null);
+    toast.dismiss();
   }, []);
 
   const runAction = useCallback(
@@ -443,8 +442,10 @@ export function useAppState() {
     const navColor = (r: Route) => (route === r ? "#201e1d" : "#605d5d");
     const navLine = (r: Route) => (route === r ? "#0088b0" : "transparent");
     const nameOf = (id: string) => readers.find((r) => r.id === id)?.name.split(" ")[0] ?? "";
-    const readerDist = (r: { lat: number; lng: number }) =>
-      myReader ? round1(distanceKm(myReader.lat, myReader.lng, r.lat, r.lng)) : 0;
+    // null = no sabemos dónde está el visitante. Antes esto devolvía 0 y la
+    // interfaz publicaba «0 km» como si fuera un dato medido.
+    const readerDist = (r: { lat: number; lng: number }): number | null =>
+      myReader ? round1(distanceKm(myReader.lat, myReader.lng, r.lat, r.lng)) : null;
     const threadForUid = (uid: string) => myThreads.find((t) => t.participants.includes(uid));
 
     const selUser = otherReaders.find((r) => r.id === sel) || null;
@@ -491,7 +492,7 @@ export function useAppState() {
       cover: string | null;
       owner: string;
       barrio: string;
-      dist: number;
+      dist: number | null;
       starsLabel: string;
       plate: string;
       short: string;
@@ -527,9 +528,12 @@ export function useAppState() {
         });
     });
     const catalog = catalogAll.filter(
-      (b) => (cat === "Todas" || b.cat === cat) && (cond === "Todos" || b.cond === cond) && (!myReader || b.dist <= maxDist)
+      (b) => (cat === "Todas" || b.cat === cat) && (cond === "Todos" || b.cond === cond) && (b.dist === null || b.dist <= maxDist)
     );
-    if (sort === "distancia") catalog.sort((a, b) => a.dist - b.dist);
+    // Sin ubicación no se puede ordenar por distancia: cae a lo más reciente.
+    if (sort === "distancia") {
+      catalog.sort((a, b) => (a.dist === null || b.dist === null ? b.createdAt - a.createdAt : a.dist - b.dist));
+    }
     if (sort === "estado") catalog.sort((a, b) => formConds.indexOf(a.cond) - formConds.indexOf(b.cond));
     if (sort === "título") catalog.sort((a, b) => a.t.localeCompare(b.t));
 
@@ -592,6 +596,7 @@ export function useAppState() {
             id: activeThreadDoc.id,
             name: threadReader.name,
             barrio: threadReader.barrio,
+            dist: readerDist(threadReader),
             online: threadReader.online,
             closed: activeThreadDoc.closed,
             dealText: activeThreadDoc.dealText,
@@ -907,6 +912,14 @@ export function useAppState() {
       selBooks: vals.selBooks,
       clearSelection: () => setSel(null),
       nearCount: otherReaders.length,
+      // Textos derivados del estado real: el barrio salía escrito a mano
+      // («Chapinero Alto») y el encabezado prometía un radio que no se medía.
+      nearHeading: myReader
+        ? `${otherReaders.length} lectores cerca`
+        : `${otherReaders.length} lectores en Bogotá`,
+      zoneNote: myReader
+        ? `${myReader.barrio} · nadie ve tu dirección exacta.`
+        : "Inicia sesión para ver a qué distancia queda cada lector.",
     },
 
     catalogView: {
@@ -996,11 +1009,11 @@ export function useAppState() {
             id: vals.thread.id,
             name: vals.thread.name,
             barrio: vals.thread.barrio,
-            dist: 0,
+            dist: vals.thread.dist,
             deal: vals.thread.dealText,
             statusLine: vals.thread.online ? "en línea ahora" : "visto hace 2 h",
           }
-        : { id: "", name: "", barrio: "", dist: 0, deal: "", statusLine: "" },
+        : { id: "", name: "", barrio: "", dist: null, deal: "", statusLine: "" },
       messages: vals.messages,
       canConfirm: vals.thread ? !vals.thread.closed && vals.thread.toUid === myUid : false,
       threadClosed: vals.thread ? vals.thread.closed : false,
@@ -1044,8 +1057,6 @@ export function useAppState() {
       submit: submitRating,
       close: () => setRating(null),
     },
-
-    toast: { visible: !!toastMsg, message: toastMsg },
 
     authModal: { open: authOpen, reason: authReason, close: closeAuth, onSuccess: onAuthSuccess },
   };

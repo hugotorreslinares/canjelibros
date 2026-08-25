@@ -1,38 +1,159 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: #f3f2f2;
-  color: #201e1d;
-  -webkit-font-smoothing: antialiased;
+@custom-variant dark (&:is(.dark *));
+
+/* Sistema de El Canje — dirección «Papel y tinta».
+   Seis pasos de escala tipográfica y una rejilla de 4 px (el --spacing por
+   defecto de Tailwind). Cualquier tamaño fuera de esta tabla es un error:
+   antes de esto convivían doce tamaños distintos en una sola pantalla. */
+@theme inline {
+  /* `inline` es lo que permite apuntar a las variables que next/font define
+     en tiempo de ejecución; nombrarlas igual que el token las volvería
+     circulares y la fuente no cargaría. */
+  --font-serif: var(--font-source-serif), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.18em;
+  --text-small: 0.9375rem;
+  --text-small--line-height: 1.5;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.6;
+  --text-subtitle: 1.3125rem;
+  --text-subtitle--line-height: 1.2;
+  --text-title: 1.75rem;
+  --text-title--line-height: 1.15;
+  --text-display: 2.75rem;
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.02em;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-placeholder: var(--placeholder);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
 }
 
-* {
-  box-sizing: border-box;
+:root {
+  --background: #f3f2f2;
+  --foreground: #201e1d;
+  --card: #f8f4f4;
+  --card-foreground: #201e1d;
+  --popover: #f8f4f4;
+  --popover-foreground: #201e1d;
+
+  /* 5,17:1 sobre blanco y 4,63:1 sobre el papel. El teal anterior (#0088b0)
+     daba 4,08:1 y por eso el botón principal no cumplía AA. */
+  --primary: #00769a;
+  --primary-foreground: #f8f4f4;
+  --primary-soft: #0088b0;
+
+  --secondary: #eae7e7;
+  --secondary-foreground: #201e1d;
+  --muted: #eae7e7;
+  --muted-foreground: #605d5d;
+  --accent: #cbeeff;
+  --accent-foreground: #004961;
+
+  /* Magenta solo para lo destructivo: antes también significaba «canje
+     cerrado con éxito», que es lo contrario. */
+  --destructive: #aa0b56;
+  --destructive-foreground: #f8f4f4;
+
+  --placeholder: #5f5b5b;
+  --border: rgba(32, 30, 29, 0.16);
+  --border-strong: rgba(32, 30, 29, 0.35);
+  --input: rgba(32, 30, 29, 0.35);
+  --ring: #00769a;
+
+  --radius: 2px;
 }
 
-a {
-  color: #006786;
-  text-decoration: none;
+.dark {
+  --background: #17161a;
+  --foreground: #eceaea;
+  --card: #1f1e22;
+  --card-foreground: #eceaea;
+  --popover: #1f1e22;
+  --popover-foreground: #eceaea;
+  --primary: #4fb8d8;
+  --primary-foreground: #10161a;
+  --primary-soft: #6ccbe8;
+  --secondary: #2a292e;
+  --secondary-foreground: #eceaea;
+  --muted: #2a292e;
+  --muted-foreground: #a5a1a1;
+  --accent: #123240;
+  --accent-foreground: #bfe6f5;
+  --destructive: #f0679f;
+  --destructive-foreground: #17161a;
+  --placeholder: #8d8989;
+  --border: rgba(236, 234, 234, 0.16);
+  --border-strong: rgba(236, 234, 234, 0.38);
+  --input: rgba(236, 234, 234, 0.28);
+  --ring: #4fb8d8;
 }
 
-a:hover {
-  color: #d6006c;
-}
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 
-button {
-  cursor: pointer;
-}
+  html {
+    @apply font-serif;
+  }
 
-:focus-visible {
-  outline: 2px solid #0088b0;
-  outline-offset: 2px;
-}
+  body {
+    @apply bg-background text-foreground text-body;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
 
-::selection {
-  background: #cbeeff;
+  a {
+    @apply text-primary;
+    text-decoration: none;
+  }
+
+  a:hover {
+    @apply text-destructive;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  ::selection {
+    @apply bg-accent;
+  }
 }
 
 @keyframes breathe {

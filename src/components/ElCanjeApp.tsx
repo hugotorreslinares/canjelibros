@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppState } from "@/hooks/use-app-state";
-import { linkBtn } from "@/lib/ui";
+import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
 import { CatalogView } from "./CatalogView";
 import { ChatView } from "./ChatView";
@@ -13,7 +13,7 @@ import { PoliciesView } from "./PoliciesView";
 import { PublishView } from "./PublishView";
 import { RatingModal } from "./RatingModal";
 import { ShelfView } from "./ShelfView";
-import { Toast } from "./Toast";
+import { Toaster } from "@/components/ui/sonner";
 
 export function ElCanjeApp() {
   const state = useAppState();
@@ -21,22 +21,24 @@ export function ElCanjeApp() {
   return (
     <div className="flex-1 flex flex-col">
       <Header {...state.header} />
-      {state.mapView.isMap && <MapView {...state.mapView} />}
-      {state.catalogView.isCatalog && <CatalogView {...state.catalogView} />}
-      {state.shelfView.isShelf && <ShelfView {...state.shelfView} />}
-      {state.publishView.isPublish && <PublishView {...state.publishView} />}
-      {state.chatView.isChat && <ChatView key={state.chatView.thread.id} {...state.chatView} />}
-      {state.moderationView.isModeration && <ModerationView {...state.moderationView} />}
-      {state.policiesView.isPolicies && <PoliciesView {...state.policiesView} />}
+      <main className="flex-1 flex flex-col">
+        {state.mapView.isMap && <MapView {...state.mapView} />}
+        {state.catalogView.isCatalog && <CatalogView {...state.catalogView} />}
+        {state.shelfView.isShelf && <ShelfView {...state.shelfView} />}
+        {state.publishView.isPublish && <PublishView {...state.publishView} />}
+        {state.chatView.isChat && <ChatView key={state.chatView.thread.id} {...state.chatView} />}
+        {state.moderationView.isModeration && <ModerationView {...state.moderationView} />}
+        {state.policiesView.isPolicies && <PoliciesView {...state.policiesView} />}
+      </main>
 
-      <footer className="mt-auto px-[24px] sm:px-[40px] py-[18px] border-t border-[#201e1d]/16 flex items-center gap-[16px] flex-wrap text-[15px] text-[#605d5d]">
+      <footer className="mt-auto px-4 sm:px-10 py-3 border-t border-border flex items-center gap-4 flex-wrap font-sans text-small text-muted-foreground">
         <span>El Canje · Bogotá</span>
-        <button onClick={state.goPolicies} className={linkBtn}>
+        <Button variant="link" onClick={state.goPolicies} className="px-0">
           Políticas del sitio
-        </button>
+        </Button>
       </footer>
 
-      <Toast {...state.toast} />
+      <Toaster position="bottom-center" />
       <OfferModal {...state.offerModal} />
       <RatingModal {...state.ratingModal} />
       <AuthModal

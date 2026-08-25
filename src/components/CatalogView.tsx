@@ -10,7 +10,7 @@ interface CatalogItem {
   desc: string;
   owner: string;
   barrio: string;
-  dist: number;
+  dist: number | null;
   starsLabel: string;
   plate: string;
   short: string;
@@ -189,7 +189,8 @@ export function CatalogView({
                   {b.owner}
                 </button>
                 <div className="text-[14px] text-[#605d5d]">
-                  {b.barrio} · {b.dist} km · {b.starsLabel}
+                  {b.barrio}
+                  {b.dist !== null && <> · {b.dist} km</>} · {b.starsLabel}
                 </div>
                 <button onClick={b.propose} className={`${smallOutlineBtn} mt-[6px]`}>
                   Proponer intercambio

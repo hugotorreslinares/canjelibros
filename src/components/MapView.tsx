@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { condPill, divider, sectionLabel, smallPrimaryBtn, tagPill } from "@/lib/ui";
 import { BookCover } from "./BookCover";
+import { DistanceLabel } from "./DistanceLabel";
 
 const LeafletMap = dynamic(() => import("./LeafletMap").then((m) => m.LeafletMap), {
   ssr: false,
@@ -11,7 +12,7 @@ interface MapUser {
   id: string;
   name: string;
   barrio: string;
-  dist: number;
+  dist: number | null;
   lat: number;
   lng: number;
   count: number;
@@ -45,7 +46,7 @@ interface MapViewProps {
   sel: {
     name: string;
     barrio: string;
-    dist: number;
+    dist: number | null;
     lat: number;
     lng: number;
     starsLabel: string;
@@ -59,6 +60,8 @@ interface MapViewProps {
   selBooks: SelBook[];
   clearSelection: () => void;
   nearCount: number;
+  nearHeading: string;
+  zoneNote: string;
 }
 
 function MapSkeleton() {
@@ -97,7 +100,16 @@ function MapSkeleton() {
   );
 }
 
-export function MapView({ users, noSelection, hasSelection, sel, selBooks, clearSelection, nearCount }: MapViewProps) {
+export function MapView({
+  users,
+  noSelection,
+  hasSelection,
+  sel,
+  selBooks,
+  clearSelection,
+  nearHeading,
+  zoneNote,
+}: MapViewProps) {
   return (
     <div className="grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_400px] flex-1 items-stretch">
       <div className="relative overflow-hidden bg-[#f3f2f2] min-h-[500px] lg:min-h-[640px]">
@@ -105,7 +117,7 @@ export function MapView({ users, noSelection, hasSelection, sel, selBooks, clear
 
         <div className="absolute left-[24px] bottom-[24px] bg-[#f8f4f4]/92 border border-[#201e1d]/16 rounded-[2px] px-[16px] py-[12px] max-w-[300px] pointer-events-none z-[1000]">
           <div className="text-[12px] tracking-[.16em] uppercase text-[#605d5d] mb-[6px]">Tu zona</div>
-          <div className="text-[16px] leading-[1.4]">Chapinero Alto · radio de 600 m. Nadie ve tu dirección exacta.</div>
+          <div className="text-[16px] leading-[1.4]">{zoneNote}</div>
         </div>
       </div>
 
@@ -113,7 +125,7 @@ export function MapView({ users, noSelection, hasSelection, sel, selBooks, clear
         {noSelection && (
           <div>
             <div className={sectionLabel}>Cerca de ti</div>
-            <h2 className="text-[34px] leading-[1.05] my-[8px] mb-[14px]">{nearCount} lectores en 3 km</h2>
+            <h2 className="text-[34px] leading-[1.05] my-[8px] mb-[14px]">{nearHeading}</h2>
             <p className="text-[17px] leading-[1.5] text-[#444141] mb-[26px] [text-wrap:pretty]">
               Toca una zona en el mapa para ver el estante de esa persona. El número dentro del círculo es cuántos
               libros tiene disponibles.
@@ -127,7 +139,7 @@ export function MapView({ users, noSelection, hasSelection, sel, selBooks, clear
                 >
                   <div className="flex justify-between items-baseline gap-[12px]">
                     <span className="text-[21px]">{u.name}</span>
-                    <span className="text-[14px] text-[#605d5d]">{u.dist} km</span>
+                    <DistanceLabel km={u.dist} className="text-[14px] text-[#605d5d]" />
                   </div>
                   <div className="text-[14px] text-[#605d5d]">
                     {u.barrio} · {u.starsLabel} {u.rating} · {u.trades} intercambios
@@ -144,7 +156,8 @@ export function MapView({ users, noSelection, hasSelection, sel, selBooks, clear
               ← Volver a la lista
             </button>
             <div className={sectionLabel}>
-              {sel.barrio} · {sel.dist} km
+              {sel.barrio}
+              {sel.dist !== null && <> · {sel.dist} km</>}
             </div>
             <h2 className="text-[36px] leading-[1.05] mt-[8px] mb-[6px]">{sel.name}</h2>
             <div className="text-[16px] text-[#444141] mb-[6px]">

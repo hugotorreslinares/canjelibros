@@ -24,7 +24,7 @@ interface Message {
 interface ChatViewProps {
   hasThreads: boolean;
   threads: ThreadSummary[];
-  thread: { id: string; name: string; barrio: string; dist: number; deal: string; statusLine: string };
+  thread: { id: string; name: string; barrio: string; dist: number | null; deal: string; statusLine: string };
   messages: Message[];
   canConfirm: boolean;
   threadClosed: boolean;
@@ -96,7 +96,8 @@ export function ChatView({
           <div>
             <div className="text-[27px]">{thread.name}</div>
             <div className="text-[15px] text-[#605d5d]">
-              {thread.barrio} · {thread.dist} km · {thread.statusLine}
+              {thread.barrio}
+              {thread.dist !== null && <> · {thread.dist} km</>} · {thread.statusLine}
             </div>
           </div>
           <div className="text-right">
