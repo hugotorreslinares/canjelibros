@@ -93,8 +93,10 @@ function formatTime(ms: number): string {
 export function useAppState() {
   const { user } = useAuth();
   useReaderProfileSync(user);
-  const { readers } = useReaders();
-  const { books } = useBooks();
+  const { readers, loading: readersLoading, error: readersError } = useReaders();
+  const { books, loading: booksLoading, error: booksError } = useBooks();
+  const dataLoading = readersLoading || booksLoading;
+  const dataError = readersError || booksError;
 
   const myUid = user?.uid ?? null;
   const isModerator = useIsModerator(myUid);
@@ -900,6 +902,8 @@ export function useAppState() {
 
     mapView: {
       isMap: route === "map",
+      loading: dataLoading,
+      error: dataError,
       users: vals.mappedUsers,
       noSelection: !vals.selUser,
       hasSelection: !!vals.selUser,
@@ -924,11 +928,16 @@ export function useAppState() {
 
     catalogView: {
       isCatalog: route === "catalog",
+      loading: dataLoading,
+      error: dataError,
       items: vals.catalog,
       empty: vals.catalogEmpty,
       count: vals.catCount,
       recommended: vals.recommended,
-      sortLabel: sort,
+      // Sin ubicación no se ordena por distancia (ver readerDist): el rótulo
+      // dice lo que de verdad está pasando.
+      sortLabel: sort === "distancia" && !myReader ? "lo más reciente" : sort,
+      hasLocation: !!myReader,
       catOptions: categories.map((c) => ({
         label: c,
         n: c === "Todas" ? vals.totalBooks : vals.counts[c] || 0,

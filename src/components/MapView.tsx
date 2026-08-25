@@ -1,6 +1,8 @@
 import dynamic from "next/dynamic";
 import { condPill, divider, sectionLabel, smallPrimaryBtn, tagPill } from "@/lib/ui";
 import { BookCover } from "./BookCover";
+import { ReaderListSkeleton } from "./BookGridSkeleton";
+import { QueryState } from "./QueryState";
 import { DistanceLabel } from "./DistanceLabel";
 
 const LeafletMap = dynamic(() => import("./LeafletMap").then((m) => m.LeafletMap), {
@@ -59,6 +61,8 @@ interface MapViewProps {
   } | null;
   selBooks: SelBook[];
   clearSelection: () => void;
+  loading: boolean;
+  error: boolean;
   nearCount: number;
   nearHeading: string;
   zoneNote: string;
@@ -107,6 +111,8 @@ export function MapView({
   sel,
   selBooks,
   clearSelection,
+  loading,
+  error,
   nearHeading,
   zoneNote,
 }: MapViewProps) {
@@ -125,11 +131,21 @@ export function MapView({
         {noSelection && (
           <div>
             <div className={sectionLabel}>Cerca de ti</div>
-            <h2 className="text-[34px] leading-[1.05] my-[8px] mb-[14px]">{nearHeading}</h2>
+            <h2 className="text-[34px] leading-[1.05] my-[8px] mb-[14px]">
+              {loading ? "Buscando lectores…" : error ? "Lectores cerca de ti" : nearHeading}
+            </h2>
             <p className="text-[17px] leading-[1.5] text-[#444141] mb-[26px] [text-wrap:pretty]">
               Toca una zona en el mapa para ver el estante de esa persona. El número dentro del círculo es cuántos
               libros tiene disponibles.
             </p>
+            <QueryState
+              loading={loading}
+              error={error}
+              isEmpty={users.length === 0}
+              skeleton={<ReaderListSkeleton />}
+              emptyTitle="Todavía no hay lectores publicando"
+              emptyDescription="Publica el primer libro y el mapa deja de estar vacío."
+            >
             <div className="grid gap-[18px]">
               {users.map((u) => (
                 <button
@@ -148,6 +164,7 @@ export function MapView({
                 </button>
               ))}
             </div>
+            </QueryState>
           </div>
         )}
         {hasSelection && sel && (
