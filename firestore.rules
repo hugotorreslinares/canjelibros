@@ -2,6 +2,33 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Moderators are listed by uid in `moderators/{uid}`. The doc is created by hand in the
+    // Firebase Console — there's no backend that could grant the role — and its mere
+    // existence is the permission. Each user may read only their own doc, so the moderator
+    // roster isn't public; the client uses that read to decide whether to show the panel.
+    function isModerator() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+
+    match /moderators/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Append-only audit trail: a moderator may add entries as themselves and read the log,
+    // but nobody — moderators included — can edit or delete one, so the record of what was
+    // censored can't be censored in turn.
+    match /moderationLog/{entryId} {
+      allow read: if isModerator();
+      allow create: if isModerator()
+        && request.resource.data.moderatorUid == request.auth.uid
+        && request.resource.data.action in ['edit', 'delete']
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() > 0;
+      allow update, delete: if false;
+    }
+
     match /readers/{uid} {
       allow read: if true;
       allow create, update: if request.auth != null && request.auth.uid == uid;
@@ -14,13 +41,18 @@ service cloud.firestore {
       // Update allowed for the current owner (any change, including giving it away), or for
       // whoever the book is reserved for when they're claiming it as the new owner (completing
       // a trade) — that's the only way a non-owner may ever touch someone else's book.
+      // Moderators may also edit or remove any book: that's the content-policy escape hatch
+      // for publications that break the site rules (see the moderation panel).
       allow update: if request.auth != null && (
         resource.data.ownerId == request.auth.uid ||
         (resource.data.resUid == request.auth.uid &&
           request.resource.data.ownerId == request.auth.uid &&
-          request.resource.data.resUid == null)
+          request.resource.data.resUid == null) ||
+        isModerator()
       );
-      allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow delete: if request.auth != null && (
+        resource.data.ownerId == request.auth.uid || isModerator()
+      );
     }
 
     match /ratings/{ratingId} {

@@ -16,6 +16,18 @@ interface CatalogItem {
   propose: () => void;
 }
 
+interface RecommendedItem {
+  t: string;
+  a: string;
+  cat: string;
+  cond: string;
+  plate: string;
+  short: string;
+  owner: string;
+  selectOwner: () => void;
+  propose: () => void;
+}
+
 interface Option {
   label: string;
   active: boolean;
@@ -27,6 +39,7 @@ interface CatalogViewProps {
   empty: boolean;
   count: string;
   sortLabel: string;
+  recommended: { title: string; items: RecommendedItem[] };
   catOptions: (Option & { n: number })[];
   condOptions: Option[];
   sortOptions: Option[];
@@ -44,6 +57,7 @@ export function CatalogView({
   empty,
   count,
   sortLabel,
+  recommended,
   catOptions,
   condOptions,
   sortOptions,
@@ -61,6 +75,40 @@ export function CatalogView({
       </div>
       <div className="h-[5px] bg-[#201e1d] mt-[14px] mb-[2px]" />
       <div className="h-px bg-[#201e1d] mb-[26px]" />
+
+      {recommended.items.length > 0 && (
+        <div className="mb-[34px]">
+          <div className={`${sectionLabel} mb-[12px]`}>{recommended.title}</div>
+          <div className="flex gap-[18px] overflow-x-auto pb-[8px] -mx-[2px] px-[2px]">
+            {recommended.items.map((b, i) => (
+              <div key={i} className="shrink-0 w-[190px] grid gap-[8px]">
+                <div
+                  style={{ background: b.plate }}
+                  className="h-[130px] rounded-[1px] p-[10px] flex items-end text-[12px] leading-[1.15] text-[#f8f4f4] overflow-hidden"
+                >
+                  {b.short}
+                </div>
+                <div className="text-[17px] leading-[1.15] overflow-hidden text-ellipsis whitespace-nowrap">{b.t}</div>
+                <div className="text-[14px] text-[#605d5d] overflow-hidden text-ellipsis whitespace-nowrap">{b.a}</div>
+                <div className="flex gap-[6px] flex-wrap">
+                  <span className={tagPill}>{b.cat}</span>
+                  <span className={condPill}>{b.cond}</span>
+                </div>
+                <button
+                  onClick={b.selectOwner}
+                  className="bg-transparent border-none p-0 text-[14px] text-[#006786] text-left hover:text-[#d6006c]"
+                >
+                  {b.owner}
+                </button>
+                <button onClick={b.propose} className={`${smallOutlineBtn} justify-self-start`}>
+                  Proponer intercambio
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className={`${divider} mt-[26px]`} />
+        </div>
+      )}
       <div className="grid grid-cols-1 md:[grid-template-columns:230px_minmax(0,1fr)] gap-[44px] items-start">
         <div className="grid gap-[26px] md:sticky md:top-[20px]">
           <div>

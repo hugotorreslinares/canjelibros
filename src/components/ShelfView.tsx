@@ -1,4 +1,4 @@
-import { condPill, divider, linkBtn, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
+import { chip, condPill, divider, linkBtn, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
 
 interface ShelfBook {
   t: string;
@@ -12,6 +12,12 @@ interface ShelfBook {
   canRemove: boolean;
   edit: () => void;
   remove: () => void;
+}
+
+interface InterestOption {
+  label: string;
+  active: boolean;
+  toggle: () => void;
 }
 
 interface ShelfViewProps {
@@ -29,6 +35,7 @@ interface ShelfViewProps {
   addSlotLabel: string;
   hasPending: boolean;
   nextCupoNote: string;
+  interestOptions: InterestOption[];
   goPublish: () => void;
   goChat: () => void;
 }
@@ -48,6 +55,7 @@ export function ShelfView({
   addSlotLabel,
   hasPending,
   nextCupoNote,
+  interestOptions,
   goPublish,
   goChat,
 }: ShelfViewProps) {
@@ -117,6 +125,20 @@ export function ShelfView({
               Ver conversación
             </button>
           )}
+        </div>
+      </div>
+
+      <div className={`border-t ${divider} pt-[24px] mb-[44px]`}>
+        <div className={`${sectionLabel} mb-[10px]`}>Categorías que te interesan</div>
+        <p className="text-[15px] text-[#444141] mb-[14px] max-w-[40em]">
+          Úsalas para que te recomendemos lectores y libros afines. Toca para agregar o quitar.
+        </p>
+        <div className="flex flex-wrap gap-[8px]">
+          {interestOptions.map((o) => (
+            <button key={o.label} onClick={o.toggle} className={chip(o.active)}>
+              {o.label}
+            </button>
+          ))}
         </div>
       </div>
 

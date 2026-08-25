@@ -23,6 +23,7 @@ export interface Reader {
   rating: number;
   bio: string;
   spot: string;
+  interests: string[];
 }
 
 export interface ChatThread {
@@ -53,5 +54,21 @@ export interface Rating {
   createdAt: number;
 }
 
-export type Route = "map" | "catalog" | "shelf" | "publish" | "chat";
+export type ModerationAction = "edit" | "delete";
+
+export interface ModerationLogEntry {
+  id: string;
+  action: ModerationAction;
+  bookId: string;
+  bookTitle: string;
+  ownerId: string;
+  ownerName: string;
+  moderatorUid: string;
+  moderatorName: string;
+  reason: string;
+  changes: string[];
+  createdAt: number;
+}
+
+export type Route = "map" | "catalog" | "shelf" | "publish" | "chat" | "moderation" | "policies";
 export type SortOption = "distancia" | "estado" | "título";
