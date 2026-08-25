@@ -28,13 +28,15 @@ Autenticación con Firebase (Google y correo). Solo publicar/editar/eliminar y p
 
 ### P0 — la interfaz afirma cosas que no son ciertas
 
+Al 25 de agosto de 2026 queda **solo el punto 1**: los demás se cerraron junto con el trabajo de interfaz.
+
 | # | Qué | Por qué importa | Nota de implementación |
 |---|-----|-----------------|------------------------|
 | 1 | `readers/{uid}.trades` solo sube para quien confirma el canje | La otra parte cierra un intercambio y su contador no se mueve; además de eso dependen los cupos del estante | Nadie puede escribir el documento de otro lector sin backend. Salidas: Cloud Function con Admin SDK (exige plan Blaze), o derivar el conteo en cliente contando hilos cerrados, como ya se hace con `rating` |
-| 2 | `online` se escribe `true` al crear el perfil y nunca cambia; la UI muestra "en línea ahora" o "visto hace 2 h" | Texto falso en mapa y chat | Guardar `lastSeenAt` con un heartbeat y derivar el estado con un umbral (p. ej. 5 min) |
-| 3 | "Racha: 4" está escrito a mano en `ShelfView` | Métrica inventada frente al usuario | Calcularla de los canjes cerrados o quitar la tarjeta |
-| 4 | Las etiquetas de calificación (`tagList`) se recogen en el modal y se descartan | El usuario cree que aporta información que nadie guarda | Persistirlas en el documento de `ratings`, o quitar el control |
-| 5 | `readers/{uid}.rating` es un `5` legado que nadie actualiza | Confunde a quien lea los datos; la calificación real se promedia desde `ratings` | Dejar de escribirlo en `ensureReaderProfile` |
+| ~~2~~ | ~~`online` se escribe `true` al crear el perfil y nunca cambia~~ | **Hecho.** `lastSeenAt` con latido cada 2 min con la pestaña visible; la presencia se deriva contra una ventana de 5 min y, si nunca hubo latido, no se dice nada | |
+| ~~3~~ | ~~"Racha: 4" escrito a mano~~ | **Hecho.** La tarjeta se quitó | |
+| ~~4~~ | ~~Las etiquetas de calificación se recogen y se descartan~~ | **Hecho.** Se guardan en `ratings.tags` y se muestran las tres más repetidas en el panel del lector | |
+| ~~5~~ | ~~`readers/{uid}.rating` es un `5` legado~~ | **Hecho.** Ya no se escribe ni se lee | |
 
 ### P1 — la moderación está a medias
 
