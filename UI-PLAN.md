@@ -2,7 +2,7 @@
 
 Plan para cerrar los hallazgos de [DESIGN-AUDIT.md](DESIGN-AUDIT.md) apoyándonos en shadcn/ui. Cada tarea cita el identificador del hallazgo que cierra (`4.1`, `5.2`, …) para poder verificar al final que no quedó nada suelto.
 
-Estado: **dirección A elegida** («Papel y tinta»). Fases 0 a 8 hechas; queda la 9 — ver §7.1.
+Estado: **dirección A elegida** («Papel y tinta»). **Fases 0 a 9 hechas** — ver §7.1.
 
 ## 1. La decisión de fondo, antes de instalar nada
 
@@ -202,16 +202,16 @@ Las fases 0 a 3 son las que cambian la primera impresión. De la 4 en adelante e
 
 ### 7.1 Estado al 25 de agosto de 2026
 
-**Fases 0 a 8 hechas.** `shadcn init` con base Radix; tokens de la dirección A en `globals.css` (escala de seis pasos, rejilla de 4 px, radio de 2 px, Source Serif 4 + Archivo); `src/lib/ui.ts` eliminado y sin consumidores; encabezado de una sola fila con `sheet` en móvil, `<main>` y `aria-current`; `sonner` en lugar del aviso propio; `QueryState` con esqueleto, error y vacío en catálogo y panel de lectores; los tres modales sobre `dialog` y los borrados sobre `alert-dialog`.
+**Fases 0 a 9 hechas.** `shadcn init` con base Radix; tokens de la dirección A en `globals.css` (escala de seis pasos, rejilla de 4 px, radio de 2 px, Source Serif 4 + Archivo); `src/lib/ui.ts` eliminado y sin consumidores; encabezado de una sola fila con `sheet` en móvil, `<main>` y `aria-current`; `sonner` en lugar del aviso propio; `QueryState` con esqueleto, error y vacío en catálogo y panel de lectores; los tres modales sobre `dialog` y los borrados sobre `alert-dialog`.
 
-Hallazgos cerrados: **todos menos 8.4** (rutas propias). El chat va sobre `message-scroller` (8.1) y los pines se agrupan por cercanía con etiqueta bajo demanda (3.3).
+Hallazgos cerrados: **todos**. El chat va sobre `message-scroller` (8.1), los pines se agrupan por cercanía con etiqueta bajo demanda (3.3) y cada vista tiene URL propia (8.4).
 
 Medido en catálogo y mapa: encabezado móvil de **65 px** (eran 243), **seis** tamaños de letra (eran doce), **cero** elementos propios bajo 44 px, y ningún «0 km» inventado.
 
 **Pendiente:**
 
-- **Fase 9** — rutas reales de Next (8.4).
 - Fuera de interfaz, y bloqueando 4.5 del todo: el latido de presencia y el conteo de canjes del otro lado, que están en [PLAN.md](PLAN.md).
+- La interfaz completa sigue sin probarse **con sesión iniciada**: estante, publicar, chat y moderación se verificaron por código, por piezas sueltas o con datos de prueba. Es lo primero que conviene hacer antes de dar la auditoría por cerrada.
 
 ## 8. Cómo verificamos cada fase
 

@@ -10,7 +10,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # El Canje — project notes for agents
 
-Book-exchange app, Bogotá. Next.js 16 App Router, TS, Tailwind v4, React 19, Firebase Auth + Firestore, Leaflet/OSM map, shadcn/ui on a Radix base. Single-page app (`/`) — all routing is client-side state (`route` field), not Next.js routes.
+Book-exchange app, Bogotá. Next.js 16 App Router, TS, Tailwind v4, React 19, Firebase Auth + Firestore, Leaflet/OSM map, shadcn/ui on a Radix base.
+
+**Routing**: one optional catch-all segment (`src/app/[[...slug]]/page.tsx`) serves every path, and `src/lib/routes.ts` maps a path to a view (`/catalogo`, `/estante`, `/publicar`, `/mensajes`, `/moderacion`, `/politicas`, `/lector/<uid>`). `use-app-state` reads `usePathname()` and derives the route from it; navigation goes through `window.history.pushState`, which Next syncs with its router — that is what keeps filters, drafts and selections alive across a view change. Don't add a `page.tsx` per view: that would remount the tree and throw that state away.
 
 Read this before exploring the codebase — it's the map so you don't have to rediscover it. Setup/env steps: [README.md](README.md). Firestore migration history/rationale: [RESULTS.md](RESULTS.md) (keep or fold into here, don't duplicate).
 
