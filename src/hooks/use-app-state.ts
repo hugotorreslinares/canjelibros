@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -30,6 +30,7 @@ import {
   useModerationLog,
   useMyThreads,
   useRatings,
+  usePresenceHeartbeat,
   useReaderProfileSync,
   useReaders,
   useThreadMessages,
@@ -37,6 +38,8 @@ import {
 import type { Route, SortOption } from "@/lib/types";
 
 const BASE_SLOTS = 5;
+// Un lector cuenta como presente si su último latido cabe en esta ventana.
+const PRESENCE_WINDOW_MS = 5 * 60_000;
 const TRADES_PER_SLOT = 3;
 const ANIMATE_PINS = true;
 
@@ -92,6 +95,23 @@ function diffBook(before: BookFields, after: BookFields): string[] {
   return changes;
 }
 
+function isOnline(lastSeenAt: number | null, now: number): boolean {
+  return lastSeenAt !== null && now - lastSeenAt < PRESENCE_WINDOW_MS;
+}
+
+// Sin latido no se inventa nada: antes decía «visto hace 2 h» de forma literal,
+// para todo el mundo y para siempre.
+function presenceLine(lastSeenAt: number | null, now: number): string {
+  if (lastSeenAt === null) return "";
+  if (isOnline(lastSeenAt, now)) return "en línea ahora";
+  const minutes = Math.round((now - lastSeenAt) / 60_000);
+  if (minutes < 60) return `visto hace ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `visto hace ${hours} h`;
+  const days = Math.round(hours / 24);
+  return days === 1 ? "visto ayer" : `visto hace ${days} días`;
+}
+
 function formatTime(ms: number): string {
   if (!ms) return "";
   return new Date(ms).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
@@ -100,6 +120,7 @@ function formatTime(ms: number): string {
 export function useAppState() {
   const { user } = useAuth();
   useReaderProfileSync(user);
+  usePresenceHeartbeat(user);
   const { readers, loading: readersLoading, error: readersError } = useReaders();
   const { books, loading: booksLoading, error: booksError } = useBooks();
   const dataLoading = readersLoading || booksLoading;
@@ -117,6 +138,22 @@ export function useAppState() {
   // than stored on the reader doc: Firestore only lets a user write their own reader doc,
   // so the person being rated can't have their rater update it for them.
   const ratings = useRatings();
+  // Las etiquetas se recogían en el modal y se descartaban. Ahora se guardan
+  // con la calificación y se muestran en el panel del lector.
+  const tagsFor = useMemo(() => {
+    const byUid = new Map<string, Map<string, number>>();
+    ratings.forEach((r) => {
+      const counts = byUid.get(r.ratedUid) ?? new Map<string, number>();
+      r.tags.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1));
+      byUid.set(r.ratedUid, counts);
+    });
+    return (uid: string) =>
+      [...(byUid.get(uid) ?? new Map<string, number>()).entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([label, count]) => ({ label, count }));
+  }, [ratings]);
+
   const avgRatingFor = useMemo(() => {
     const byUid = new Map<string, number[]>();
     ratings.forEach((r) => {
@@ -163,6 +200,14 @@ export function useAppState() {
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [coverBusy, setCoverBusy] = useState(false);
+
+  // La presencia caduca sola: sin este tic, «en línea ahora» se quedaría
+  // congelado hasta que llegara otro cambio de Firestore.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
   const activeThreadId = threadId && myThreads.some((t) => t.id === threadId) ? threadId : myThreads[0]?.id ?? null;
   const threadMessages = useThreadMessages(activeThreadId);
@@ -509,10 +554,10 @@ export function useAppState() {
         rating,
         count: readerBooks.length,
         starsLabel: stars(rating),
-        ink: r.online ? "#0088b0" : "#7d7979",
-        haloInk: r.online ? "rgba(0,136,176,.30)" : "rgba(32,30,29,.16)",
-        pulse: r.online && ANIMATE_PINS ? 3.4 + i * 0.6 : 0,
-        statusLine: r.online ? "en línea ahora" : "visto hace 2 h",
+        ink: isOnline(r.lastSeenAt, now) ? "#00769a" : "#7d7979",
+        haloInk: isOnline(r.lastSeenAt, now) ? "rgba(0,118,154,.30)" : "rgba(32,30,29,.16)",
+        pulse: isOnline(r.lastSeenAt, now) && ANIMATE_PINS ? 3.4 + i * 0.6 : 0,
+        statusLine: presenceLine(r.lastSeenAt, now),
         teaser: readerBooks.slice(0, 2).map((b) => b.t).join(" · "),
         select: () => setSel(r.id),
       };
@@ -637,7 +682,7 @@ export function useAppState() {
             name: threadReader.name,
             barrio: threadReader.barrio,
             dist: readerDist(threadReader),
-            online: threadReader.online,
+            statusLine: presenceLine(threadReader.lastSeenAt, now),
             closed: activeThreadDoc.closed,
             dealText: activeThreadDoc.dealText,
             fromUid: activeThreadDoc.fromUid,
@@ -717,6 +762,7 @@ export function useAppState() {
     threadMessages,
     avgRatingFor,
     setSel,
+    now,
   ]);
 
   const moderationItems = useMemo(() => {
@@ -862,7 +908,7 @@ export function useAppState() {
     try {
       await transferBook(fromBookId, toUid);
       await transferBook(toBookId, fromUid);
-      await addRating(user.uid, fromUid, starsPicked);
+      await addRating(user.uid, fromUid, starsPicked, tags);
       await bumpReaderTrades(user.uid);
       await closeThread(activeThreadId);
     } catch {
@@ -872,7 +918,7 @@ export function useAppState() {
     setRating(null);
     go("shelf");
     showToast("Intercambio completado. Los libros ya cambiaron de estante.");
-  }, [starsPicked, vals.thread, user, myThreads, activeThreadId, showToast, go]);
+  }, [starsPicked, tags, vals.thread, user, myThreads, activeThreadId, showToast, go]);
 
   return {
     route,
@@ -948,6 +994,7 @@ export function useAppState() {
         ? {
             ...vals.mappedUsers.find((u) => u.id === vals.selUser!.id)!,
             count: vals.selBooks.length,
+            tags: tagsFor(vals.selUser.id),
           }
         : null,
       selBooks: vals.selBooks,
@@ -1058,7 +1105,7 @@ export function useAppState() {
             barrio: vals.thread.barrio,
             dist: vals.thread.dist,
             deal: vals.thread.dealText,
-            statusLine: vals.thread.online ? "en línea ahora" : "visto hace 2 h",
+            statusLine: vals.thread.statusLine,
           }
         : { id: "", name: "", barrio: "", dist: null, deal: "", statusLine: "" },
       messages: vals.messages,

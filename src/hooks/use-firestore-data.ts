@@ -6,6 +6,7 @@ import { isFirebaseConfigured } from "@/lib/firebase";
 import {
   ensureReaderProfile,
   fetchIsModerator,
+  touchPresence,
   subscribeBooks,
   subscribeModerationLog,
   subscribeMyThreads,
@@ -44,6 +45,26 @@ export function useReaderProfileSync(user: User | null) {
 
 // Stores *which* uid was confirmed as a moderator rather than a bare boolean, so the flag
 // can be masked on sign-out or an account switch without clearing state from the effect body.
+const HEARTBEAT_MS = 120_000;
+
+// Marca presencia al entrar, cada dos minutos con la pestaña a la vista, y al
+// volver a ella. Sin esto `lastSeenAt` solo tendría la fecha de registro.
+export function usePresenceHeartbeat(user: User | null) {
+  useEffect(() => {
+    if (!user || !isFirebaseConfigured) return;
+    const beat = () => {
+      if (document.visibilityState === "visible") touchPresence(user.uid).catch(() => {});
+    };
+    beat();
+    const timer = setInterval(beat, HEARTBEAT_MS);
+    document.addEventListener("visibilitychange", beat);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", beat);
+    };
+  }, [user]);
+}
+
 export function useIsModerator(uid: string | null): boolean {
   const [moderatorUid, setModeratorUid] = useState<string | null>(null);
 

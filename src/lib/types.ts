@@ -19,9 +19,11 @@ export interface Reader {
   barrio: string;
   lat: number;
   lng: number;
-  online: boolean;
+  // Presencia real: el sello del último latido. El `online: true` que se
+  // escribía al crear el perfil no volvía a cambiar nunca, así que todo el
+  // mundo aparecía «en línea ahora» para siempre.
+  lastSeenAt: number | null;
   trades: number;
-  rating: number;
   bio: string;
   spot: string;
   interests: string[];
@@ -52,6 +54,7 @@ export interface Rating {
   raterUid: string;
   ratedUid: string;
   stars: number;
+  tags: string[];
   createdAt: number;
 }
 

@@ -59,6 +59,7 @@ interface MapViewProps {
     spot: string;
     count: number;
     statusLine: string;
+    tags: { label: string; count: number }[];
   } | null;
   selBooks: SelBook[];
   clearSelection: () => void;
@@ -164,6 +165,7 @@ export function MapView({
                   </div>
                   <div className="text-[14px] text-[#605d5d]">
                     {u.barrio} · {u.starsLabel} {u.rating} · {u.trades} intercambios
+                    {u.statusLine && <> · {u.statusLine}</>}
                   </div>
                   <div className="text-[16px] text-[#201e1d]">{u.teaser}</div>
                 </button>
@@ -183,8 +185,19 @@ export function MapView({
             </div>
             <h2 className="text-[36px] leading-[1.05] mt-[8px] mb-[6px]">{sel.name}</h2>
             <div className="text-[16px] text-[#444141] mb-[6px]">
-              {sel.starsLabel} {sel.rating} de 5 · {sel.trades} intercambios · {sel.statusLine}
+              {sel.starsLabel} {sel.rating} de 5 · {sel.trades} intercambios
+              {sel.statusLine && <> · {sel.statusLine}</>}
             </div>
+            {sel.tags.length > 0 && (
+              <div className="flex gap-2 flex-wrap mb-2">
+                {sel.tags.map((t) => (
+                  <Badge key={t.label} variant="secondary">
+                    {t.label}
+                    {t.count > 1 && <span className="ml-1 opacity-70">×{t.count}</span>}
+                  </Badge>
+                ))}
+              </div>
+            )}
             <div className="text-[16px] leading-[1.5] text-[#444141] mb-[8px] italic">{sel.bio}</div>
             <div className="font-sans text-small text-muted-foreground border-t border-border pt-2.5 mb-6">
               Punto de encuentro que propone: {sel.spot}
