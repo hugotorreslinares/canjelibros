@@ -5,13 +5,15 @@ import type { User } from "firebase/auth";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import {
   ensureReaderProfile,
+  fetchIsModerator,
   subscribeBooks,
+  subscribeModerationLog,
   subscribeMyThreads,
   subscribeRatings,
   subscribeReaders,
   subscribeThreadMessages,
 } from "@/lib/firestore-data";
-import type { Book, ChatMessage, ChatThread, Rating, Reader } from "@/lib/types";
+import type { Book, ChatMessage, ChatThread, ModerationLogEntry, Rating, Reader } from "@/lib/types";
 
 function getCurrentPosition(): Promise<{ lat: number; lng: number } | undefined> {
   return new Promise((resolve) => {
@@ -38,6 +40,41 @@ export function useReaderProfileSync(user: User | null) {
       cancelled = true;
     };
   }, [user]);
+}
+
+// Stores *which* uid was confirmed as a moderator rather than a bare boolean, so the flag
+// can be masked on sign-out or an account switch without clearing state from the effect body.
+export function useIsModerator(uid: string | null): boolean {
+  const [moderatorUid, setModeratorUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!uid || !isFirebaseConfigured) return;
+    let cancelled = false;
+    fetchIsModerator(uid)
+      .then((ok) => {
+        if (!cancelled && ok) setModeratorUid(uid);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
+
+  return !!uid && moderatorUid === uid;
+}
+
+// Only moderators may read the log, so the subscription is opened only for them —
+// otherwise every visitor would trigger a permission-denied listener on page load.
+export function useModerationLog(enabled: boolean): ModerationLogEntry[] {
+  const [entries, setEntries] = useState<ModerationLogEntry[]>([]);
+
+  useEffect(() => {
+    if (!enabled || !isFirebaseConfigured) return;
+    const unsub = subscribeModerationLog(setEntries);
+    return unsub;
+  }, [enabled]);
+
+  return enabled ? entries : [];
 }
 
 export function useReaders(): { readers: Reader[]; loading: boolean; error: boolean } {

@@ -11,6 +11,7 @@ import {
   closeThread,
   createBook,
   deleteBook as deleteBookDoc,
+  logModerationAction,
   openThread,
   removeReaderInterest,
   reserveBook,
@@ -19,7 +20,16 @@ import {
   updateBook,
 } from "@/lib/firestore-data";
 import { categories, conds, formCats, formConds, tagList } from "@/lib/mock-data";
-import { useBooks, useMyThreads, useRatings, useReaderProfileSync, useReaders, useThreadMessages } from "./use-firestore-data";
+import {
+  useBooks,
+  useIsModerator,
+  useModerationLog,
+  useMyThreads,
+  useRatings,
+  useReaderProfileSync,
+  useReaders,
+  useThreadMessages,
+} from "./use-firestore-data";
 import type { Route, SortOption } from "@/lib/types";
 
 const BASE_SLOTS = 5;
@@ -42,6 +52,34 @@ function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
+function formatDateTime(ms: number): string {
+  if (!ms) return "hace un momento";
+  return new Date(ms).toLocaleString("es-CO", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// Field-by-field diff so the log says what a moderator actually touched, not just "editó".
+function diffBook(
+  before: { t: string; a: string; cat: string; cond: string; desc: string },
+  after: { t: string; a: string; cat: string; cond: string; desc: string }
+): string[] {
+  const labels: Array<[keyof typeof before, string]> = [
+    ["t", "título"],
+    ["a", "autor"],
+    ["cat", "categoría"],
+    ["cond", "estado"],
+    ["desc", "descripción"],
+  ];
+  return labels
+    .filter(([key]) => before[key] !== after[key])
+    .map(([key, label]) => `${label}: «${before[key] || "vacío"}» → «${after[key] || "vacío"}»`);
+}
+
 function formatTime(ms: number): string {
   if (!ms) return "";
   return new Date(ms).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
@@ -54,6 +92,8 @@ export function useAppState() {
   const { books } = useBooks();
 
   const myUid = user?.uid ?? null;
+  const isModerator = useIsModerator(myUid);
+  const moderationLog = useModerationLog(isModerator);
   const myReader = readers.find((r) => r.id === myUid) ?? null;
   const myBooks = books.filter((b) => b.ownerId === myUid);
   const otherReaders = readers.filter((r) => r.id !== myUid);
@@ -91,6 +131,10 @@ export function useAppState() {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [editingBookId, setEditingBookId] = useState<string | null>(null);
+  const [modQuery, setModQuery] = useState("");
+  const [modEditingId, setModEditingId] = useState<string | null>(null);
+  const [modForm, setModForm] = useState<FormState>(EMPTY_FORM);
+  const [modReason, setModReason] = useState("");
 
   const activeThreadId = threadId && myThreads.some((t) => t.id === threadId) ? threadId : myThreads[0]?.id ?? null;
   const threadMessages = useThreadMessages(activeThreadId);
@@ -110,6 +154,10 @@ export function useAppState() {
     setRating(null);
     setStarsPicked(0);
     setTags([]);
+    setModQuery("");
+    setModEditingId(null);
+    setModForm(EMPTY_FORM);
+    setModReason("");
   }
 
   const [authOpen, setAuthOpen] = useState(false);
@@ -243,6 +291,128 @@ export function useAppState() {
       }
     },
     [user, promptAuth, myReader, showToast]
+  );
+
+  const moderatorName = myReader?.name ?? user?.displayName ?? user?.email ?? "Moderación";
+
+  const modStartEdit = useCallback(
+    (bookId: string) => {
+      const b = books.find((x) => x.id === bookId);
+      if (!b) return;
+      setModForm({ t: b.t, a: b.a, desc: b.desc, cond: b.cond, cat: b.cat });
+      setModReason("");
+      setModEditingId(bookId);
+    },
+    [books]
+  );
+
+  const modCancelEdit = useCallback(() => {
+    setModEditingId(null);
+    setModForm(EMPTY_FORM);
+    setModReason("");
+  }, []);
+
+  const modSaveEdit = useCallback(async () => {
+    if (!isModerator || !user) {
+      showToast("No tienes permisos de moderación.");
+      return;
+    }
+    if (!modEditingId) return;
+    const before = books.find((x) => x.id === modEditingId);
+    if (!before) return;
+    if (!modForm.t.trim()) {
+      showToast("El título no puede quedar vacío.");
+      return;
+    }
+    if (!modReason.trim()) {
+      showToast("Escribe el motivo: queda en la bitácora.");
+      return;
+    }
+    const after = {
+      t: modForm.t.trim(),
+      a: modForm.a.trim() || "Autor sin datos",
+      cat: modForm.cat,
+      cond: modForm.cond,
+      desc: modForm.desc.trim(),
+    };
+    const changes = diffBook(before, after);
+    if (changes.length === 0) {
+      showToast("No cambiaste nada en la publicación.");
+      return;
+    }
+    try {
+      await updateBook(modEditingId, after);
+    } catch {
+      showToast("No se pudo guardar. Revisa tus permisos e intenta de nuevo.");
+      return;
+    }
+    setModEditingId(null);
+    setModForm(EMPTY_FORM);
+    setModReason("");
+    try {
+      await logModerationAction({
+        action: "edit",
+        bookId: before.id,
+        bookTitle: before.t,
+        ownerId: before.ownerId,
+        ownerName: readers.find((r) => r.id === before.ownerId)?.name ?? "Lector sin perfil",
+        moderatorUid: user.uid,
+        moderatorName,
+        reason: modReason.trim(),
+        changes,
+      });
+      showToast("Publicación editada y registrada en la bitácora.");
+    } catch {
+      showToast("Publicación editada, pero no se pudo registrar en la bitácora.");
+    }
+  }, [modEditingId, user, isModerator, books, modForm, modReason, readers, moderatorName, showToast]);
+
+  const modDelete = useCallback(
+    async (bookId: string) => {
+      if (!isModerator || !user) {
+        showToast("No tienes permisos de moderación.");
+        return;
+      }
+      const b = books.find((x) => x.id === bookId);
+      if (!b) return;
+      const warning = b.resUid
+        ? "\n\nOJO: está reservado en un intercambio; eliminarlo impedirá cerrar ese canje."
+        : "";
+      if (!window.confirm(`¿Eliminar definitivamente «${b.t}» por incumplir las políticas del sitio?${warning}`)) return;
+      const reason = window.prompt(`Motivo de la eliminación de «${b.t}» (queda en la bitácora):`, "")?.trim();
+      if (!reason) {
+        showToast("Eliminación cancelada: la bitácora exige un motivo.");
+        return;
+      }
+      try {
+        await deleteBookDoc(bookId);
+      } catch {
+        showToast("No se pudo eliminar. Revisa tus permisos e intenta de nuevo.");
+        return;
+      }
+      if (modEditingId === bookId) {
+        setModEditingId(null);
+        setModForm(EMPTY_FORM);
+        setModReason("");
+      }
+      try {
+        await logModerationAction({
+          action: "delete",
+          bookId: b.id,
+          bookTitle: b.t,
+          ownerId: b.ownerId,
+          ownerName: readers.find((r) => r.id === b.ownerId)?.name ?? "Lector sin perfil",
+          moderatorUid: user.uid,
+          moderatorName,
+          reason,
+          changes: [],
+        });
+        showToast("Publicación eliminada y registrada en la bitácora.");
+      } catch {
+        showToast("Publicación eliminada, pero no se pudo registrar en la bitácora.");
+      }
+    },
+    [user, isModerator, books, readers, modEditingId, moderatorName, showToast]
   );
 
   const vals = useMemo(() => {
@@ -481,6 +651,35 @@ export function useAppState() {
     avgRatingFor,
   ]);
 
+  const moderationItems = useMemo(() => {
+    const q = modQuery.trim().toLowerCase();
+    const nameOf = (id: string) => readers.find((r) => r.id === id)?.name ?? "Lector sin perfil";
+    return books
+      .slice()
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .filter((b) => {
+        if (!q) return true;
+        return [b.t, b.a, b.desc, b.cat, nameOf(b.ownerId)].some((field) => field.toLowerCase().includes(q));
+      })
+      .map((b, i) => ({
+        id: b.id,
+        t: b.t,
+        a: b.a,
+        cat: b.cat,
+        cond: b.cond,
+        desc: b.desc,
+        ownerName: nameOf(b.ownerId),
+        ownerId: b.ownerId,
+        isMine: b.ownerId === myUid,
+        reserved: !!b.resUid,
+        reservedWith: b.resUid ? nameOf(b.resUid) : "",
+        plate: plateFor(i),
+        editing: modEditingId === b.id,
+        edit: () => modStartEdit(b.id),
+        remove: () => modDelete(b.id),
+      }));
+  }, [books, readers, modQuery, modEditingId, myUid, modStartEdit, modDelete]);
+
   const submitBook = useCallback(async () => {
     if (!user) {
       promptAuth("Inicia sesión para publicar un libro.");
@@ -595,6 +794,8 @@ export function useAppState() {
   return {
     route,
     user,
+    isModerator,
+    goPolicies: () => go("policies"),
 
     header: {
       today: new Date().toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" }),
@@ -603,11 +804,52 @@ export function useAppState() {
       isCatalog: route === "catalog",
       isChat: route === "chat",
       isShelf: route === "shelf",
+      isModerator,
+      isModeration: route === "moderation",
+      goModeration: () => go("moderation"),
       goMap: () => go("map"),
       goCatalog: () => go("catalog"),
       goChat: () => go("chat"),
       goShelf: () => go("shelf"),
       goPublish,
+    },
+
+    moderationView: {
+      isModeration: route === "moderation",
+      allowed: isModerator,
+      signedIn: !!user,
+      items: moderationItems,
+      count: moderationItems.length,
+      query: modQuery,
+      setQuery: (v: string) => setModQuery(v),
+      form: modForm,
+      setTitle: (v: string) => setModForm((f) => ({ ...f, t: v })),
+      setAuthor: (v: string) => setModForm((f) => ({ ...f, a: v })),
+      setDesc: (v: string) => setModForm((f) => ({ ...f, desc: v })),
+      condChips: formConds.map((c) => ({ label: c, active: modForm.cond === c, pick: () => setModForm((f) => ({ ...f, cond: c })) })),
+      catChips: formCats.map((c) => ({ label: c, active: modForm.cat === c, pick: () => setModForm((f) => ({ ...f, cat: c })) })),
+      reason: modReason,
+      setReason: (v: string) => setModReason(v),
+      log: moderationLog.map((e) => ({
+        id: e.id,
+        when: formatDateTime(e.createdAt),
+        action: e.action === "delete" ? "Eliminó" : "Editó",
+        isDelete: e.action === "delete",
+        bookTitle: e.bookTitle,
+        ownerName: e.ownerName,
+        moderatorName: e.moderatorName,
+        reason: e.reason,
+        changes: e.changes,
+      })),
+      logEmpty: moderationLog.length === 0,
+      save: modSaveEdit,
+      cancelEdit: modCancelEdit,
+      goPolicies: () => go("policies"),
+    },
+
+    policiesView: {
+      isPolicies: route === "policies",
+      goMap: () => go("map"),
     },
 
     mapView: {

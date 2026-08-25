@@ -12,6 +12,9 @@ interface HeaderProps {
   isCatalog: boolean;
   isChat: boolean;
   isShelf: boolean;
+  isModerator: boolean;
+  isModeration: boolean;
+  goModeration: () => void;
   goMap: () => void;
   goCatalog: () => void;
   goChat: () => void;
@@ -26,6 +29,9 @@ export function Header({
   isCatalog,
   isChat,
   isShelf,
+  isModerator,
+  isModeration,
+  goModeration,
   goMap,
   goCatalog,
   goChat,
@@ -67,6 +73,11 @@ export function Header({
           <button onClick={goShelf} className={navClass(isShelf)}>
             Mi estante
           </button>
+          {isModerator && (
+            <button onClick={goModeration} className={navClass(isModeration)}>
+              Moderación
+            </button>
+          )}
           <button
             onClick={goPublish}
             className="bg-[#0088b0] text-white border-none rounded-[2px] px-[18px] py-[9px] text-[16px] transition-colors hover:bg-[#1186ac] active:bg-[#006786]"

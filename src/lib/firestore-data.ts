@@ -13,22 +13,97 @@ import {
   setDoc,
   updateDoc,
   addDoc,
+  limit,
   where,
   type Unsubscribe,
 } from "firebase/firestore";
 import type { User } from "firebase/auth";
 import { db, FirebaseNotConfiguredError } from "./firebase";
 import { BOGOTA_CENTER } from "./geo-constants";
-import type { Book, ChatMessage, ChatThread, NewBook, Rating, Reader } from "./types";
+import type {
+  Book,
+  ChatMessage,
+  ChatThread,
+  ModerationAction,
+  ModerationLogEntry,
+  NewBook,
+  Rating,
+  Reader,
+} from "./types";
 
 const READERS = "readers";
 const BOOKS = "books";
 const THREADS = "threads";
 const MESSAGES = "messages";
 const RATINGS = "ratings";
+const MODERATORS = "moderators";
+const MODERATION_LOG = "moderationLog";
+const MODERATION_LOG_PAGE = 50;
 
 export function threadIdFor(uidA: string, uidB: string): string {
   return [uidA, uidB].sort().join("_");
+}
+
+// Moderator status lives in `moderators/{uid}`, created by hand in the Firebase Console —
+// there's no backend here that could grant the role, and the security rules read the same
+// doc, so the UI flag and the enforced permission can't drift apart.
+export async function fetchIsModerator(uid: string): Promise<boolean> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const snap = await getDoc(doc(db, MODERATORS, uid));
+  return snap.exists();
+}
+
+// Append-only audit trail of moderator actions: rules let moderators create entries as
+// themselves and read them, never edit or delete one. Written *after* the book write
+// succeeds, so the log can't claim an action that never landed.
+export async function logModerationAction(entry: {
+  action: ModerationAction;
+  bookId: string;
+  bookTitle: string;
+  ownerId: string;
+  ownerName: string;
+  moderatorUid: string;
+  moderatorName: string;
+  reason: string;
+  changes: string[];
+}): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await addDoc(collection(db, MODERATION_LOG), { ...entry, createdAt: serverTimestamp() });
+}
+
+export function subscribeModerationLog(
+  cb: (entries: ModerationLogEntry[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const q = query(collection(db, MODERATION_LOG), orderBy("createdAt", "desc"), limit(MODERATION_LOG_PAGE));
+  return onSnapshot(
+    q,
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            action: data.action === "delete" ? ("delete" as const) : ("edit" as const),
+            bookId: data.bookId ?? "",
+            bookTitle: data.bookTitle ?? "",
+            ownerId: data.ownerId ?? "",
+            ownerName: data.ownerName ?? "",
+            moderatorUid: data.moderatorUid ?? "",
+            moderatorName: data.moderatorName ?? "",
+            reason: data.reason ?? "",
+            changes: data.changes ?? [],
+            createdAt: data.createdAt?.toMillis?.() ?? 0,
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("moderation log subscription failed", err);
+      onError?.(err);
+    }
+  );
 }
 
 export async function ensureReaderProfile(user: User, coords?: { lat: number; lng: number }): Promise<void> {
