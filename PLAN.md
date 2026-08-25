@@ -19,10 +19,9 @@ Autenticación con Firebase (Google y correo). Solo publicar/editar/eliminar y p
 
 ## 2. Pendiente inmediato
 
-1. **Republicar `firestore.rules`** en la consola: la última versión agrega `coverOk()` (rechaza portadas que no sean string o pasen de 140 000 caracteres). Sin eso, guardar un libro con foto falla.
-2. **Probar la subida de portada** con sesión iniciada: elegir foto, publicar, verificar que aparece en catálogo y mapa, y que "Quitar foto" la borra. Es el único camino de la funcionalidad que no se ha ejercitado contra Firestore real.
-3. **Commit de portadas** una vez probado (moderación y políticas ya están en `7e6172c`).
-4. **Reemplazar `moderacion@elcanje.co`** por una dirección real antes de exponer el sitio: hoy la página de políticas promete un canal de reporte que no existe.
+1. **Recorrer la aplicación con sesión iniciada.** Todo el rediseño (fases 0 a 9 de [UI-PLAN.md](UI-PLAN.md)) se verificó vista por vista en el navegador, pero **sin cuenta**: estante, publicar, mensajes y moderación se comprobaron por código, por piezas sueltas o con datos de prueba. El recorrido que falta es publicar → proponer → chatear → confirmar canje → calificar, y moderar un libro.
+2. **Reemplazar `moderacion@elcanje.co`** por una dirección real antes de exponer el sitio: hoy la página de políticas promete un canal de reporte que no existe.
+3. **Ver la presencia en verde.** `lastSeenAt` solo existe para quien haya entrado después del latido; los perfiles antiguos no dicen nada hasta que su dueño vuelva a entrar. Es lo correcto, pero conviene confirmarlo con dos sesiones.
 
 ## 3. Backlog priorizado
 
@@ -55,7 +54,6 @@ Al 25 de agosto de 2026 queda **solo el punto 1**: los demás se cerraron junto 
 | 11 | `subscribeBooks` y `subscribeReaders` traen la colección completa, sin límite ni paginación; el filtro de distancia es de cliente | Mismo umbral que el anterior. Requiere consultas geográficas reales, no un filtro post-lectura |
 | 12 | No hay suite de pruebas | Antes de que toque el flujo de canje alguien que no escribió ese código. Los candidatos naturales son `diffBook`, `fileToCoverDataUrl` y el cálculo de cupos |
 | 13 | Las reglas no se despliegan desde el repo | Cada cambio en `firestore.rules` exige publicar a mano; el repo y la consola pueden divergir sin que nada avise. Instalar Firebase CLI y `firebase deploy --only firestore:rules` lo cierra |
-| 14 | Todo el ruteo es estado de cliente: una sola URL | La página de políticas no se puede enlazar ni citar, que es la mitad de para qué sirve un documento legal. Convertir al menos `/politicas` en una ruta real de Next |
 
 ## 4. Restricciones que condicionan el diseño
 
@@ -71,6 +69,8 @@ No hay pruebas automatizadas. Antes de dar por terminado un cambio:
 ```bash
 npx tsc --noEmit && npx eslint .
 ```
+
+Las dos herramientas necesitan **Node ≥ 20**; con el v14 que a veces queda por defecto en esta máquina ni siquiera arranca `next dev`.
 
 Antes de dar por completa una funcionalidad, además `npm run build` y una revisión manual en el navegador con el servidor de desarrollo. No decir "probado" sin haber ejercitado el camino real en la aplicación.
 
