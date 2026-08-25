@@ -36,8 +36,19 @@ service cloud.firestore {
     }
 
     match /books/{bookId} {
+      // Covers are stored inline as data URLs (no Storage bucket, which would require a
+      // billing account), so the document itself is the size limit worth guarding: without
+      // this cap a client could park hundreds of KB per book in everyone's catalog read.
+      function coverOk() {
+        return !('cover' in request.resource.data)
+          || request.resource.data.cover == null
+          || (request.resource.data.cover is string && request.resource.data.cover.size() < 140000);
+      }
+
       allow read: if true;
-      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid
+        && coverOk();
       // Update allowed for the current owner (any change, including giving it away), or for
       // whoever the book is reserved for when they're claiming it as the new owner (completing
       // a trade) — that's the only way a non-owner may ever touch someone else's book.
@@ -49,7 +60,7 @@ service cloud.firestore {
           request.resource.data.ownerId == request.auth.uid &&
           request.resource.data.resUid == null) ||
         isModerator()
-      );
+      ) && coverOk();
       allow delete: if request.auth != null && (
         resource.data.ownerId == request.auth.uid || isModerator()
       );

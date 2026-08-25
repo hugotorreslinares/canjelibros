@@ -186,6 +186,7 @@ export function subscribeBooks(cb: (books: Book[]) => void, onError?: (err: unkn
             cat: data.cat ?? "",
             cond: data.cond ?? "",
             desc: data.desc ?? "",
+            cover: data.cover ?? null,
             resUid: data.resUid ?? null,
             createdAt: data.createdAt?.toMillis?.() ?? 0,
           };

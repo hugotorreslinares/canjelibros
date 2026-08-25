@@ -1,6 +1,8 @@
 import { chip, condPill, divider, linkBtn, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
+import { BookCover } from "./BookCover";
 
 interface ShelfBook {
+  cover: string | null;
   t: string;
   a: string;
   cat: string;
@@ -145,12 +147,13 @@ export function ShelfView({
       <div className="grid [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))] gap-[26px]">
         {myBooks.map((b, i) => (
           <div key={i} className={`border-t ${divider} pt-[16px] grid gap-[8px]`}>
-            <div
-              style={{ background: b.plate }}
-              className="h-[150px] rounded-[1px] p-[12px] flex items-end text-[14px] leading-[1.2] text-[#f8f4f4]"
-            >
-              {b.short}
-            </div>
+            <BookCover
+              cover={b.cover}
+              plate={b.plate}
+              title={b.short}
+              className="h-[150px] w-full rounded-[1px]"
+              textClassName="p-[12px] text-[14px] leading-[1.2]"
+            />
             <div className="text-[21px] leading-[1.15]">{b.t}</div>
             <div className="text-[15px] text-[#605d5d]">{b.a}</div>
             <div className="flex gap-[8px] flex-wrap">

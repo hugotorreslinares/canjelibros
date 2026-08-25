@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { condPill, divider, sectionLabel, smallPrimaryBtn, tagPill } from "@/lib/ui";
+import { BookCover } from "./BookCover";
 
 const LeafletMap = dynamic(() => import("./LeafletMap").then((m) => m.LeafletMap), {
   ssr: false,
@@ -26,6 +27,7 @@ interface MapUser {
 }
 
 interface SelBook {
+  cover: string | null;
   t: string;
   a: string;
   cat: string;
@@ -156,12 +158,13 @@ export function MapView({ users, noSelection, hasSelection, sel, selBooks, clear
             <div className="grid gap-[20px]">
               {selBooks.map((b, i) => (
                 <div key={i} className={`grid grid-cols-[56px_minmax(0,1fr)] gap-[14px] border-t ${divider} pt-[16px]`}>
-                  <div
-                    style={{ background: b.plate }}
-                    className="h-[82px] rounded-[1px] p-[6px] flex items-end text-[10px] leading-[1.15] text-[#f8f4f4] overflow-hidden"
-                  >
-                    {b.short}
-                  </div>
+                  <BookCover
+                    cover={b.cover}
+                    plate={b.plate}
+                    title={b.short}
+                    className="h-[82px] w-full rounded-[1px]"
+                    textClassName="p-[6px] text-[10px] leading-[1.15]"
+                  />
                   <div className="grid gap-[5px]">
                     <div className="text-[20px] leading-[1.15]">{b.t}</div>
                     <div className="text-[15px] text-[#605d5d]">{b.a}</div>

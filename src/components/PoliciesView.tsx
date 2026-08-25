@@ -13,6 +13,7 @@ const PROHIBITED = [
   "Manuales o instructivos para fabricar armas, explosivos, drogas ilícitas o para cometer delitos informáticos.",
   "Bienes distintos a libros: no se permite usar el catálogo para ofrecer sustancias, armas, medicamentos, animales ni servicios.",
   "Libros que sean producto de hurto, incluidos ejemplares retirados de bibliotecas públicas o institucionales.",
+  "Imágenes de las que no eres titular: portadas descargadas de internet, fotos tomadas de otro anuncio o ilustraciones de la editorial. La foto debe ser tuya, del ejemplar que ofreces.",
   "Datos personales de terceros —direcciones exactas, teléfonos, documentos de identidad— publicados sin su consentimiento.",
 ];
 
@@ -20,6 +21,7 @@ const RULES = [
   "Publica solo ejemplares físicos que tengas en tu poder y que puedas entregar en mano.",
   "Describe el estado real del libro. Exagerar la condición es motivo de reporte.",
   "Acuerda los encuentros en lugares públicos y concurridos.",
+  "La foto de portada es opcional: si no subes ninguna, mostramos el título como portada tipográfica. No fotografíes personas ni documentos junto al libro.",
   "Trata a los demás lectores con respeto en los mensajes: no se toleran insultos, acoso ni spam.",
 ];
 

@@ -19,6 +19,7 @@ import {
   transferBook,
   updateBook,
 } from "@/lib/firestore-data";
+import { CoverError, fileToCoverDataUrl } from "@/lib/image";
 import { categories, conds, formCats, formConds, tagList } from "@/lib/mock-data";
 import {
   useBooks,
@@ -42,9 +43,10 @@ interface FormState {
   desc: string;
   cond: string;
   cat: string;
+  cover: string | null;
 }
 
-const EMPTY_FORM: FormState = { t: "", a: "", desc: "", cond: "Bueno", cat: "Novela" };
+const EMPTY_FORM: FormState = { t: "", a: "", desc: "", cond: "Bueno", cat: "Novela", cover: null };
 
 type PendingAction = { kind: "goPublish" } | { kind: "openOffer"; uid: string; bookId: string };
 
@@ -64,20 +66,22 @@ function formatDateTime(ms: number): string {
 }
 
 // Field-by-field diff so the log says what a moderator actually touched, not just "editó".
-function diffBook(
-  before: { t: string; a: string; cat: string; cond: string; desc: string },
-  after: { t: string; a: string; cat: string; cond: string; desc: string }
-): string[] {
-  const labels: Array<[keyof typeof before, string]> = [
+type BookFields = { t: string; a: string; cat: string; cond: string; desc: string; cover: string | null };
+
+function diffBook(before: BookFields, after: BookFields): string[] {
+  const labels: Array<[keyof Omit<BookFields, "cover">, string]> = [
     ["t", "título"],
     ["a", "autor"],
     ["cat", "categoría"],
     ["cond", "estado"],
     ["desc", "descripción"],
   ];
-  return labels
+  const changes = labels
     .filter(([key]) => before[key] !== after[key])
     .map(([key, label]) => `${label}: «${before[key] || "vacío"}» → «${after[key] || "vacío"}»`);
+  // The cover is a data URL — log that it changed, never its contents.
+  if (before.cover !== after.cover) changes.push(after.cover ? "portada: reemplazada" : "portada: retirada");
+  return changes;
 }
 
 function formatTime(ms: number): string {
@@ -242,12 +246,27 @@ export function useAppState() {
       }
       const b = myBooks.find((x) => x.id === bookId);
       if (!b) return;
-      setForm({ t: b.t, a: b.a, desc: b.desc, cond: b.cond, cat: b.cat });
+      setForm({ t: b.t, a: b.a, desc: b.desc, cond: b.cond, cat: b.cat, cover: b.cover });
       setEditingBookId(bookId);
       go("publish");
     },
     [user, promptAuth, myBooks, go]
   );
+
+  const pickCover = useCallback(
+    async (file: File) => {
+      try {
+        const cover = await fileToCoverDataUrl(file);
+        setForm((f) => ({ ...f, cover }));
+        showToast("Foto lista. Se guarda al publicar.");
+      } catch (err) {
+        showToast(err instanceof CoverError ? err.message : "No se pudo procesar la foto.");
+      }
+    },
+    [showToast]
+  );
+
+  const clearCover = useCallback(() => setForm((f) => ({ ...f, cover: null })), []);
 
   const deleteBook = useCallback(
     async (bookId: string) => {
@@ -299,7 +318,7 @@ export function useAppState() {
     (bookId: string) => {
       const b = books.find((x) => x.id === bookId);
       if (!b) return;
-      setModForm({ t: b.t, a: b.a, desc: b.desc, cond: b.cond, cat: b.cat });
+      setModForm({ t: b.t, a: b.a, desc: b.desc, cond: b.cond, cat: b.cat, cover: b.cover });
       setModReason("");
       setModEditingId(bookId);
     },
@@ -311,6 +330,8 @@ export function useAppState() {
     setModForm(EMPTY_FORM);
     setModReason("");
   }, []);
+
+  const modRemoveCover = useCallback(() => setModForm((f) => ({ ...f, cover: null })), []);
 
   const modSaveEdit = useCallback(async () => {
     if (!isModerator || !user) {
@@ -334,6 +355,7 @@ export function useAppState() {
       cat: modForm.cat,
       cond: modForm.cond,
       desc: modForm.desc.trim(),
+      cover: modForm.cover,
     };
     const changes = diffBook(before, after);
     if (changes.length === 0) {
@@ -466,6 +488,7 @@ export function useAppState() {
       cat: string;
       cond: string;
       desc: string;
+      cover: string | null;
       owner: string;
       barrio: string;
       dist: number;
@@ -487,6 +510,7 @@ export function useAppState() {
             cat: b.cat,
             cond: b.cond,
             desc: b.desc,
+            cover: b.cover,
             owner: r.name,
             barrio: r.barrio,
             dist: readerDist(r),
@@ -668,6 +692,7 @@ export function useAppState() {
         cat: b.cat,
         cond: b.cond,
         desc: b.desc,
+        cover: b.cover,
         ownerName: nameOf(b.ownerId),
         ownerId: b.ownerId,
         isMine: b.ownerId === myUid,
@@ -691,7 +716,14 @@ export function useAppState() {
     }
     try {
       if (editingBookId) {
-        await updateBook(editingBookId, { t: form.t, a: form.a || "Autor sin datos", cat: form.cat, cond: form.cond, desc: form.desc });
+        await updateBook(editingBookId, {
+          t: form.t,
+          a: form.a || "Autor sin datos",
+          cat: form.cat,
+          cond: form.cond,
+          desc: form.desc,
+          cover: form.cover,
+        });
         setEditingBookId(null);
         setForm(EMPTY_FORM);
         setRoute("shelf");
@@ -702,7 +734,14 @@ export function useAppState() {
         showToast("Sin cupos: cierra un intercambio primero.");
         return;
       }
-      await createBook(user.uid, { t: form.t, a: form.a || "Autor sin datos", cat: form.cat, cond: form.cond, desc: form.desc });
+      await createBook(user.uid, {
+        t: form.t,
+        a: form.a || "Autor sin datos",
+        cat: form.cat,
+        cond: form.cond,
+        desc: form.desc,
+        cover: form.cover,
+      });
       setForm(EMPTY_FORM);
       setRoute("shelf");
       showToast("Publicado. Ya aparece en el mapa y en el catálogo.");
@@ -828,6 +867,8 @@ export function useAppState() {
       setDesc: (v: string) => setModForm((f) => ({ ...f, desc: v })),
       condChips: formConds.map((c) => ({ label: c, active: modForm.cond === c, pick: () => setModForm((f) => ({ ...f, cond: c })) })),
       catChips: formCats.map((c) => ({ label: c, active: modForm.cat === c, pick: () => setModForm((f) => ({ ...f, cat: c })) })),
+      cover: modForm.cover,
+      removeCover: modRemoveCover,
       reason: modReason,
       setReason: (v: string) => setModReason(v),
       log: moderationLog.map((e) => ({
@@ -930,6 +971,9 @@ export function useAppState() {
       setDesc: (v: string) => setForm((f) => ({ ...f, desc: v })),
       condChips: formConds.map((c) => ({ label: c, active: form.cond === c, pick: () => setForm((f) => ({ ...f, cond: c })) })),
       catChips: formCats.map((c) => ({ label: c, active: form.cat === c, pick: () => setForm((f) => ({ ...f, cat: c })) })),
+      pickCover,
+      clearCover,
+      previewCover: form.cover,
       previewPlate: plateFor(editingBookId ? Math.max(0, myBooks.findIndex((b) => b.id === editingBookId)) : vals.used + 2),
       previewShort: form.t || "Portada tipográfica",
       previewTitle: form.t || "Título del libro",
@@ -977,6 +1021,7 @@ export function useAppState() {
       bookAuthor: vals.offerBook?.a || "",
       bookCond: vals.offerBook?.cond || "",
       bookCat: vals.offerBook?.cat || "",
+      bookCover: vals.offerBook?.cover ?? null,
       bookPlate: plateFor(1),
       myOfferables: myBooks.map((b) => ({ ...b, active: offerMineId === b.id, choose: () => setOfferMineId(b.id) })),
       hint: offerMineId === null ? "Elige qué libro tuyo ofreces." : "Si acepta, ambos libros quedan reservados hasta el encuentro.",

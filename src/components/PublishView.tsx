@@ -1,4 +1,5 @@
-import { chip, condPill, divider, input, linkBtn, primaryBtn, sectionLabel, tagPill } from "@/lib/ui";
+import { chip, condPill, divider, input, linkBtn, primaryBtn, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
+import { BookCover } from "./BookCover";
 
 interface Chip {
   label: string;
@@ -16,6 +17,9 @@ interface PublishViewProps {
   setDesc: (v: string) => void;
   condChips: Chip[];
   catChips: Chip[];
+  pickCover: (file: File) => void;
+  clearCover: () => void;
+  previewCover: string | null;
   previewPlate: string;
   previewShort: string;
   previewTitle: string;
@@ -35,6 +39,9 @@ export function PublishView({
   setDesc,
   condChips,
   catChips,
+  pickCover,
+  clearCover,
+  previewCover,
   previewPlate,
   previewShort,
   previewTitle,
@@ -93,8 +100,34 @@ export function PublishView({
           </div>
           <div className="grid gap-[8px]">
             <span className="text-[15px] text-[#444141]">Portada (opcional)</span>
-            <div className="border border-dashed border-[#201e1d]/40 rounded-[2px] p-[26px] text-center text-[16px] text-[#605d5d]">
-              Arrastra una foto de la tapa. Si no hay foto, imprimimos el título como portada tipográfica.
+            <div className="border border-dashed border-[#201e1d]/40 rounded-[2px] p-[22px] grid gap-[12px] justify-items-center text-center">
+              <p className="text-[16px] leading-[1.5] text-[#605d5d] max-w-[34em]">
+                Sube una foto <strong className="font-semibold">tomada por ti</strong> del ejemplar que vas a
+                intercambiar. Si no hay foto, imprimimos el título como portada tipográfica.
+              </p>
+              <label className={`${smallOutlineBtn} cursor-pointer`}>
+                {previewCover ? "Cambiar foto" : "Elegir foto"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    // Clearing the input lets the same file be re-picked after an error.
+                    e.target.value = "";
+                    if (file) pickCover(file);
+                  }}
+                />
+              </label>
+              {previewCover && (
+                <button onClick={clearCover} className={linkBtn}>
+                  Quitar foto
+                </button>
+              )}
+              <p className="text-[14px] leading-[1.45] text-[#605d5d] max-w-[34em]">
+                No subas la imagen de portada que encontraste en internet: es del editor o del ilustrador. La foto se
+                reduce a 520 px antes de guardarse.
+              </p>
             </div>
           </div>
           <div className="flex gap-[14px] items-center flex-wrap mt-[4px]">
@@ -109,12 +142,13 @@ export function PublishView({
       </div>
       <div className="pt-0 lg:pt-[40px]">
         <div className={`${sectionLabel} mb-[12px]`}>Vista previa</div>
-        <div
-          style={{ background: previewPlate }}
-          className="h-[210px] rounded-[1px] p-[16px] flex items-end text-[17px] leading-[1.2] text-[#f8f4f4]"
-        >
-          {previewShort}
-        </div>
+        <BookCover
+          cover={previewCover}
+          plate={previewPlate}
+          title={previewShort}
+          className="h-[210px] w-full rounded-[1px]"
+          textClassName="p-[16px] text-[17px] leading-[1.2]"
+        />
         <div className="text-[23px] leading-[1.15] mt-[12px]">{previewTitle}</div>
         <div className="text-[16px] text-[#605d5d]">{previewAuthor}</div>
         <div className="flex gap-[8px] flex-wrap mt-[10px]">

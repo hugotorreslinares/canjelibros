@@ -6,11 +6,12 @@ export interface Book {
   cat: string;
   cond: string;
   desc: string;
+  cover: string | null;
   resUid: string | null;
   createdAt: number;
 }
 
-export type NewBook = Pick<Book, "t" | "a" | "cat" | "cond" | "desc">;
+export type NewBook = Pick<Book, "t" | "a" | "cat" | "cond" | "desc" | "cover">;
 
 export interface Reader {
   id: string;

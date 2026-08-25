@@ -1,7 +1,9 @@
 import { chip, condPill, divider, input, linkBtn, primaryBtn, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
+import { BookCover } from "./BookCover";
 
 interface ModerationBook {
   id: string;
+  cover: string | null;
   t: string;
   a: string;
   cat: string;
@@ -48,6 +50,8 @@ interface ModerationViewProps {
   setDesc: (v: string) => void;
   condChips: Chip[];
   catChips: Chip[];
+  cover: string | null;
+  removeCover: () => void;
   reason: string;
   setReason: (v: string) => void;
   log: LogEntry[];
@@ -70,6 +74,8 @@ export function ModerationView({
   setDesc,
   condChips,
   catChips,
+  cover,
+  removeCover,
   reason,
   setReason,
   log,
@@ -130,12 +136,13 @@ export function ModerationView({
       <div className="grid gap-[26px]">
         {items.map((b) => (
           <div key={b.id} className={`border-t ${divider} pt-[18px] grid [grid-template-columns:110px_1fr] gap-[20px]`}>
-            <div
-              style={{ background: b.plate }}
-              className="h-[150px] rounded-[1px] p-[10px] flex items-end text-[13px] leading-[1.2] text-[#f8f4f4]"
-            >
-              {b.t}
-            </div>
+            <BookCover
+              cover={b.cover}
+              plate={b.plate}
+              title={b.t}
+              className="h-[150px] w-full rounded-[1px]"
+              textClassName="p-[10px] text-[13px] leading-[1.2]"
+            />
 
             <div className="grid gap-[8px]">
               <div className="text-[13px] tracking-[.14em] uppercase text-[#605d5d]">
@@ -182,6 +189,28 @@ export function ModerationView({
                         </button>
                       ))}
                     </div>
+                  </div>
+                  <div className="grid gap-[6px]">
+                    <span className={sectionLabel}>Portada</span>
+                    {cover ? (
+                      <div className="flex items-center gap-[14px]">
+                        <BookCover
+                          cover={cover}
+                          plate={b.plate}
+                          title={b.t}
+                          className="h-[70px] w-[52px] rounded-[1px]"
+                          textClassName="p-[6px] text-[10px] leading-[1.15]"
+                        />
+                        <button
+                          onClick={removeCover}
+                          className="bg-transparent border-none p-0 text-[15px] text-[#aa0b56] hover:text-[#d6006c] transition-colors"
+                        >
+                          Quitar la foto
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[16px] text-[#605d5d]">Sin foto · portada tipográfica.</span>
+                    )}
                   </div>
                   <label className="grid gap-[6px]">
                     <span className={sectionLabel}>Motivo de la edición</span>
