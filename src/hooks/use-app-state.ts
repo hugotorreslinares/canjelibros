@@ -148,6 +148,7 @@ export function useAppState() {
   const [modReason, setModReason] = useState("");
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
+  const [coverBusy, setCoverBusy] = useState(false);
 
   const activeThreadId = threadId && myThreads.some((t) => t.id === threadId) ? threadId : myThreads[0]?.id ?? null;
   const threadMessages = useThreadMessages(activeThreadId);
@@ -265,12 +266,15 @@ export function useAppState() {
 
   const pickCover = useCallback(
     async (file: File) => {
+      setCoverBusy(true);
       try {
         const cover = await fileToCoverDataUrl(file);
         setForm((f) => ({ ...f, cover }));
         showToast("Foto lista. Se guarda al publicar.");
       } catch (err) {
         showToast(err instanceof CoverError ? err.message : "No se pudo procesar la foto.");
+      } finally {
+        setCoverBusy(false);
       }
     },
     [showToast]
@@ -507,7 +511,6 @@ export function useAppState() {
           .map((b, i) => ({
             ...b,
             plate: plateFor(i + 1),
-            short: b.t,
             propose: () => openOffer(selUser.id, b.id),
           }))
       : [];
@@ -525,7 +528,6 @@ export function useAppState() {
       dist: number | null;
       starsLabel: string;
       plate: string;
-      short: string;
       createdAt: number;
       selectOwner: () => void;
       propose: () => void;
@@ -547,7 +549,6 @@ export function useAppState() {
             dist: readerDist(r),
             starsLabel: stars(avgRatingFor(r.id)),
             plate: plateFor(catalogAll.length),
-            short: b.t,
             createdAt: b.createdAt,
             selectOwner: () => {
               setRoute("map");
@@ -600,7 +601,6 @@ export function useAppState() {
       return {
         ...b,
         plate: plateFor(myBooks.indexOf(b)),
-        short: b.t,
         state: activelyReserved ? `Reservado con ${nameOf(b.resUid as string)}` : "Disponible",
         reserved: activelyReserved,
         canRemove: !activelyReserved,
@@ -1021,6 +1021,7 @@ export function useAppState() {
       catChips: formCats.map((c) => ({ label: c, active: form.cat === c, pick: () => setForm((f) => ({ ...f, cat: c })) })),
       pickCover,
       clearCover,
+      coverBusy,
       previewCover: form.cover,
       previewPlate: plateFor(editingBookId ? Math.max(0, myBooks.findIndex((b) => b.id === editingBookId)) : vals.used + 2),
       previewShort: form.t || "Portada tipográfica",

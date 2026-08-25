@@ -1,5 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { BookCover } from "./BookCover";
 import { BookRowsSkeleton } from "./BookGridSkeleton";
 import { QueryState } from "./QueryState";
@@ -16,7 +23,6 @@ interface CatalogItem {
   dist: number | null;
   starsLabel: string;
   plate: string;
-  short: string;
   selectOwner: () => void;
   propose: () => void;
 }
@@ -28,7 +34,6 @@ interface RecommendedItem {
   cat: string;
   cond: string;
   plate: string;
-  short: string;
   owner: string;
   selectOwner: () => void;
   propose: () => void;
@@ -106,28 +111,37 @@ export function CatalogView({
       {recommended.items.length > 0 && (
         <section className="mb-8" aria-label={recommended.title}>
           <h2 className="font-sans text-label uppercase text-muted-foreground mb-3">{recommended.title}</h2>
-          <div className="flex gap-4 overflow-x-auto pb-2 -mx-0.5 px-0.5">
-            {recommended.items.map((b, i) => (
-              <div key={i} className="shrink-0 w-[150px] flex flex-col gap-2">
-                <BookCover
-                  cover={b.cover}
-                  plate={b.plate}
-                  title={b.short}
-                  className="h-[225px] w-[150px] rounded-sm"
-                  textClassName="p-3 text-small leading-tight"
-                />
-                <div className="font-serif text-body leading-tight truncate">{b.t}</div>
-                <div className="font-sans text-small text-muted-foreground truncate">{b.a}</div>
-                <div className="flex gap-1.5 flex-wrap">
-                  <Badge variant="secondary">{b.cat}</Badge>
-                  <Badge variant="outline">{b.cond}</Badge>
-                </div>
-                <Button onClick={b.propose} className="w-full">
-                  Proponer canje
-                </Button>
-              </div>
-            ))}
-          </div>
+          {/* Antes era un desplazamiento horizontal sin ninguna pista: en
+              escritorio nada decía que hubiera más libros a la derecha. */}
+          <Carousel opts={{ align: "start", loop: false }} className="w-full">
+            <CarouselContent className="-ml-4">
+              {recommended.items.map((b, i) => (
+                <CarouselItem key={i} className="pl-4 basis-[150px]">
+                  <div className="flex flex-col gap-2">
+                    <BookCover
+                      cover={b.cover}
+                      plate={b.plate}
+                      title={b.t}
+                      author={b.a}
+                      size="md"
+                      className="h-[225px] w-[150px] rounded-sm"
+                    />
+                    <div className="font-serif text-body leading-tight truncate">{b.t}</div>
+                    <div className="font-sans text-small text-muted-foreground truncate">{b.a}</div>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Badge variant="secondary">{b.cat}</Badge>
+                      <Badge variant="outline">{b.cond}</Badge>
+                    </div>
+                    <Button onClick={b.propose} className="w-full">
+                      Proponer canje
+                    </Button>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex -left-4" />
+            <CarouselNext className="hidden sm:flex -right-4" />
+          </Carousel>
           <div className="border-t border-border mt-6" />
         </section>
       )}
@@ -195,9 +209,9 @@ export function CatalogView({
                 <BookCover
                   cover={b.cover}
                   plate={b.plate}
-                  title={b.short}
+                  title={b.t}
+                  size="sm"
                   className="h-[111px] w-[74px] rounded-sm"
-                  textClassName="p-2 text-label leading-tight"
                 />
                 <div className="flex flex-col gap-1.5">
                   <div className="flex gap-2.5 flex-wrap items-baseline">

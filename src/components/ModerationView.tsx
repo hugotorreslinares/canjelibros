@@ -141,8 +141,9 @@ export function ModerationView({
               cover={b.cover}
               plate={b.plate}
               title={b.t}
-              className="h-[150px] w-full rounded-[1px]"
-              textClassName="p-[10px] text-[13px] leading-[1.2]"
+              author={b.a}
+              size="md"
+              className="h-[165px] w-[110px] rounded-sm"
             />
 
             <div className="grid gap-[8px]">
@@ -209,8 +210,8 @@ export function ModerationView({
                           cover={cover}
                           plate={b.plate}
                           title={b.t}
-                          className="h-[70px] w-[52px] rounded-[1px]"
-                          textClassName="p-[6px] text-[10px] leading-[1.15]"
+                          size="sm"
+                          className="h-[78px] w-[52px] rounded-sm"
                         />
                         <Button variant="ghost" onClick={removeCover} className="text-destructive hover:text-destructive">
                           Quitar la foto

@@ -38,7 +38,6 @@ interface SelBook {
   cond: string;
   desc: string;
   plate: string;
-  short: string;
   propose: () => void;
 }
 
@@ -192,9 +191,9 @@ export function MapView({
                   <BookCover
                     cover={b.cover}
                     plate={b.plate}
-                    title={b.short}
-                    className="h-[82px] w-full rounded-[1px]"
-                    textClassName="p-[6px] text-[10px] leading-[1.15]"
+                    title={b.t}
+                    size="sm"
+                    className="h-[84px] w-[56px] rounded-sm"
                   />
                   <div className="grid gap-[5px]">
                     <div className="text-[20px] leading-[1.15]">{b.t}</div>

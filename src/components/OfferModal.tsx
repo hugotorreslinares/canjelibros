@@ -65,8 +65,8 @@ export function OfferModal({
                 cover={bookCover}
                 plate={bookPlate}
                 title={bookTitle}
+                size="sm"
                 className="h-[99px] w-[66px] rounded-sm"
-                textClassName="p-2 text-label leading-tight"
               />
               <div>
                 <p className="font-serif text-subtitle">{bookTitle}</p>

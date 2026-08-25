@@ -20,6 +20,7 @@ interface PublishViewProps {
   catChips: Chip[];
   pickCover: (file: File) => void;
   clearCover: () => void;
+  coverBusy: boolean;
   previewCover: string | null;
   previewPlate: string;
   previewShort: string;
@@ -66,6 +67,7 @@ export function PublishView({
   catChips,
   pickCover,
   clearCover,
+  coverBusy,
   previewCover,
   previewPlate,
   previewShort,
@@ -129,9 +131,9 @@ export function PublishView({
                 Sube una foto <strong className="font-semibold">tomada por ti</strong> del ejemplar que vas a
                 intercambiar. Si no hay foto, imprimimos el título como portada tipográfica.
               </p>
-              <Button variant="outline" asChild>
-                <label className="cursor-pointer">
-                  {previewCover ? "Cambiar foto" : "Elegir foto"}
+              <Button variant="outline" asChild disabled={coverBusy}>
+                <label className={coverBusy ? "pointer-events-none opacity-60" : "cursor-pointer"}>
+                  {coverBusy ? "Procesando foto…" : previewCover ? "Cambiar foto" : "Elegir foto"}
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -174,8 +176,9 @@ export function PublishView({
           cover={previewCover}
           plate={previewPlate}
           title={previewShort}
+          author={previewAuthor}
+          size="lg"
           className="h-[420px] w-[280px] rounded-sm"
-          textClassName="p-4 text-body leading-tight"
         />
         <p className="font-serif text-subtitle mt-3">{previewTitle}</p>
         <p className="font-sans text-small text-muted-foreground">{previewAuthor}</p>

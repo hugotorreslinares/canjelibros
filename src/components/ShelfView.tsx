@@ -9,7 +9,6 @@ interface ShelfBook {
   cat: string;
   cond: string;
   plate: string;
-  short: string;
   state: string;
   reserved: boolean;
   canRemove: boolean;
@@ -155,9 +154,10 @@ export function ShelfView({
             <BookCover
               cover={b.cover}
               plate={b.plate}
-              title={b.short}
+              title={b.t}
+              author={b.a}
+              size="lg"
               className="h-[264px] w-full rounded-sm"
-              textClassName="p-3 text-body leading-tight"
             />
             <h3 className="font-serif text-subtitle m-0">{b.t}</h3>
             <p className="font-sans text-small text-muted-foreground">{b.a}</p>
