@@ -172,3 +172,24 @@
   background: transparent;
   border: none;
 }
+
+/* La etiqueta del pin solo aparece bajo intención: cursor encima, foco de
+   teclado o pin seleccionado. Permanentes, se encaballaban entre sí. */
+.cambialibros-marker .marker-label {
+  opacity: 0;
+  transition: opacity 0.16s ease-out;
+}
+
+.cambialibros-marker:hover .marker-label,
+.cambialibros-marker:focus .marker-label,
+.cambialibros-marker:focus-visible .marker-label,
+.cambialibros-marker.is-selected .marker-label,
+.cambialibros-cluster .marker-label {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cambialibros-marker .marker-label {
+    transition: none;
+  }
+}
