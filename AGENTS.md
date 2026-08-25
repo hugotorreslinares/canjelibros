@@ -10,17 +10,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # El Canje — project notes for agents
 
-Book-exchange app, Bogotá. Next.js 16 App Router, TS, Tailwind v4, React 19, Firebase Auth + Firestore, Leaflet/OSM map. Single-page app (`/`) — all routing is client-side state (`route` field), not Next.js routes.
+Book-exchange app, Bogotá. Next.js 16 App Router, TS, Tailwind v4, React 19, Firebase Auth + Firestore, Leaflet/OSM map, shadcn/ui on a Radix base. Single-page app (`/`) — all routing is client-side state (`route` field), not Next.js routes.
 
 Read this before exploring the codebase — it's the map so you don't have to rediscover it. Setup/env steps: [README.md](README.md). Firestore migration history/rationale: [RESULTS.md](RESULTS.md) (keep or fold into here, don't duplicate).
 
 ## Architecture (single source of truth per concern — don't relearn by grepping)
 
-- `src/hooks/use-app-state.ts` — the entire app's state/business logic, one big hook. Every view's props come from here as a grouped object (`mapView`, `catalogView`, `shelfView`, `publishView`, `chatView`, `offerModal`, `ratingModal`, `authModal`, `toast`, `header`). Components are pure render, spread-fed from `ElCanjeApp.tsx`. Read this file first for any logic question — don't re-derive from components.
+- `src/hooks/use-app-state.ts` — the entire app's state/business logic, one big hook. Every view's props come from here as a grouped object (`mapView`, `catalogView`, `shelfView`, `publishView`, `chatView`, `moderationView`, `policiesView`, `offerModal`, `ratingModal`, `authModal`, `deleteDialog`, `header`). It hands components **facts, not styles**: `reserved`, `mine`, `closed`, `dist: number | null` — never a hex or a class. If you find yourself computing a colour there, that decision belongs in the component. Components are pure render, spread-fed from `ElCanjeApp.tsx`. Read this file first for any logic question — don't re-derive from components.
 - `src/lib/firestore-data.ts` — all Firestore reads/writes. `src/hooks/use-firestore-data.ts` — React subscription wrappers (`onSnapshot`) + reader-profile-on-signin bootstrap.
 - `src/lib/auth-context.tsx` / `src/lib/firebase.ts` — Firebase Auth + `db` (Firestore) init, both null-guarded via `isFirebaseConfigured` so the app degrades gracefully with no crash when env vars are missing.
 - `src/lib/types.ts` — canonical shapes (`Reader`, `Book`). Don't invent parallel types in components; component prop interfaces are intentionally narrower/local views, not duplicates to keep in sync — check here first.
-- `src/components/LeafletMap.tsx` — client-only (`next/dynamic`, `ssr:false`), Leaflet needs `window`. OSM tiles, no API key.
+- `src/components/LeafletMap.tsx` — client-only (`next/dynamic`, `ssr:false`), Leaflet needs `window`. OSM tiles, no API key. Pins group by screen proximity at the current zoom (`CLUSTER_RADIUS_PX`) and their labels only show on hover/focus/selection — permanent labels collided. A group opens a **list** of its readers, not a zoom: profiles are created with the device's location, so several readers share a point and zooming never separates them.
 - `design_source/` — original Claude Design reference (`.dc.html`), read-only, excluded from lint. Not shipped code.
 
 ## Data model (Firestore)
@@ -28,7 +28,7 @@ Read this before exploring the codebase — it's the map so you don't have to re
 - `readers/{uid}`: name, barrio, lat, lng, online, trades, bio, spot, interests (string[], category names from `formCats` — used for future recommendations, edited from Mi estante's chip toggles). Auto-created on first sign-in (real geolocation, falls back to Bogotá center). `rating` field exists but is a dead legacy default (5, never updated) — display rating is computed client-side from `ratings`, see below. Don't reintroduce reads of `reader.rating` for display.
 - `books/{bookId}`: ownerId, t, a, cat, cond, desc, cover (JPEG data URL or null), resUid (reservation target or null), createdAt.
   - **Covers live inline in the document, not in Cloud Storage** — since Feb 2026 a Storage bucket requires a linked billing account even for a few KB, and this app must run on the free tier. `src/lib/image.ts` downscales to 520 px and re-encodes as JPEG until the data URL fits `MAX_COVER_CHARS` (120k; a 12 MP photo lands near 41k), and `firestore.rules` caps the field at 140k so a hand-rolled client can't park hundreds of KB in everyone's catalog read. The trade-off: every cover travels with every books snapshot — if the catalog ever grows past a few hundred books, that's the thing to move to Storage/a CDN.
-  - `src/components/BookCover.tsx` is the single renderer: reader photo when present, `plateFor` typographic plate otherwise. Don't inline a plate `<div>` in a new view.
+  - `src/components/BookCover.tsx` is the single renderer: reader photo when present, a composed typographic plate otherwise, both in the same 2:3 frame with a spine shadow so they read as the same object. Pass `size` (`sm`/`md`/`lg`), not text classes — each size carries its own composition. `plateFor` in `src/lib/design-utils.ts` holds eight mid-tone colours, all ≥5.7:1 against the cream the title is set in; the old palette's near-blacks read as broken images beside real photos.
 - `threads/{threadId}`: one per reader pair, id = `[uidA, uidB].sort().join('_')` (see `threadIdFor` in `firestore-data.ts`) — participants, fromUid/toUid (proposer/recipient), fromBookId/toBookId (the two books in play), dealText, lastMessage, closed. Only the two participants can read/write.
 - `threads/{threadId}/messages/{messageId}`: senderId, text, createdAt. Same access as the parent thread.
 - `moderators/{uid}`: empty marker doc — its existence *is* the moderator role. Created by hand in the Firebase Console (no backend can grant it). Each user may read only their own doc, so the roster isn't public; `useIsModerator` reads it to decide whether to show the Moderación panel, and `firestore.rules`' `isModerator()` reads the same doc to actually allow the write. To make someone a censor: create `moderators/<uid>` in the Console.
@@ -53,9 +53,23 @@ Everything is real/Firestore now: readers, books, reservations, chat threads + m
 
 `ChatView` must be rendered with `key={state.chatView.thread.id}` from `ElCanjeApp.tsx` — that's how its local message-draft input resets when the active thread changes. Don't "simplify" that key away.
 
+## Design system (read before writing any markup)
+
+The px-for-px parity with `design_source/` is **over** — that file is historical reference now. What governs is the token system in `src/app/globals.css`, direction «Papel y tinta», and [UI-PLAN.md](UI-PLAN.md) records why each piece exists. [DESIGN-AUDIT.md](DESIGN-AUDIT.md) is the audit it answers; its finding ids (`4.1`, `5.2`) are cited in commits.
+
+- **Six type steps, nothing else**: `text-label` (12, uppercase, tracked), `text-small` (15), `text-body` (17), `text-subtitle` (21), `text-title` (28), `text-display` (44). A size outside this table is a bug. Twelve sizes on one screen is what the audit found.
+- **Spacing on the 4px grid** — Tailwind's default `--spacing`. No new arbitrary `[13px]` values.
+- **Colour only through tokens**: `bg-background`, `text-foreground`, `text-muted-foreground`, `bg-primary`, `text-destructive`, `border-border`. No hex in a component. `--primary` is `#00769a`, not the old `#0088b0`, because white-on-teal has to clear 4.5:1. `--destructive` means destructive **only** — it is not the colour of a completed trade.
+- **44px minimum** for anything tappable. `Button`'s default size is 44; that is deliberate, not shadcn's default.
+- **shadcn components live in `src/components/ui/`** and we own them: `button`, `badge`, `dialog`, `alert-dialog`, `sheet`, `sonner`, `skeleton`, `empty`, `alert`, `separator`, `carousel`, `bubble`, `message-scroller`. Several are re-skinned or patched (button sizes, 40% overlay scrim, carousel via `useSyncExternalStore`, 44px carousel arrows). **Re-running `shadcn add` with `--overwrite` throws that away** — answer no to the button prompt.
+- `src/lib/ui.ts` is gone. If you need a button, import `Button`; don't reintroduce class-string constants.
+
+App-level components worth knowing before you build a new one: `BookCover` (2:3 frame, photo or `TypePlate`-style plate, `size` prop), `QueryState` + `BookGridSkeleton` (loading / error / empty — never render an empty list for all three), `DistanceLabel` (renders nothing when distance is unknown; never print "0 km"), `DeleteDialog` (every destructive confirm; no `window.confirm`/`window.prompt`), `Toaster` from `sonner` (the only feedback channel; it portals above modals).
+
 ## Working conventions
 
-- Tailwind arbitrary-value utilities match the original design's exact px/color values — prefer them over inventing new spacing scale. Inline `style={{}}` reserved for genuinely dynamic runtime values (map pins, gradients, plate colors).
-- `npx tsc --noEmit && npx eslint .` before considering any change done; `npm run build` before calling a feature complete.
+- Inline `style={{}}` is reserved for genuinely dynamic runtime values (map pins, gradients, plate colours) — not for spacing or type.
+- `npx tsc --noEmit && npx eslint .` before considering any change done; `npm run build` before calling a feature complete. **Both need Node ≥ 20**; this machine's default `node` has been seen at v14, where even `next dev` fails to parse.
+- The lint here is stricter than most React setups: no `setState` inside an effect body, no reading refs during render. When a shipped shadcn component breaks it (the carousel did), fix the component — don't disable the rule.
 - Firebase/Google Maps/any paid API: never assume a key exists — guard with the `isXConfigured` pattern already established, degrade to a visible-but-non-crashing state.
 - This repo has no test suite — verification is tsc + eslint + build + manual browser check (`preview_start` / Claude Browser tools). Don't claim "tested" without actually driving the browser.
