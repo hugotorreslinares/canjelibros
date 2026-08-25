@@ -51,6 +51,11 @@ const EMPTY_FORM: FormState = { t: "", a: "", desc: "", cond: "Bueno", cat: "Nov
 
 type PendingAction = { kind: "goPublish" } | { kind: "openOffer"; uid: string; bookId: string };
 
+// Un borrado no se confirma con window.confirm: ese diálogo no se puede
+// estilar, no es accesible y en moderación además tenía que pedir el motivo
+// por window.prompt, que en móvil se pierde.
+type PendingDelete = { scope: "shelf" | "moderation"; bookId: string; title: string; reserved: boolean };
+
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
@@ -141,6 +146,8 @@ export function useAppState() {
   const [modEditingId, setModEditingId] = useState<string | null>(null);
   const [modForm, setModForm] = useState<FormState>(EMPTY_FORM);
   const [modReason, setModReason] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [deleteReason, setDeleteReason] = useState("");
 
   const activeThreadId = threadId && myThreads.some((t) => t.id === threadId) ? threadId : myThreads[0]?.id ?? null;
   const threadMessages = useThreadMessages(activeThreadId);
@@ -164,6 +171,8 @@ export function useAppState() {
     setModEditingId(null);
     setModForm(EMPTY_FORM);
     setModReason("");
+    setPendingDelete(null);
+    setDeleteReason("");
   }
 
   const [authOpen, setAuthOpen] = useState(false);
@@ -282,19 +291,9 @@ export function useAppState() {
         showToast("No puedes eliminar un libro reservado en un intercambio activo.");
         return;
       }
-      if (!window.confirm(`¿Eliminar "${b.t}" de tu estante?`)) return;
-      try {
-        await deleteBookDoc(bookId);
-        if (editingBookId === bookId) {
-          setEditingBookId(null);
-          setForm(EMPTY_FORM);
-        }
-        showToast("Libro eliminado de tu estante.");
-      } catch {
-        showToast("No se pudo eliminar. Intenta de nuevo.");
-      }
+      setPendingDelete({ scope: "shelf", bookId, title: b.t, reserved: false });
     },
-    [user, promptAuth, myBooks, myThreads, showToast, editingBookId]
+    [user, promptAuth, myBooks, myThreads, showToast]
   );
 
   const toggleInterest = useCallback(
@@ -398,45 +397,74 @@ export function useAppState() {
       }
       const b = books.find((x) => x.id === bookId);
       if (!b) return;
-      const warning = b.resUid
-        ? "\n\nOJO: está reservado en un intercambio; eliminarlo impedirá cerrar ese canje."
-        : "";
-      if (!window.confirm(`¿Eliminar definitivamente «${b.t}» por incumplir las políticas del sitio?${warning}`)) return;
-      const reason = window.prompt(`Motivo de la eliminación de «${b.t}» (queda en la bitácora):`, "")?.trim();
-      if (!reason) {
-        showToast("Eliminación cancelada: la bitácora exige un motivo.");
-        return;
-      }
+      setDeleteReason("");
+      setPendingDelete({ scope: "moderation", bookId, title: b.t, reserved: !!b.resUid });
+    },
+    [user, isModerator, books, showToast]
+  );
+
+  const cancelDelete = useCallback(() => {
+    setPendingDelete(null);
+    setDeleteReason("");
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDelete) return;
+    const { scope, bookId } = pendingDelete;
+
+    if (scope === "shelf") {
       try {
         await deleteBookDoc(bookId);
+        if (editingBookId === bookId) {
+          setEditingBookId(null);
+          setForm(EMPTY_FORM);
+        }
+        showToast("Libro eliminado de tu estante.");
       } catch {
-        showToast("No se pudo eliminar. Revisa tus permisos e intenta de nuevo.");
-        return;
+        showToast("No se pudo eliminar. Intenta de nuevo.");
       }
-      if (modEditingId === bookId) {
-        setModEditingId(null);
-        setModForm(EMPTY_FORM);
-        setModReason("");
-      }
-      try {
-        await logModerationAction({
-          action: "delete",
-          bookId: b.id,
-          bookTitle: b.t,
-          ownerId: b.ownerId,
-          ownerName: readers.find((r) => r.id === b.ownerId)?.name ?? "Lector sin perfil",
-          moderatorUid: user.uid,
-          moderatorName,
-          reason,
-          changes: [],
-        });
-        showToast("Publicación eliminada y registrada en la bitácora.");
-      } catch {
-        showToast("Publicación eliminada, pero no se pudo registrar en la bitácora.");
-      }
-    },
-    [user, isModerator, books, readers, modEditingId, moderatorName, showToast]
-  );
+      setPendingDelete(null);
+      return;
+    }
+
+    if (!user) return;
+    const reason = deleteReason.trim();
+    if (!reason) {
+      showToast("Escribe el motivo: la bitácora no acepta un borrado sin él.");
+      return;
+    }
+    const b = books.find((x) => x.id === bookId);
+    if (!b) return;
+    try {
+      await deleteBookDoc(bookId);
+    } catch {
+      showToast("No se pudo eliminar. Revisa tus permisos e intenta de nuevo.");
+      return;
+    }
+    setPendingDelete(null);
+    setDeleteReason("");
+    if (modEditingId === bookId) {
+      setModEditingId(null);
+      setModForm(EMPTY_FORM);
+      setModReason("");
+    }
+    try {
+      await logModerationAction({
+        action: "delete",
+        bookId: b.id,
+        bookTitle: b.t,
+        ownerId: b.ownerId,
+        ownerName: readers.find((r) => r.id === b.ownerId)?.name ?? "Lector sin perfil",
+        moderatorUid: user.uid,
+        moderatorName,
+        reason,
+        changes: [],
+      });
+      showToast("Publicación eliminada y registrada en la bitácora.");
+    } catch {
+      showToast("Publicación eliminada, pero no se pudo registrar en la bitácora.");
+    }
+  }, [pendingDelete, deleteReason, user, books, readers, editingBookId, modEditingId, moderatorName, showToast]);
 
   const vals = useMemo(() => {
     const totalSlots = BASE_SLOTS + Math.floor((myReader?.trades ?? 0) / TRADES_PER_SLOT);
@@ -1050,6 +1078,20 @@ export function useAppState() {
         setOfferMineId(null);
       },
       send: sendOffer,
+    },
+
+    deleteDialog: {
+      open: !!pendingDelete,
+      isModeration: pendingDelete?.scope === "moderation",
+      title: pendingDelete?.scope === "moderation" ? "Eliminar por incumplir las políticas" : "Eliminar de tu estante",
+      bookTitle: pendingDelete?.title ?? "",
+      warning: pendingDelete?.reserved
+        ? "Está reservado en un intercambio: eliminarlo impedirá cerrar ese canje."
+        : null,
+      reason: deleteReason,
+      setReason: (v: string) => setDeleteReason(v),
+      confirm: confirmDelete,
+      cancel: cancelDelete,
     },
 
     ratingModal: {

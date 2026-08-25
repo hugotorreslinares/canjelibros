@@ -4,6 +4,7 @@ import { useAppState } from "@/hooks/use-app-state";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
 import { CatalogView } from "./CatalogView";
+import { DeleteDialog } from "./DeleteDialog";
 import { ChatView } from "./ChatView";
 import { Header } from "./Header";
 import { MapView } from "./MapView";
@@ -40,6 +41,7 @@ export function ElCanjeApp() {
 
       <Toaster position="bottom-center" />
       <OfferModal {...state.offerModal} />
+      <DeleteDialog {...state.deleteDialog} />
       <RatingModal {...state.ratingModal} />
       <AuthModal
         open={state.authModal.open}
