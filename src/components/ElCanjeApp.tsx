@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppState } from "@/hooks/use-app-state";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
 import { CatalogView } from "./CatalogView";
@@ -34,8 +35,8 @@ export function ElCanjeApp() {
 
       <footer className="mt-auto px-4 sm:px-10 py-3 border-t border-border flex items-center gap-4 flex-wrap font-sans text-small text-muted-foreground">
         <span>El Canje · Bogotá</span>
-        <Button variant="link" onClick={state.goPolicies} className="px-0">
-          Políticas del sitio
+        <Button variant="link" asChild className="px-0">
+          <Link href="/politicas">Políticas del sitio</Link>
         </Button>
       </footer>
 

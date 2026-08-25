@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { plateFor, stars } from "@/lib/design-utils";
@@ -22,6 +23,7 @@ import {
 } from "@/lib/firestore-data";
 import { CoverError, fileToCoverDataUrl } from "@/lib/image";
 import { categories, conds, formCats, formConds, tagList } from "@/lib/mock-data";
+import { locationFromPath, pathForReader, pathForRoute } from "@/lib/routes";
 import {
   useBooks,
   useIsModerator,
@@ -128,8 +130,20 @@ export function useAppState() {
     };
   }, [ratings]);
 
-  const [route, setRoute] = useState<Route>("map");
-  const [sel, setSel] = useState<string | null>(null);
+  // `pushState` se integra con el router de Next, así que usePathname refleja
+  // el cambio sin recargar ni desmontar la vista (docs: Native History API).
+  const pathname = usePathname();
+  const { route, readerId: sel } = locationFromPath(pathname);
+
+  const navigate = useCallback((path: string) => {
+    if (window.location.pathname !== path) window.history.pushState(null, "", path);
+  }, []);
+
+  const setRoute = useCallback((r: Route) => navigate(pathForRoute(r)), [navigate]);
+  const setSel = useCallback(
+    (id: string | null) => navigate(id ? pathForReader(id) : pathForRoute("map")),
+    [navigate]
+  );
   const [offer, setOffer] = useState<{ uid: string; bookId: string } | null>(null);
   const [offerMineId, setOfferMineId] = useState<string | null>(null);
   const [cat, setCat] = useState("Todas");
@@ -163,7 +177,6 @@ export function useAppState() {
     setEditingBookId(null);
     setOffer(null);
     setOfferMineId(null);
-    setSel(null);
     setThreadId(null);
     setRating(null);
     setStarsPicked(0);
@@ -186,10 +199,13 @@ export function useAppState() {
     toast(t);
   }, []);
 
-  const go = useCallback((r: Route) => {
-    setRoute(r);
-    toast.dismiss();
-  }, []);
+  const go = useCallback(
+    (r: Route) => {
+      setRoute(r);
+      toast.dismiss();
+    },
+    [setRoute]
+  );
 
   const runAction = useCallback(
     (action: PendingAction) => {
@@ -498,10 +514,7 @@ export function useAppState() {
         pulse: r.online && ANIMATE_PINS ? 3.4 + i * 0.6 : 0,
         statusLine: r.online ? "en línea ahora" : "visto hace 2 h",
         teaser: readerBooks.slice(0, 2).map((b) => b.t).join(" · "),
-        select: () => {
-          setSel(r.id);
-          setRoute("map");
-        },
+        select: () => setSel(r.id),
       };
     });
 
@@ -550,10 +563,7 @@ export function useAppState() {
             starsLabel: stars(avgRatingFor(r.id)),
             plate: plateFor(catalogAll.length),
             createdAt: b.createdAt,
-            selectOwner: () => {
-              setRoute("map");
-              setSel(r.id);
-            },
+            selectOwner: () => setSel(r.id),
             propose: () => openOffer(r.id, b.id),
           });
         });
@@ -706,6 +716,7 @@ export function useAppState() {
     activeThreadId,
     threadMessages,
     avgRatingFor,
+    setSel,
   ]);
 
   const moderationItems = useMemo(() => {
@@ -759,7 +770,7 @@ export function useAppState() {
         });
         setEditingBookId(null);
         setForm(EMPTY_FORM);
-        setRoute("shelf");
+        go("shelf");
         showToast("Cambios guardados.");
         return;
       }
@@ -776,12 +787,12 @@ export function useAppState() {
         cover: form.cover,
       });
       setForm(EMPTY_FORM);
-      setRoute("shelf");
+      go("shelf");
       showToast("Publicado. Ya aparece en el mapa y en el catálogo.");
     } catch {
       showToast("No se pudo guardar. Intenta de nuevo.");
     }
-  }, [user, promptAuth, form, editingBookId, vals.used, vals.totalSlots, showToast]);
+  }, [user, promptAuth, form, editingBookId, vals.used, vals.totalSlots, showToast, go]);
 
   const sendOffer = useCallback(async () => {
     if (!user) {
@@ -813,12 +824,12 @@ export function useAppState() {
       setOffer(null);
       setOfferMineId(null);
       setThreadId(tId);
-      setRoute("chat");
+      go("chat");
       showToast(`Propuesta enviada a ${vals.offerUser!.name}.`);
     } catch {
       showToast("No se pudo enviar la propuesta. Intenta de nuevo.");
     }
-  }, [user, promptAuth, offerMineId, offer, vals.offerUser, vals.offerBook, myBooks, showToast]);
+  }, [user, promptAuth, offerMineId, offer, vals.offerUser, vals.offerBook, myBooks, showToast, go]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -859,9 +870,9 @@ export function useAppState() {
       return;
     }
     setRating(null);
-    setRoute("shelf");
+    go("shelf");
     showToast("Intercambio completado. Los libros ya cambiaron de estante.");
-  }, [starsPicked, vals.thread, user, myThreads, activeThreadId, showToast]);
+  }, [starsPicked, vals.thread, user, myThreads, activeThreadId, showToast, go]);
 
   return {
     route,
