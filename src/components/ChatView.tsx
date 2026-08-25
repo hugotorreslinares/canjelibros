@@ -1,5 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { Button } from "@/components/ui/button";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@/components/ui/message-scroller";
 
 interface ThreadSummary {
   id: string;
@@ -43,14 +52,6 @@ export function ChatView({
   sendMessage,
 }: ChatViewProps) {
   const [draft, setDraft] = useState("");
-  const endRef = useRef<HTMLDivElement>(null);
-
-  // Sin esto el mensaje recién enviado queda fuera de vista en una conversación
-  // larga. Provisional: la fase 7 lo cambia por message-scroller, que además
-  // suelta el seguimiento cuando el lector sube a releer.
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
-  }, [messages.length]);
 
   const send = () => {
     const text = draft.trim();
@@ -115,23 +116,43 @@ export function ChatView({
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col gap-4 py-6 overflow-auto">
-          {messages.map((m, i) => (
-            <div
-              key={i}
-              style={{ alignSelf: m.side }}
-              className={`max-w-[62%] border rounded-sm px-4 py-3 font-serif text-body ${
-                m.mine ? "bg-foreground text-background border-foreground" : "bg-card text-foreground border-border"
-              }`}
-            >
-              {m.text}
-              <div className={`font-sans text-label mt-1.5 ${m.mine ? "text-background/70" : "text-muted-foreground"}`}>
-                {m.time}
-              </div>
-            </div>
-          ))}
-          <div ref={endRef} />
-        </div>
+        {/* role="log" y aria-relevant="additions" los pone el propio
+            componente: anuncia el mensaje nuevo sin releer la conversación
+            entera, sigue el borde vivo y suelta el seguimiento cuando el lector
+            sube a releer. */}
+        <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+          <MessageScroller className="h-[min(60vh,560px)]">
+            <MessageScrollerViewport aria-label={`Conversación con ${thread.name}`}>
+              <MessageScrollerContent className="gap-3 py-6">
+                {messages.map((m, i) => (
+                  <MessageScrollerItem key={i} messageId={`msg-${i}`} scrollAnchor={m.mine} className="flex flex-col">
+                    <Bubble
+                      align={m.side}
+                      variant={m.mine ? "default" : "outline"}
+                      className={
+                        m.mine
+                          ? "*:data-[slot=bubble-content]:bg-foreground *:data-[slot=bubble-content]:text-background"
+                          : undefined
+                      }
+                    >
+                      <BubbleContent className="font-serif text-body rounded-sm">
+                        {m.text}
+                        <div
+                          className={`font-sans text-label mt-1.5 ${
+                            m.mine ? "text-background/70" : "text-muted-foreground"
+                          }`}
+                        >
+                          {m.time}
+                        </div>
+                      </BubbleContent>
+                    </Bubble>
+                  </MessageScrollerItem>
+                ))}
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton direction="end" size="icon" variant="outline" />
+          </MessageScroller>
+        </MessageScrollerProvider>
 
         <div className="border-t border-border pt-4 flex flex-col gap-3.5">
           <div className="flex gap-3 items-center flex-wrap">
