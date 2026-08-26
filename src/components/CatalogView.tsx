@@ -53,7 +53,7 @@ interface CatalogViewProps {
   count: string;
   sortLabel: string;
   hasLocation: boolean;
-  recommended: { title: string; items: RecommendedItem[] };
+  recommended: { title: string; note: string | null; items: RecommendedItem[] };
   catOptions: (Option & { n: number })[];
   condOptions: Option[];
   sortOptions: Option[];
@@ -110,7 +110,10 @@ export function CatalogView({
 
       {recommended.items.length > 0 && (
         <section className="mb-8" aria-label={recommended.title}>
-          <h2 className="font-sans text-label uppercase text-muted-foreground mb-3">{recommended.title}</h2>
+          <h2 className="font-sans text-label uppercase text-muted-foreground mb-3">
+            {recommended.title}
+            {recommended.note && <span className="ml-2 normal-case tracking-normal">· {recommended.note}</span>}
+          </h2>
           {/* Antes era un desplazamiento horizontal sin ninguna pista: en
               escritorio nada decía que hubiera más libros a la derecha. */}
           <Carousel opts={{ align: "start", loop: false }} className="w-full">

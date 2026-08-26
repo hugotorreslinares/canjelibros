@@ -38,6 +38,7 @@ import {
 import type { Route, SortOption } from "@/lib/types";
 
 const BASE_SLOTS = 5;
+const RECOMMENDED_COUNT = 10;
 // Un lector cuenta como presente si su último latido cabe en esta ventana.
 const PRESENCE_WINDOW_MS = 5 * 60_000;
 const TRADES_PER_SLOT = 3;
@@ -623,16 +624,23 @@ export function useAppState() {
     if (sort === "estado") catalog.sort((a, b) => formConds.indexOf(a.cond) - formConds.indexOf(b.cond));
     if (sort === "título") catalog.sort((a, b) => a.t.localeCompare(b.t));
 
+    // Diez recomendaciones ordenadas por interés y luego por novedad: primero
+    // todo lo que cae en una categoría marcada en Mi estante, y si no alcanza a
+    // llenar la fila, sigue lo más reciente. Cortar solo por coincidencia dejaba
+    // la fila con dos libros en cuanto los intereses eran específicos.
     const myInterests = myReader?.interests ?? [];
-    const interestMatches = catalogAll
-      .filter((b) => myInterests.includes(b.cat))
-      .sort((a, b) => b.createdAt - a.createdAt);
-    const latestBooks = catalogAll.slice().sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
-    const recommended = !myUid
-      ? { title: "Recién publicados", items: latestBooks }
-      : interestMatches.length > 0
-        ? { title: "Recomendados para ti", items: interestMatches.slice(0, 8) }
-        : { title: "Recién publicados", items: latestBooks };
+    const byInterest = (b: (typeof catalogAll)[number]) => (myInterests.includes(b.cat) ? 0 : 1);
+    const ranked = catalogAll
+      .slice()
+      .sort((a, b) => byInterest(a) - byInterest(b) || b.createdAt - a.createdAt)
+      .slice(0, RECOMMENDED_COUNT);
+    const matchCount = ranked.filter((b) => myInterests.includes(b.cat)).length;
+    const recommended = {
+      title: matchCount > 0 ? "Recomendados para ti" : "Recién publicados",
+      // Cuando la fila mezcla, el rótulo dice desde dónde deja de ser por interés.
+      note: matchCount > 0 && matchCount < ranked.length ? `${matchCount} por tus intereses` : null,
+      items: ranked,
+    };
 
     const counts: Record<string, number> = {};
     let totalBooks = 0;
