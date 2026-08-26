@@ -165,9 +165,7 @@ export function ShelfView({
               <Badge variant="secondary">{b.cat}</Badge>
               <Badge variant="outline">{b.cond}</Badge>
             </div>
-            <p className={`font-sans text-small ${b.reserved ? "text-destructive" : "text-muted-foreground"}`}>
-              {b.state}
-            </p>
+            <p className="font-sans text-small text-muted-foreground">{b.state}</p>
             <div className="flex gap-1 items-center mt-0.5">
               <Button variant="link" onClick={b.edit} className="px-0">
                 Editar

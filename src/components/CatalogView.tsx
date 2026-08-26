@@ -13,6 +13,7 @@ import { QueryState } from "./QueryState";
 
 interface CatalogItem {
   cover: string | null;
+  reserved: boolean;
   t: string;
   a: string;
   cat: string;
@@ -225,6 +226,9 @@ export function CatalogView({
                   <div className="flex gap-2 flex-wrap mt-0.5">
                     <Badge variant="secondary">{b.cat}</Badge>
                     <Badge variant="outline">{b.cond}</Badge>
+                    {/* Reservado no es destructivo: es «ahora no». Va en el gris
+                        de los metadatos, no en el magenta de eliminar. */}
+                    {b.reserved && <Badge variant="outline">Reservado</Badge>}
                   </div>
                 </div>
                 {/* El dueño baja a metadato: antes era un enlace del mismo peso
@@ -238,7 +242,16 @@ export function CatalogView({
                     {b.barrio}
                     {b.dist !== null && <> · {b.dist} km</>} · {b.starsLabel}
                   </p>
-                  <Button onClick={b.propose}>Proponer canje</Button>
+                  {b.reserved ? (
+                    <div className="flex flex-col gap-1 items-start">
+                      <Button disabled>Reservado</Button>
+                      <span className="font-sans text-small text-muted-foreground max-w-[20em]">
+                        Vuelve a estar libre si la propuesta no cierra.
+                      </span>
+                    </div>
+                  ) : (
+                    <Button onClick={b.propose}>Proponer canje</Button>
+                  )}
                 </div>
               </article>
             ))}
