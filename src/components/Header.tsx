@@ -78,9 +78,9 @@ export function Header({
           <div className="flex items-baseline gap-5 min-w-0">
             <button
               onClick={goMap}
-              className="flex items-center h-11 bg-transparent border-none p-0 font-serif text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
+              className="flex items-center h-11 shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
             >
-              El Canje
+              El Circular
             </button>
             <span className="font-sans text-label uppercase text-muted-foreground hidden lg:inline">
               Bogotá · {today}
