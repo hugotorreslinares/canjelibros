@@ -587,6 +587,7 @@ export function useAppState() {
       dist: number | null;
       starsLabel: string;
       plate: string;
+      reserved: boolean;
       createdAt: number;
       selectOwner: () => void;
       propose: () => void;
@@ -608,6 +609,7 @@ export function useAppState() {
             dist: readerDist(r),
             starsLabel: stars(avgRatingFor(r.id)),
             plate: plateFor(catalogAll.length),
+            reserved: !!b.resUid,
             createdAt: b.createdAt,
             selectOwner: () => setSel(r.id),
             propose: () => openOffer(r.id, b.id),
@@ -630,8 +632,10 @@ export function useAppState() {
     // la fila con dos libros en cuanto los intereses eran específicos.
     const myInterests = myReader?.interests ?? [];
     const byInterest = (b: (typeof catalogAll)[number]) => (myInterests.includes(b.cat) ? 0 : 1);
+    // Un libro ya reservado no se puede canjear: recomendarlo gasta el clic del
+    // lector y lo lleva a una propuesta que su dueño no puede aceptar.
     const ranked = catalogAll
-      .slice()
+      .filter((b) => !b.reserved)
       .sort((a, b) => byInterest(a) - byInterest(b) || b.createdAt - a.createdAt)
       .slice(0, RECOMMENDED_COUNT);
     const matchCount = ranked.filter((b) => myInterests.includes(b.cat)).length;
