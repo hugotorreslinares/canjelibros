@@ -55,6 +55,14 @@ Everything is real/Firestore now: readers, books, reservations, chat threads + m
 
 `ChatView` must be rendered with `key={state.chatView.thread.id}` from `ElCanjeApp.tsx` — that's how its local message-draft input resets when the active thread changes. Don't "simplify" that key away.
 
+## SEO and machine readability
+
+- `src/lib/seo.ts` is the single source: site name, description, the canonical URL (from `NEXT_PUBLIC_SITE_URL`, else Vercel's `VERCEL_PROJECT_PRODUCTION_URL`, else localhost), the per-route title/description/index table, and the JSON-LD graph. Change copy there, not in a component.
+- The catch-all page's `generateMetadata` gives every view its own title, description and canonical, and marks the personal ones (`/estante`, `/publicar`, `/mensajes`, `/moderacion`, `/lector/*`) `noindex`. `robots.ts` disallows the same set; `sitemap.ts` lists only the indexable ones.
+- An unknown path **404s** (`isKnownPath` in `src/lib/routes.ts`). Without that check a catch-all answers 200 to any URL, which is duplicate content at infinite addresses.
+- `public/llms.txt` describes the site for AI crawlers, and `src/app/opengraph-image.tsx` generates the share card. Its type falls back to Satori's sans — a serif would need the font file fetched into the route.
+- **The limit worth knowing**: books and readers come from Firestore in the browser, so the served HTML carries the shell and the static copy but no catalog. `/politicas` is fully in the HTML; `/catalogo` is not. Server-rendering real listings needs a server-side read (Admin SDK, hence a paid plan) — until then, no crawler and no model sees an actual book.
+
 ## Design system (read before writing any markup)
 
 The px-for-px parity with `design_source/` is **over** — that file is historical reference now. What governs is the token system in `src/app/globals.css`, direction «Papel y tinta», and [UI-PLAN.md](UI-PLAN.md) records why each piece exists. [DESIGN-AUDIT.md](DESIGN-AUDIT.md) is the audit it answers; its finding ids (`4.1`, `5.2`) are cited in commits.

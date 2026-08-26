@@ -1,0 +1,30 @@
+# Circular
+
+> Circular es un intercambio vecinal de libros usados en Bogotá, Colombia. Cada
+> persona publica los libros que ya leyó, ve los que tienen otros lectores cerca
+> y acuerdan el canje por mensaje. El intercambio es libro por libro: no se
+> cobra, no se vende y no hay publicidad.
+
+Cómo funciona: un lector publica un libro con su título, autor, estado y, si
+quiere, una foto tomada por él mismo del ejemplar. Otro lector propone un canje
+ofreciendo uno de los suyos. Si el dueño acepta, se acuerdan por mensaje dónde
+encontrarse, y al confirmar el intercambio los dos libros cambian de estante y
+cada parte puede calificar a la otra.
+
+## Páginas
+
+- [Mapa de lectores](/): quiénes están publicando cerca y cuántos libros tiene cada uno.
+- [Catálogo](/catalogo): todos los libros disponibles, con filtros por categoría y estado.
+- [Políticas del sitio](/politicas): qué se puede publicar y qué no, cómo funciona la moderación y cómo reportar.
+
+## Qué no es
+
+No es una librería ni un marketplace: no se venden libros, no se intermedian
+pagos y no se envían por correo. Los encuentros son en persona, en Bogotá.
+
+## Qué no se permite publicar
+
+Copias piratas o escaneos de obras protegidas, material de explotación sexual
+infantil, contenido que incite a la violencia o a la discriminación, documentos
+robados o falsificados, documentos con reserva legal, y datos personales de
+terceros. El detalle está en /politicas.

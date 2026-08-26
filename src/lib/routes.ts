@@ -28,8 +28,21 @@ export function pathForReader(readerId: string): string {
   return `${READER_PREFIX}${encodeURIComponent(readerId)}`;
 }
 
+// Un catch-all responde a cualquier ruta, así que sin esto /lo-que-sea
+// devolvería el mapa con 200: contenido duplicado en infinitas direcciones, que
+// es exactamente lo que un buscador penaliza.
+export function isKnownPath(pathname: string): boolean {
+  const clean = normalize(pathname);
+  if (clean.startsWith(READER_PREFIX)) return clean.slice(READER_PREFIX.length).length > 0;
+  return (Object.values(ROUTE_PATHS) as string[]).includes(clean);
+}
+
+function normalize(pathname: string): string {
+  return pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+}
+
 export function locationFromPath(pathname: string): Location {
-  const clean = pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  const clean = normalize(pathname);
 
   if (clean.startsWith(READER_PREFIX)) {
     const readerId = decodeURIComponent(clean.slice(READER_PREFIX.length));
