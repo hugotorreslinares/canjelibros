@@ -21,7 +21,7 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "El Canje",
+  title: "Circular",
   description: "Intercambia libros usados con lectores cerca de ti en Bogotá. Sin dinero, sin publicidad.",
 };
 

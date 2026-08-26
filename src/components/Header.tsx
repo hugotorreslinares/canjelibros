@@ -188,7 +188,7 @@ export function Header({
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onSuccess={() => setLoginOpen(false)}
-        reason="Inicia sesión para acceder a tu cuenta de El Canje."
+        reason="Inicia sesión para acceder a tu cuenta de Circular."
       />
     </>
   );
