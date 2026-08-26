@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo, Source_Serif_4 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
@@ -30,9 +31,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <AuthProvider>{children}</AuthProvider>
         {/* Analítica sin cookies ni identificadores por persona: cuenta visitas
-            de página, no lectores. Solo emite en el despliegue de Vercel; en
-            local no envía nada. */}
+            de página, no lectores. Solo emiten en el despliegue de Vercel; en
+            local no envían nada. */}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
