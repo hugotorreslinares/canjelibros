@@ -62,7 +62,7 @@ export function Header({
   // El estado activo se marca con aria-current además del subrayado: antes solo
   // lo comunicaba el color, que no llega a un lector de pantalla.
   const desktopLink = (item: NavItem) =>
-    `bg-transparent border-none px-0 py-1 font-sans text-body border-b-2 transition-colors ${
+    `bg-transparent border-none px-0 py-1 font-sans text-body whitespace-nowrap border-b-2 transition-colors ${
       item.active ? "text-foreground border-primary" : "text-muted-foreground border-transparent hover:text-foreground"
     }`;
 
@@ -80,9 +80,9 @@ export function Header({
               onClick={goMap}
               className="flex items-center h-11 shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
             >
-              El Circular
+              Circular
             </button>
-            <span className="font-sans text-label uppercase text-muted-foreground hidden lg:inline">
+            <span className="font-sans text-label uppercase text-muted-foreground hidden xl:inline">
               Bogotá · {today}
             </span>
           </div>
