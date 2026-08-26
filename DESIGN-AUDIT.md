@@ -1,4 +1,4 @@
-# Auditoría de diseño — El Canje
+# Auditoría de diseño — Circular
 
 Revisión de interfaz, 25 de agosto de 2026. Solo diagnóstico: **no se corrigió nada**.
 

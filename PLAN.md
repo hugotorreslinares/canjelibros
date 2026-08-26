@@ -1,4 +1,4 @@
-# PLAN — El Canje
+# PLAN — Circular
 
 Estado del proyecto y trabajo pendiente. Complementa a [AGENTS.md](AGENTS.md), que describe **cómo está hecho**; aquí va **qué falta y en qué orden**.
 

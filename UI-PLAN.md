@@ -1,4 +1,4 @@
-# Plan de interfaz — shadcn/ui sobre El Canje
+# Plan de interfaz — shadcn/ui sobre Circular
 
 Plan para cerrar los hallazgos de [DESIGN-AUDIT.md](DESIGN-AUDIT.md) apoyándonos en shadcn/ui. Cada tarea cita el identificador del hallazgo que cierra (`4.1`, `5.2`, …) para poder verificar al final que no quedó nada suelto.
 
@@ -8,11 +8,11 @@ Estado: **dirección A elegida** («Papel y tinta»). **Fases 0 a 9 hechas** —
 
 shadcn/ui no es una librería de componentes: copia código fuente a tu repositorio y tú lo mantienes. Eso lo hace ideal aquí **por sus primitivas de comportamiento y accesibilidad**, no por su estética.
 
-El riesgo real es el contrario al que parece: si adoptamos el aspecto por defecto de shadcn (esquinas de 10 px, grises neutros, tipografía de interfaz genérica), El Canje pierde lo único que hoy tiene a favor —una voz editorial con serif y esquinas de 2 px— y termina pareciéndose a cualquier panel de administración. La auditoría no pidió otra estética: pidió **un sistema**.
+El riesgo real es el contrario al que parece: si adoptamos el aspecto por defecto de shadcn (esquinas de 10 px, grises neutros, tipografía de interfaz genérica), Circular pierde lo único que hoy tiene a favor —una voz editorial con serif y esquinas de 2 px— y termina pareciéndose a cualquier panel de administración. La auditoría no pidió otra estética: pidió **un sistema**.
 
 Por eso la regla de este plan:
 
-> Tomamos de shadcn el **comportamiento** (foco atrapado, Escape, `role`, `aria-*`, teclado, portales, z-index) y lo vestimos con los tokens de El Canje. El aspecto por defecto de shadcn no llega a producción en ninguna pantalla.
+> Tomamos de shadcn el **comportamiento** (foco atrapado, Escape, `role`, `aria-*`, teclado, portales, z-index) y lo vestimos con los tokens de Circular. El aspecto por defecto de shadcn no llega a producción en ninguna pantalla.
 
 Dos consecuencias que conviene aceptar ahora:
 
@@ -105,7 +105,7 @@ Sobre el conjunto de chat: `message-scroller` es un contenedor con `role="log"` 
 
 **Ojo con el nombre `marker`:** en shadcn es un separador de eventos dentro de una conversación, **no** un pin de mapa. El pin de Leaflet lo construimos nosotros (§5.4).
 
-**Qué NO tomamos:** `card`. La identidad de El Canje es de reglas finas y filetes, no de tarjetas con sombra; apilar `Card` dentro de `Card` es justo el aspecto genérico que queremos evitar. `avatar` tampoco: los lectores no tienen foto de perfil y no vamos a inventarla.
+**Qué NO tomamos:** `card`. La identidad de Circular es de reglas finas y filetes, no de tarjetas con sombra; apilar `Card` dentro de `Card` es justo el aspecto genérico que queremos evitar. `avatar` tampoco: los lectores no tienen foto de perfil y no vamos a inventarla.
 
 Instalación de una sola vez, una vez aprobado el plan:
 
