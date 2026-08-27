@@ -1,6 +1,19 @@
-import { condPill, divider, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { BookCover } from "./BookCover";
+import { BookRowsSkeleton } from "./BookGridSkeleton";
+import { QueryState } from "./QueryState";
 
 interface CatalogItem {
+  cover: string | null;
+  reserved: boolean;
   t: string;
   a: string;
   cat: string;
@@ -8,21 +21,20 @@ interface CatalogItem {
   desc: string;
   owner: string;
   barrio: string;
-  dist: number;
+  dist: number | null;
   starsLabel: string;
   plate: string;
-  short: string;
   selectOwner: () => void;
   propose: () => void;
 }
 
 interface RecommendedItem {
+  cover: string | null;
   t: string;
   a: string;
   cat: string;
   cond: string;
   plate: string;
-  short: string;
   owner: string;
   selectOwner: () => void;
   propose: () => void;
@@ -35,11 +47,14 @@ interface Option {
 }
 
 interface CatalogViewProps {
+  loading: boolean;
+  error: boolean;
   items: CatalogItem[];
   empty: boolean;
   count: string;
   sortLabel: string;
-  recommended: { title: string; items: RecommendedItem[] };
+  hasLocation: boolean;
+  recommended: { title: string; note: string | null; items: RecommendedItem[] };
   catOptions: (Option & { n: number })[];
   condOptions: Option[];
   sortOptions: Option[];
@@ -48,15 +63,29 @@ interface CatalogViewProps {
   setDist: (v: number) => void;
 }
 
-function filterBtnClass(active: boolean) {
-  return `text-left bg-transparent border-none py-[3px] text-[17px] ${active ? "text-[#0088b0]" : "text-[#201e1d]"}`;
+function FilterButton({ option, count }: { option: Option; count?: number }) {
+  return (
+    <button
+      onClick={option.pick}
+      aria-pressed={option.active}
+      className={`flex h-11 items-center gap-2 bg-transparent border-none text-left font-serif text-body ${
+        option.active ? "text-primary" : "text-foreground"
+      }`}
+    >
+      {option.label}
+      {count !== undefined && <span className="font-sans text-small text-muted-foreground">{count}</span>}
+    </button>
+  );
 }
 
 export function CatalogView({
+  loading,
+  error,
   items,
   empty,
   count,
   sortLabel,
+  hasLocation,
   recommended,
   catOptions,
   condOptions,
@@ -65,139 +94,169 @@ export function CatalogView({
   maxDistLabel,
   setDist,
 }: CatalogViewProps) {
+  // Una categoría con cero libros no lleva a ninguna parte: seis de las nueve
+  // ocupaban una pantalla entera en móvil sin ofrecer nada.
+  const usableCats = catOptions.filter((o) => o.n > 0 || o.active);
+
   return (
-    <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px]">
-      <div className="flex items-baseline justify-between gap-[30px] flex-wrap mb-[6px]">
-        <h1 className="text-[40px] sm:text-[52px] leading-none m-0">Catálogo</h1>
-        <div className="text-[16px] text-[#605d5d]">
-          {count} libros disponibles · ordenados por {sortLabel}
-        </div>
+    <div className="px-6 sm:px-10 pt-8 pb-16">
+      <div className="flex items-baseline justify-between gap-8 flex-wrap mb-2">
+        <h1 className="font-serif text-display m-0">Catálogo</h1>
+        <p className="font-sans text-small text-muted-foreground">
+          {loading ? "Cargando libros…" : error ? "No se pudo cargar el catálogo" : `${count} libros disponibles · ordenados por ${sortLabel}`}
+        </p>
       </div>
-      <div className="h-[5px] bg-[#201e1d] mt-[14px] mb-[2px]" />
-      <div className="h-px bg-[#201e1d] mb-[26px]" />
+      <div className="h-[5px] bg-foreground mt-4 mb-0.5" />
+      <div className="h-px bg-foreground mb-6" />
 
       {recommended.items.length > 0 && (
-        <div className="mb-[34px]">
-          <div className={`${sectionLabel} mb-[12px]`}>{recommended.title}</div>
-          <div className="flex gap-[18px] overflow-x-auto pb-[8px] -mx-[2px] px-[2px]">
-            {recommended.items.map((b, i) => (
-              <div key={i} className="shrink-0 w-[190px] grid gap-[8px]">
-                <div
-                  style={{ background: b.plate }}
-                  className="h-[130px] rounded-[1px] p-[10px] flex items-end text-[12px] leading-[1.15] text-[#f8f4f4] overflow-hidden"
-                >
-                  {b.short}
-                </div>
-                <div className="text-[17px] leading-[1.15] overflow-hidden text-ellipsis whitespace-nowrap">{b.t}</div>
-                <div className="text-[14px] text-[#605d5d] overflow-hidden text-ellipsis whitespace-nowrap">{b.a}</div>
-                <div className="flex gap-[6px] flex-wrap">
-                  <span className={tagPill}>{b.cat}</span>
-                  <span className={condPill}>{b.cond}</span>
-                </div>
-                <button
-                  onClick={b.selectOwner}
-                  className="bg-transparent border-none p-0 text-[14px] text-[#006786] text-left hover:text-[#d6006c]"
-                >
-                  {b.owner}
-                </button>
-                <button onClick={b.propose} className={`${smallOutlineBtn} justify-self-start`}>
-                  Proponer intercambio
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className={`${divider} mt-[26px]`} />
-        </div>
+        <section className="mb-8" aria-label={recommended.title}>
+          <h2 className="font-sans text-label uppercase text-muted-foreground mb-3">
+            {recommended.title}
+            {recommended.note && <span className="ml-2 normal-case tracking-normal">· {recommended.note}</span>}
+          </h2>
+          {/* Antes era un desplazamiento horizontal sin ninguna pista: en
+              escritorio nada decía que hubiera más libros a la derecha. */}
+          <Carousel opts={{ align: "start", loop: false }} className="w-full">
+            <CarouselContent className="-ml-4">
+              {recommended.items.map((b, i) => (
+                <CarouselItem key={i} className="pl-4 basis-[150px]">
+                  <div className="flex flex-col gap-2">
+                    <BookCover
+                      cover={b.cover}
+                      plate={b.plate}
+                      title={b.t}
+                      author={b.a}
+                      size="md"
+                      className="h-[225px] w-[150px] rounded-sm"
+                    />
+                    <div className="font-serif text-body leading-tight truncate">{b.t}</div>
+                    <div className="font-sans text-small text-muted-foreground truncate">{b.a}</div>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Badge variant="secondary">{b.cat}</Badge>
+                      <Badge variant="outline">{b.cond}</Badge>
+                    </div>
+                    <Button onClick={b.propose} className="w-full">
+                      Proponer canje
+                    </Button>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex -left-4" />
+            <CarouselNext className="hidden sm:flex -right-4" />
+          </Carousel>
+          <div className="border-t border-border mt-6" />
+        </section>
       )}
-      <div className="grid grid-cols-1 md:[grid-template-columns:230px_minmax(0,1fr)] gap-[44px] items-start">
-        <div className="grid gap-[26px] md:sticky md:top-[20px]">
+
+      <div className="grid grid-cols-1 md:[grid-template-columns:230px_minmax(0,1fr)] gap-11 items-start">
+        <div className="flex flex-col gap-6 md:sticky md:top-20">
           <div>
-            <div className={`${sectionLabel} mb-[10px]`}>Categoría</div>
-            <div className="grid gap-[4px]">
-              {catOptions.map((o) => (
-                <button key={o.label} onClick={o.pick} className={filterBtnClass(o.active)}>
-                  {o.label} <span className="text-[#7d7979] text-[14px]">{o.n}</span>
-                </button>
+            <h2 className="font-sans text-label uppercase text-muted-foreground mb-2">Categoría</h2>
+            <div className="flex flex-col">
+              {usableCats.map((o) => (
+                <FilterButton key={o.label} option={o} count={o.n} />
               ))}
             </div>
           </div>
           <div>
-            <div className={`${sectionLabel} mb-[10px]`}>Estado</div>
-            <div className="grid gap-[4px]">
+            <h2 className="font-sans text-label uppercase text-muted-foreground mb-2">Estado</h2>
+            <div className="flex flex-col">
               {condOptions.map((o) => (
-                <button key={o.label} onClick={o.pick} className={filterBtnClass(o.active)}>
-                  {o.label}
-                </button>
+                <FilterButton key={o.label} option={o} />
               ))}
             </div>
           </div>
+          {hasLocation && (
+            <div>
+              <h2 className="font-sans text-label uppercase text-muted-foreground mb-2">Distancia máxima</h2>
+              <label className="font-serif text-body mb-1.5 block" htmlFor="catalogo-distancia">
+                {maxDistLabel}
+              </label>
+              <input
+                id="catalogo-distancia"
+                type="range"
+                min={0.5}
+                max={8}
+                step={0.5}
+                value={maxDist}
+                onChange={(e) => setDist(parseFloat(e.target.value))}
+                className="w-full h-11 accent-primary"
+              />
+            </div>
+          )}
           <div>
-            <div className={`${sectionLabel} mb-[10px]`}>Distancia máxima</div>
-            <div className="text-[19px] mb-[6px]">{maxDistLabel}</div>
-            <input
-              type="range"
-              min={0.5}
-              max={8}
-              step={0.5}
-              value={maxDist}
-              onChange={(e) => setDist(parseFloat(e.target.value))}
-              className="w-full accent-[#0088b0]"
-            />
-          </div>
-          <div>
-            <div className={`${sectionLabel} mb-[10px]`}>Orden</div>
-            <div className="grid gap-[4px]">
+            <h2 className="font-sans text-label uppercase text-muted-foreground mb-2">Orden</h2>
+            <div className="flex flex-col">
               {sortOptions.map((o) => (
-                <button key={o.label} onClick={o.pick} className={filterBtnClass(o.active)}>
-                  {o.label}
-                </button>
+                <FilterButton key={o.label} option={o} />
               ))}
             </div>
           </div>
         </div>
 
-        <div className="grid gap-0">
-          {items.map((b, i) => (
-            <div
-              key={i}
-              className={`grid grid-cols-1 sm:grid-cols-[74px_minmax(0,1fr)_210px] gap-[22px] border-t ${divider} py-[22px] items-start`}
-            >
-              <div
-                style={{ background: b.plate }}
-                className="h-[106px] rounded-[1px] p-[8px] flex items-end text-[11px] leading-[1.15] text-[#f8f4f4] overflow-hidden"
+        <QueryState
+          loading={loading}
+          error={error}
+          isEmpty={empty}
+          skeleton={<BookRowsSkeleton />}
+          emptyTitle="Nada con esos filtros"
+          emptyDescription="Prueba con otra categoría, otro estado o un radio más amplio."
+        >
+          <div className="flex flex-col">
+            {items.map((b, i) => (
+              <article
+                key={i}
+                className="grid grid-cols-1 sm:grid-cols-[74px_minmax(0,1fr)_200px] gap-5 border-t border-border py-6 items-start"
               >
-                {b.short}
-              </div>
-              <div className="grid gap-[6px]">
-                <div className="flex gap-[10px] flex-wrap items-baseline">
-                  <span className="text-[25px] leading-[1.1]">{b.t}</span>
-                  <span className="text-[16px] text-[#605d5d]">{b.a}</span>
+                <BookCover
+                  cover={b.cover}
+                  plate={b.plate}
+                  title={b.t}
+                  size="sm"
+                  className="h-[111px] w-[74px] rounded-sm"
+                />
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex gap-2.5 flex-wrap items-baseline">
+                    <h3 className="font-serif text-title m-0">{b.t}</h3>
+                    <span className="font-sans text-small text-muted-foreground">{b.a}</span>
+                  </div>
+                  <p className="font-serif text-body text-foreground/85 max-w-[46em]">{b.desc}</p>
+                  <div className="flex gap-2 flex-wrap mt-0.5">
+                    <Badge variant="secondary">{b.cat}</Badge>
+                    <Badge variant="outline">{b.cond}</Badge>
+                    {/* Reservado no es destructivo: es «ahora no». Va en el gris
+                        de los metadatos, no en el magenta de eliminar. */}
+                    {b.reserved && <Badge variant="outline">Reservado</Badge>}
+                  </div>
                 </div>
-                <div className="text-[16px] leading-[1.5] text-[#444141] max-w-[46em]">{b.desc}</div>
-                <div className="flex gap-[8px] flex-wrap mt-[2px]">
-                  <span className={tagPill}>{b.cat}</span>
-                  <span className={condPill}>{b.cond}</span>
+                {/* El dueño baja a metadato: antes era un enlace del mismo peso
+                    que el llamado a la acción, justo encima de él. */}
+                <div className="flex flex-col gap-2 items-start">
+                  <p className="font-sans text-small text-muted-foreground">
+                    <button onClick={b.selectOwner} className="bg-transparent border-none p-0 text-primary underline-offset-4 hover:underline">
+                      {b.owner}
+                    </button>
+                    <br />
+                    {b.barrio}
+                    {b.dist !== null && <> · {b.dist} km</>} · {b.starsLabel}
+                  </p>
+                  {b.reserved ? (
+                    <div className="flex flex-col gap-1 items-start">
+                      <Button disabled>Reservado</Button>
+                      <span className="font-sans text-small text-muted-foreground max-w-[20em]">
+                        Vuelve a estar libre si la propuesta no cierra.
+                      </span>
+                    </div>
+                  ) : (
+                    <Button onClick={b.propose}>Proponer canje</Button>
+                  )}
                 </div>
-              </div>
-              <div className="grid gap-[6px] justify-items-start">
-                <button onClick={b.selectOwner} className="bg-transparent border-none p-0 text-[18px] text-[#006786] text-left hover:text-[#d6006c]">
-                  {b.owner}
-                </button>
-                <div className="text-[14px] text-[#605d5d]">
-                  {b.barrio} · {b.dist} km · {b.starsLabel}
-                </div>
-                <button onClick={b.propose} className={`${smallOutlineBtn} mt-[6px]`}>
-                  Proponer intercambio
-                </button>
-              </div>
-            </div>
-          ))}
-          {empty && (
-            <div className={`border-t ${divider} py-[40px] text-[20px] text-[#605d5d]`}>
-              Nada con esos filtros. Amplía la distancia o cambia de categoría.
-            </div>
-          )}
-        </div>
+              </article>
+            ))}
+          </div>
+        </QueryState>
       </div>
     </div>
   );

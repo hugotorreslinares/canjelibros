@@ -1,4 +1,13 @@
-import { divider, linkBtn, modalOverlay, modalPanel, primaryBtn, sectionLabel } from "@/lib/ui";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { BookCover } from "./BookCover";
 
 interface Offerable {
   t: string;
@@ -15,6 +24,7 @@ interface OfferModalProps {
   bookAuthor: string;
   bookCond: string;
   bookCat: string;
+  bookCover: string | null;
   bookPlate: string;
   myOfferables: Offerable[];
   hint: string;
@@ -29,51 +39,63 @@ export function OfferModal({
   bookAuthor,
   bookCond,
   bookCat,
+  bookCover,
   bookPlate,
   myOfferables,
   hint,
   close,
   send,
 }: OfferModalProps) {
-  if (!open) return null;
   return (
-    <div className={modalOverlay} onClick={close}>
-      <div className={`${modalPanel} max-w-[900px] px-[24px] sm:px-[38px] py-[32px]`} onClick={(e) => e.stopPropagation()}>
-        <div className={sectionLabel}>Propuesta de canje con {owner}</div>
-        <h2 className="text-[32px] sm:text-[36px] leading-[1.05] mt-[8px] mb-[22px]">Uno por uno</h2>
-        <div className="grid grid-cols-1 sm:[grid-template-columns:1fr_46px_1fr] gap-[24px] items-start">
+    <Dialog open={open} onOpenChange={(next) => !next && close()}>
+      <DialogContent className="sm:max-w-[900px] p-8">
+        <DialogHeader>
+          <p className="font-sans text-label uppercase text-muted-foreground">Propuesta de canje con {owner}</p>
+          <DialogTitle className="font-serif text-title">Uno por uno</DialogTitle>
+          <DialogDescription className="sr-only">
+            Elige cuál de tus libros ofreces a cambio de {bookTitle}.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid grid-cols-1 sm:[grid-template-columns:1fr_46px_1fr] gap-6 items-start">
           <div>
-            <div className={`${sectionLabel} mb-[12px]`}>Pides</div>
-            <div className="grid grid-cols-[66px_minmax(0,1fr)] gap-[14px]">
-              <div
-                style={{ background: bookPlate }}
-                className="h-[96px] rounded-[1px] p-[8px] flex items-end text-[11px] leading-[1.15] text-[#f8f4f4]"
-              >
-                {bookTitle}
-              </div>
+            <h3 className="font-sans text-label uppercase text-muted-foreground mb-3">Pides</h3>
+            <div className="grid grid-cols-[66px_minmax(0,1fr)] gap-3.5">
+              <BookCover
+                cover={bookCover}
+                plate={bookPlate}
+                title={bookTitle}
+                size="sm"
+                className="h-[99px] w-[66px] rounded-sm"
+              />
               <div>
-                <div className="text-[21px] leading-[1.15]">{bookTitle}</div>
-                <div className="text-[15px] text-[#605d5d]">{bookAuthor}</div>
-                <div className="text-[14px] text-[#444141] mt-[6px]">
+                <p className="font-serif text-subtitle">{bookTitle}</p>
+                <p className="font-sans text-small text-muted-foreground">{bookAuthor}</p>
+                <p className="font-sans text-small text-foreground/85 mt-1.5">
                   {bookCond} · {bookCat}
-                </div>
+                </p>
               </div>
             </div>
           </div>
-          <div className="text-[34px] text-[#0088b0] text-center pt-[34px] sm:pt-[34px]">⇄</div>
+
+          <div className="text-[34px] text-primary text-center pt-8" aria-hidden="true">
+            ⇄
+          </div>
+
           <div>
-            <div className={`${sectionLabel} mb-[12px]`}>Ofreces uno de los tuyos</div>
-            <div className="grid gap-[2px]">
+            <h3 className="font-sans text-label uppercase text-muted-foreground mb-3">Ofreces uno de los tuyos</h3>
+            <div className="flex flex-col gap-0.5">
               {myOfferables.map((b, i) => (
                 <button
                   key={i}
                   onClick={b.choose}
-                  className={`text-left border rounded-[2px] px-[13px] py-[11px] grid gap-[2px] ${
-                    b.active ? "bg-[#cbeeff] border-[#0088b0]" : "bg-transparent border-[#201e1d]/30"
+                  aria-pressed={b.active}
+                  className={`text-left border rounded-sm px-3.5 py-3 flex flex-col gap-0.5 min-h-11 ${
+                    b.active ? "bg-accent border-primary" : "bg-transparent border-border-strong hover:bg-muted"
                   }`}
                 >
-                  <span className="text-[18px]">{b.t}</span>
-                  <span className="text-[14px] text-[#605d5d]">
+                  <span className="font-serif text-body">{b.t}</span>
+                  <span className="font-sans text-small text-muted-foreground">
                     {b.a} · {b.cond}
                   </span>
                 </button>
@@ -81,16 +103,14 @@ export function OfferModal({
             </div>
           </div>
         </div>
-        <div className={`flex gap-[16px] items-center mt-[30px] flex-wrap border-t ${divider} pt-[22px]`}>
-          <button onClick={send} className={primaryBtn}>
+
+        <DialogFooter className="border-t border-border pt-5 sm:justify-start items-center">
+          <Button onClick={send} size="lg">
             Enviar propuesta
-          </button>
-          <button onClick={close} className={linkBtn}>
-            Cancelar
-          </button>
-          <span className="text-[15px] text-[#605d5d]">{hint}</span>
-        </div>
-      </div>
-    </div>
+          </Button>
+          <span className="font-sans text-small text-muted-foreground">{hint}</span>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

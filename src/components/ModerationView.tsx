@@ -1,7 +1,10 @@
-import { chip, condPill, divider, input, linkBtn, primaryBtn, sectionLabel, smallOutlineBtn, tagPill } from "@/lib/ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { BookCover } from "./BookCover";
 
 interface ModerationBook {
   id: string;
+  cover: string | null;
   t: string;
   a: string;
   cat: string;
@@ -48,6 +51,8 @@ interface ModerationViewProps {
   setDesc: (v: string) => void;
   condChips: Chip[];
   catChips: Chip[];
+  cover: string | null;
+  removeCover: () => void;
   reason: string;
   setReason: (v: string) => void;
   log: LogEntry[];
@@ -70,6 +75,8 @@ export function ModerationView({
   setDesc,
   condChips,
   catChips,
+  cover,
+  removeCover,
   reason,
   setReason,
   log,
@@ -81,29 +88,29 @@ export function ModerationView({
   if (!allowed) {
     return (
       <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[720px]">
-        <div className={sectionLabel}>Moderación</div>
+        <div className="font-sans text-label uppercase text-muted-foreground">Moderación</div>
         <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-[18px]">Panel restringido</h1>
         <p className="text-[17px] leading-[1.5] text-[#444141]">
           {signedIn
-            ? "Tu cuenta no tiene permisos de moderación. Si crees que debería tenerlos, escríbenos a moderacion@elcanje.co."
+            ? "Tu cuenta no tiene permisos de moderación. Si crees que debería tenerlos, escríbenos a moderacion@librocambio.com."
             : "Inicia sesión con una cuenta de moderación para revisar publicaciones reportadas."}
         </p>
-        <button onClick={goPolicies} className={`${smallOutlineBtn} mt-[24px]`}>
+        <Button variant="outline" onClick={goPolicies} className="mt-6">
           Ver políticas del sitio
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[1180px]">
-      <div className={sectionLabel}>Moderación</div>
+      <div className="font-sans text-label uppercase text-muted-foreground">Moderación</div>
       <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-0">Publicaciones de la comunidad</h1>
       <p className="text-[17px] leading-[1.5] text-[#444141] mt-[10px] max-w-[46em]">
         Edita una publicación para corregir o retirar datos que incumplan las{" "}
-        <button onClick={goPolicies} className={linkBtn}>
+        <Button variant="link" onClick={goPolicies} className="px-0 h-auto">
           políticas del sitio
-        </button>
+        </Button>
         , o elimínala si el contenido no puede corregirse. Toda acción aquí es inmediata y visible para el lector dueño
         del libro.
       </p>
@@ -112,12 +119,12 @@ export function ModerationView({
 
       <div className="flex items-end gap-[16px] flex-wrap mb-[30px]">
         <label className="grid gap-[6px] flex-1 min-w-[260px]">
-          <span className={sectionLabel}>Buscar</span>
+          <span className="font-sans text-label uppercase text-muted-foreground">Buscar</span>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Título, autor, descripción, categoría o lector"
-            className={input}
+            className="border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder"
           />
         </label>
         <div className="text-[15px] text-[#605d5d] pb-[14px]">
@@ -129,13 +136,15 @@ export function ModerationView({
 
       <div className="grid gap-[26px]">
         {items.map((b) => (
-          <div key={b.id} className={`border-t ${divider} pt-[18px] grid [grid-template-columns:110px_1fr] gap-[20px]`}>
-            <div
-              style={{ background: b.plate }}
-              className="h-[150px] rounded-[1px] p-[10px] flex items-end text-[13px] leading-[1.2] text-[#f8f4f4]"
-            >
-              {b.t}
-            </div>
+          <div key={b.id} className="border-t border-border pt-5 grid [grid-template-columns:110px_1fr] gap-5">
+            <BookCover
+              cover={b.cover}
+              plate={b.plate}
+              title={b.t}
+              author={b.a}
+              size="md"
+              className="h-[165px] w-[110px] rounded-sm"
+            />
 
             <div className="grid gap-[8px]">
               <div className="text-[13px] tracking-[.14em] uppercase text-[#605d5d]">
@@ -147,58 +156,85 @@ export function ModerationView({
               {b.editing ? (
                 <div className="grid gap-[14px] max-w-[640px]">
                   <label className="grid gap-[6px]">
-                    <span className={sectionLabel}>Título</span>
-                    <input value={form.t} onChange={(e) => setTitle(e.target.value)} className={input} />
+                    <span className="font-sans text-label uppercase text-muted-foreground">Título</span>
+                    <input value={form.t} onChange={(e) => setTitle(e.target.value)} className="border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder" />
                   </label>
                   <label className="grid gap-[6px]">
-                    <span className={sectionLabel}>Autor</span>
-                    <input value={form.a} onChange={(e) => setAuthor(e.target.value)} className={input} />
+                    <span className="font-sans text-label uppercase text-muted-foreground">Autor</span>
+                    <input value={form.a} onChange={(e) => setAuthor(e.target.value)} className="border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder" />
                   </label>
                   <label className="grid gap-[6px]">
-                    <span className={sectionLabel}>Descripción</span>
+                    <span className="font-sans text-label uppercase text-muted-foreground">Descripción</span>
                     <textarea
                       value={form.desc}
                       onChange={(e) => setDesc(e.target.value)}
                       rows={3}
-                      className={`${input} resize-y`}
+                      className={`border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder resize-y`}
                     />
                   </label>
                   <div className="grid gap-[6px]">
-                    <span className={sectionLabel}>Categoría</span>
+                    <span className="font-sans text-label uppercase text-muted-foreground">Categoría</span>
                     <div className="flex flex-wrap gap-[8px]">
                       {catChips.map((c) => (
-                        <button key={c.label} onClick={c.pick} className={chip(c.active)}>
+                        <button key={c.label} onClick={c.pick} aria-pressed={c.active}
+                          className={`h-11 px-4 rounded-sm border font-sans text-small transition-colors ${
+                          c.active
+                            ? "border-primary bg-accent text-accent-foreground"
+                            : "border-border-strong bg-transparent text-foreground/85 hover:bg-muted"
+                        }`}>
                           {c.label}
                         </button>
                       ))}
                     </div>
                   </div>
                   <div className="grid gap-[6px]">
-                    <span className={sectionLabel}>Estado</span>
+                    <span className="font-sans text-label uppercase text-muted-foreground">Estado</span>
                     <div className="flex flex-wrap gap-[8px]">
                       {condChips.map((c) => (
-                        <button key={c.label} onClick={c.pick} className={chip(c.active)}>
+                        <button key={c.label} onClick={c.pick} aria-pressed={c.active}
+                          className={`h-11 px-4 rounded-sm border font-sans text-small transition-colors ${
+                          c.active
+                            ? "border-primary bg-accent text-accent-foreground"
+                            : "border-border-strong bg-transparent text-foreground/85 hover:bg-muted"
+                        }`}>
                           {c.label}
                         </button>
                       ))}
                     </div>
                   </div>
+                  <div className="grid gap-[6px]">
+                    <span className="font-sans text-label uppercase text-muted-foreground">Portada</span>
+                    {cover ? (
+                      <div className="flex items-center gap-[14px]">
+                        <BookCover
+                          cover={cover}
+                          plate={b.plate}
+                          title={b.t}
+                          size="sm"
+                          className="h-[78px] w-[52px] rounded-sm"
+                        />
+                        <Button variant="ghost" onClick={removeCover} className="text-destructive hover:text-destructive">
+                          Quitar la foto
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="text-[16px] text-[#605d5d]">Sin foto · portada tipográfica.</span>
+                    )}
+                  </div>
                   <label className="grid gap-[6px]">
-                    <span className={sectionLabel}>Motivo de la edición</span>
+                    <span className="font-sans text-label uppercase text-muted-foreground">Motivo de la edición</span>
                     <input
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
                       placeholder="Queda registrado en la bitácora, junto a tu nombre"
-                      className={input}
+                      className="border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder"
                     />
                   </label>
                   <div className="flex gap-[14px] items-center flex-wrap">
-                    <button onClick={save} className={primaryBtn}>
-                      Guardar cambios
-                    </button>
-                    <button onClick={cancelEdit} className={linkBtn}>
+                    <Button onClick={save}>Guardar cambios</Button>
+                    <Button variant="link" onClick={cancelEdit}>
                       Cancelar
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -206,20 +242,17 @@ export function ModerationView({
                   <div className="text-[24px] leading-[1.15]">{b.t}</div>
                   <div className="text-[15px] text-[#605d5d]">{b.a}</div>
                   <div className="flex gap-[8px] flex-wrap">
-                    <span className={tagPill}>{b.cat}</span>
-                    <span className={condPill}>{b.cond}</span>
+                    <Badge variant="secondary">{b.cat}</Badge>
+                    <Badge variant="outline">{b.cond}</Badge>
                   </div>
                   {b.desc && <p className="text-[16px] leading-[1.5] text-[#444141] max-w-[46em]">{b.desc}</p>}
                   <div className="flex gap-[16px] items-center mt-[4px]">
-                    <button onClick={b.edit} className={linkBtn}>
+                    <Button variant="link" onClick={b.edit} className="px-0">
                       Editar publicación
-                    </button>
-                    <button
-                      onClick={b.remove}
-                      className="bg-transparent border-none p-0 text-[15px] text-[#aa0b56] hover:text-[#d6006c] transition-colors"
-                    >
+                    </Button>
+                    <Button variant="ghost" onClick={b.remove} className="text-destructive hover:text-destructive">
                       Eliminar por incumplir políticas
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}
@@ -229,7 +262,7 @@ export function ModerationView({
       </div>
 
       <section className="mt-[54px]">
-        <div className={sectionLabel}>Bitácora de moderación</div>
+        <div className="font-sans text-label uppercase text-muted-foreground">Bitácora de moderación</div>
         <h2 className="text-[28px] leading-[1.15] mt-[6px] mb-[10px]">Últimas 50 acciones</h2>
         <p className="text-[16px] leading-[1.5] text-[#444141] max-w-[46em] mb-[20px]">
           Cada edición y cada eliminación queda registrada con su motivo. Los registros no se pueden modificar ni
@@ -237,13 +270,13 @@ export function ModerationView({
         </p>
 
         {logEmpty ? (
-          <p className={`border-t ${divider} pt-[14px] text-[17px] text-[#605d5d]`}>
+          <p className="border-t border-border pt-3.5 font-serif text-body text-muted-foreground">
             Todavía no hay acciones de moderación registradas.
           </p>
         ) : (
           <div className="grid gap-[16px]">
             {log.map((e) => (
-              <div key={e.id} className={`border-t ${divider} pt-[14px] grid gap-[6px]`}>
+              <div key={e.id} className="border-t border-border pt-3.5 grid gap-1.5">
                 <div className="text-[13px] tracking-[.14em] uppercase text-[#605d5d]">{e.when}</div>
                 <div className="text-[18px] leading-[1.4]">
                   <span style={{ color: e.isDelete ? "#aa0b56" : "#006786" }}>{e.action}</span> «{e.bookTitle}» de{" "}

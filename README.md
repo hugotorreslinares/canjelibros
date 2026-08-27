@@ -1,4 +1,4 @@
-# El Canje
+# Librocambio
 
 Intercambio de libros usados entre lectores de Bogotá. Implementación en Next.js (App Router) del diseño `design_source/El Canje.dc.html`, con autenticación de Firebase requerida para publicar libros o proponer intercambios.
 

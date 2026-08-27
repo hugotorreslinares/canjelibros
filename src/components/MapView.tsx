@@ -1,5 +1,10 @@
 import dynamic from "next/dynamic";
-import { condPill, divider, sectionLabel, smallPrimaryBtn, tagPill } from "@/lib/ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { BookCover } from "./BookCover";
+import { ReaderListSkeleton } from "./BookGridSkeleton";
+import { QueryState } from "./QueryState";
+import { DistanceLabel } from "./DistanceLabel";
 
 const LeafletMap = dynamic(() => import("./LeafletMap").then((m) => m.LeafletMap), {
   ssr: false,
@@ -10,7 +15,7 @@ interface MapUser {
   id: string;
   name: string;
   barrio: string;
-  dist: number;
+  dist: number | null;
   lat: number;
   lng: number;
   count: number;
@@ -26,13 +31,13 @@ interface MapUser {
 }
 
 interface SelBook {
+  cover: string | null;
   t: string;
   a: string;
   cat: string;
   cond: string;
   desc: string;
   plate: string;
-  short: string;
   propose: () => void;
 }
 
@@ -41,9 +46,10 @@ interface MapViewProps {
   noSelection: boolean;
   hasSelection: boolean;
   sel: {
+    id: string;
     name: string;
     barrio: string;
-    dist: number;
+    dist: number | null;
     lat: number;
     lng: number;
     starsLabel: string;
@@ -53,10 +59,15 @@ interface MapViewProps {
     spot: string;
     count: number;
     statusLine: string;
+    tags: { label: string; count: number }[];
   } | null;
   selBooks: SelBook[];
   clearSelection: () => void;
+  loading: boolean;
+  error: boolean;
   nearCount: number;
+  nearHeading: string;
+  zoneNote: string;
 }
 
 function MapSkeleton() {
@@ -95,45 +106,72 @@ function MapSkeleton() {
   );
 }
 
-export function MapView({ users, noSelection, hasSelection, sel, selBooks, clearSelection, nearCount }: MapViewProps) {
+export function MapView({
+  users,
+  noSelection,
+  hasSelection,
+  sel,
+  selBooks,
+  clearSelection,
+  loading,
+  error,
+  nearHeading,
+  zoneNote,
+}: MapViewProps) {
   return (
     <div className="grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_400px] flex-1 items-stretch">
       <div className="relative overflow-hidden bg-[#f3f2f2] min-h-[500px] lg:min-h-[640px]">
-        <LeafletMap users={users} selected={sel ? { lat: sel.lat, lng: sel.lng } : null} />
+        <LeafletMap
+          users={users}
+          selected={sel ? { lat: sel.lat, lng: sel.lng } : null}
+          selectedId={sel?.id ?? null}
+        />
 
         <div className="absolute left-[24px] bottom-[24px] bg-[#f8f4f4]/92 border border-[#201e1d]/16 rounded-[2px] px-[16px] py-[12px] max-w-[300px] pointer-events-none z-[1000]">
           <div className="text-[12px] tracking-[.16em] uppercase text-[#605d5d] mb-[6px]">Tu zona</div>
-          <div className="text-[16px] leading-[1.4]">Chapinero Alto · radio de 600 m. Nadie ve tu dirección exacta.</div>
+          <div className="text-[16px] leading-[1.4]">{zoneNote}</div>
         </div>
       </div>
 
       <aside className="border-l-0 lg:border-l border-[#201e1d]/16 px-[24px] lg:px-[30px] pt-[28px] pb-[40px] overflow-auto">
         {noSelection && (
           <div>
-            <div className={sectionLabel}>Cerca de ti</div>
-            <h2 className="text-[34px] leading-[1.05] my-[8px] mb-[14px]">{nearCount} lectores en 3 km</h2>
+            <div className="font-sans text-label uppercase text-muted-foreground">Cerca de ti</div>
+            <h2 className="text-[34px] leading-[1.05] my-[8px] mb-[14px]">
+              {loading ? "Buscando lectores…" : error ? "Lectores cerca de ti" : nearHeading}
+            </h2>
             <p className="text-[17px] leading-[1.5] text-[#444141] mb-[26px] [text-wrap:pretty]">
               Toca una zona en el mapa para ver el estante de esa persona. El número dentro del círculo es cuántos
               libros tiene disponibles.
             </p>
+            <QueryState
+              loading={loading}
+              error={error}
+              isEmpty={users.length === 0}
+              skeleton={<ReaderListSkeleton />}
+              emptyTitle="Todavía no hay lectores publicando"
+              emptyDescription="Publica el primer libro y el mapa deja de estar vacío."
+            >
             <div className="grid gap-[18px]">
               {users.map((u) => (
                 <button
                   key={u.id}
                   onClick={u.select}
-                  className={`text-left bg-transparent border-none border-t ${divider} pt-[16px] grid gap-[4px] hover:bg-[#eae7e7]`}
+                  className="text-left bg-transparent border-none border-t border-border pt-4 grid gap-1 hover:bg-muted"
                 >
                   <div className="flex justify-between items-baseline gap-[12px]">
                     <span className="text-[21px]">{u.name}</span>
-                    <span className="text-[14px] text-[#605d5d]">{u.dist} km</span>
+                    <DistanceLabel km={u.dist} className="text-[14px] text-[#605d5d]" />
                   </div>
                   <div className="text-[14px] text-[#605d5d]">
                     {u.barrio} · {u.starsLabel} {u.rating} · {u.trades} intercambios
+                    {u.statusLine && <> · {u.statusLine}</>}
                   </div>
                   <div className="text-[16px] text-[#201e1d]">{u.teaser}</div>
                 </button>
               ))}
             </div>
+            </QueryState>
           </div>
         )}
         {hasSelection && sel && (
@@ -141,38 +179,51 @@ export function MapView({ users, noSelection, hasSelection, sel, selBooks, clear
             <button onClick={clearSelection} className="bg-transparent border-none p-0 pb-[18px] text-[15px] text-[#006786] hover:text-[#d6006c]">
               ← Volver a la lista
             </button>
-            <div className={sectionLabel}>
-              {sel.barrio} · {sel.dist} km
+            <div className="font-sans text-label uppercase text-muted-foreground">
+              {sel.barrio}
+              {sel.dist !== null && <> · {sel.dist} km</>}
             </div>
             <h2 className="text-[36px] leading-[1.05] mt-[8px] mb-[6px]">{sel.name}</h2>
             <div className="text-[16px] text-[#444141] mb-[6px]">
-              {sel.starsLabel} {sel.rating} de 5 · {sel.trades} intercambios · {sel.statusLine}
+              {sel.starsLabel} {sel.rating} de 5 · {sel.trades} intercambios
+              {sel.statusLine && <> · {sel.statusLine}</>}
             </div>
+            {sel.tags.length > 0 && (
+              <div className="flex gap-2 flex-wrap mb-2">
+                {sel.tags.map((t) => (
+                  <Badge key={t.label} variant="secondary">
+                    {t.label}
+                    {t.count > 1 && <span className="ml-1 opacity-70">×{t.count}</span>}
+                  </Badge>
+                ))}
+              </div>
+            )}
             <div className="text-[16px] leading-[1.5] text-[#444141] mb-[8px] italic">{sel.bio}</div>
-            <div className={`text-[14px] text-[#605d5d] border-t ${divider} pt-[10px] mb-[22px]`}>
+            <div className="font-sans text-small text-muted-foreground border-t border-border pt-2.5 mb-6">
               Punto de encuentro que propone: {sel.spot}
             </div>
-            <div className={`${sectionLabel} mb-[14px]`}>Su estante · {sel.count} disponibles</div>
+            <div className="font-sans text-label uppercase text-muted-foreground mb-3.5">Su estante · {sel.count} disponibles</div>
             <div className="grid gap-[20px]">
               {selBooks.map((b, i) => (
-                <div key={i} className={`grid grid-cols-[56px_minmax(0,1fr)] gap-[14px] border-t ${divider} pt-[16px]`}>
-                  <div
-                    style={{ background: b.plate }}
-                    className="h-[82px] rounded-[1px] p-[6px] flex items-end text-[10px] leading-[1.15] text-[#f8f4f4] overflow-hidden"
-                  >
-                    {b.short}
-                  </div>
+                <div key={i} className="grid grid-cols-[56px_minmax(0,1fr)] gap-3.5 border-t border-border pt-4">
+                  <BookCover
+                    cover={b.cover}
+                    plate={b.plate}
+                    title={b.t}
+                    size="sm"
+                    className="h-[84px] w-[56px] rounded-sm"
+                  />
                   <div className="grid gap-[5px]">
                     <div className="text-[20px] leading-[1.15]">{b.t}</div>
                     <div className="text-[15px] text-[#605d5d]">{b.a}</div>
                     <div className="text-[15px] leading-[1.45] text-[#444141]">{b.desc}</div>
                     <div className="flex gap-[8px] flex-wrap mt-[3px]">
-                      <span className={tagPill}>{b.cat}</span>
-                      <span className={condPill}>{b.cond}</span>
+                      <Badge variant="secondary">{b.cat}</Badge>
+                      <Badge variant="outline">{b.cond}</Badge>
                     </div>
-                    <button onClick={b.propose} className={`${smallPrimaryBtn} justify-self-start mt-[8px]`}>
-                      Proponer intercambio
-                    </button>
+                    <Button onClick={b.propose} className="justify-self-start mt-2">
+                      Proponer canje
+                    </Button>
                   </div>
                 </div>
               ))}

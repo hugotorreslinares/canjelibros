@@ -1,4 +1,12 @@
-import { chip, linkBtn, modalOverlay, modalPanel, primaryBtn, sectionLabel } from "@/lib/ui";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface StarPick {
   filled: boolean;
@@ -21,42 +29,59 @@ interface RatingModalProps {
 }
 
 export function RatingModal({ open, name, starPicks, ratingTags, submit, close }: RatingModalProps) {
-  if (!open) return null;
   return (
-    <div className={modalOverlay} onClick={close}>
-      <div className={`${modalPanel} max-w-[560px] px-[24px] sm:px-[38px] py-[32px]`} onClick={(e) => e.stopPropagation()}>
-        <div className={sectionLabel}>Canje cerrado</div>
-        <h2 className="text-[30px] sm:text-[34px] leading-[1.05] mt-[8px] mb-[10px]">¿Cómo te fue con {name}?</h2>
-        <p className="text-[17px] leading-[1.5] text-[#444141] mb-[22px]">
-          Solo pueden calificarse las personas que completaron un intercambio. Tu nota es pública en su perfil.
-        </p>
-        <div className="flex gap-[10px] mb-[20px]">
+    <Dialog open={open} onOpenChange={(next) => !next && close()}>
+      <DialogContent className="sm:max-w-[560px] p-8">
+        <DialogHeader>
+          <p className="font-sans text-label uppercase text-muted-foreground">Canje cerrado</p>
+          <DialogTitle className="font-serif text-title">¿Cómo te fue con {name}?</DialogTitle>
+          <DialogDescription className="font-serif text-body text-foreground/85">
+            Solo pueden calificarse las personas que completaron un intercambio. Tu nota es pública en su perfil.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex gap-1" role="group" aria-label="Estrellas">
           {starPicks.map((s, i) => (
             <button
               key={i}
               onClick={s.pick}
-              className={`bg-transparent border-none p-0 text-[42px] leading-none ${s.filled ? "text-[#d6006c]" : "text-[#d7d3d3]"}`}
+              aria-label={`${i + 1} ${i === 0 ? "estrella" : "estrellas"}`}
+              aria-pressed={s.filled}
+              className={`bg-transparent border-none size-11 grid place-items-center text-[38px] leading-none ${
+                s.filled ? "text-destructive" : "text-border-strong"
+              }`}
             >
               ★
             </button>
           ))}
         </div>
-        <div className="flex gap-[8px] flex-wrap mb-[24px]">
+
+        <div className="flex gap-2 flex-wrap">
           {ratingTags.map((t) => (
-            <button key={t.label} onClick={t.toggle} className={chip(t.active)}>
+            <button
+              key={t.label}
+              onClick={t.toggle}
+              aria-pressed={t.active}
+              className={`h-11 px-4 rounded-sm border font-sans text-small transition-colors ${
+                t.active
+                  ? "border-primary bg-accent text-accent-foreground"
+                  : "border-border-strong bg-transparent text-foreground/85 hover:bg-muted"
+              }`}
+            >
               {t.label}
             </button>
           ))}
         </div>
-        <div className="flex gap-[16px] items-center flex-wrap">
-          <button onClick={submit} className={primaryBtn}>
+
+        <DialogFooter className="sm:justify-start">
+          <Button onClick={submit} size="lg">
             Enviar calificación
-          </button>
-          <button onClick={close} className={linkBtn}>
+          </Button>
+          <Button variant="link" onClick={close}>
             Después
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

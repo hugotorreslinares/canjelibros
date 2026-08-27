@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { linkBtn } from "@/lib/ui";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AuthModal } from "./AuthModal";
 
 interface HeaderProps {
@@ -20,6 +22,13 @@ interface HeaderProps {
   goChat: () => void;
   goShelf: () => void;
   goPublish: () => void;
+}
+
+interface NavItem {
+  label: string;
+  active: boolean;
+  go: () => void;
+  badge?: number;
 }
 
 export function Header({
@@ -40,72 +49,160 @@ export function Header({
 }: HeaderProps) {
   const { user, logOut } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const navClass = (active: boolean) =>
-    `bg-transparent border-none px-0 py-[4px] text-[17px] border-b-2 transition-colors ${
-      active ? "text-[#201e1d] border-[#0088b0]" : "text-[#605d5d] border-transparent"
+  const items: NavItem[] = [
+    { label: "Mapa", active: isMap, go: goMap },
+    { label: "Catálogo", active: isCatalog, go: goCatalog },
+    { label: "Mensajes", active: isChat, go: goChat, badge: unread },
+    { label: "Mi estante", active: isShelf, go: goShelf },
+  ];
+
+  // Moderación vive solo en el menú lateral. Es un destino administrativo que
+  // usan dos o tres personas, y como quinto enlace del menú de escritorio
+  // ensanchaba la barra hasta montarse encima del logotipo. Por eso un
+  // moderador conserva el botón de menú también en escritorio: es su única
+  // puerta al panel.
+  const menuItems: NavItem[] = isModerator
+    ? [...items, { label: "Moderación", active: isModeration, go: goModeration }]
+    : items;
+
+  // El estado activo se marca con aria-current además del subrayado: antes solo
+  // lo comunicaba el color, que no llega a un lector de pantalla.
+  const desktopLink = (item: NavItem) =>
+    `bg-transparent border-none px-0 py-1 font-sans text-body whitespace-nowrap border-b-2 transition-colors ${
+      item.active ? "text-foreground border-primary" : "text-muted-foreground border-transparent hover:text-foreground"
     }`;
+
+  const runFromMenu = (go: () => void) => {
+    setMenuOpen(false);
+    go();
+  };
 
   return (
     <>
-      <header className="flex items-center justify-between gap-[30px] px-[24px] sm:px-[40px] py-[14px] border-b border-[#201e1d]/16 flex-wrap">
-        <div className="flex items-baseline gap-[20px]">
-          <button
-            onClick={goMap}
-            className="bg-transparent border-none p-0 font-[inherit] text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-[#201e1d]"
-          >
-            El Canje
-          </button>
-          <span className="text-[12px] tracking-[.16em] uppercase text-[#605d5d] hidden sm:inline">
-            Bogotá · {today}
-          </span>
-        </div>
-        <nav className="flex items-center gap-[22px] sm:gap-[26px] text-[17px] flex-wrap">
-          <button onClick={goMap} className={navClass(isMap)}>
-            Mapa
-          </button>
-          <button onClick={goCatalog} className={navClass(isCatalog)}>
-            Catálogo
-          </button>
-          <button onClick={goChat} className={navClass(isChat)}>
-            Mensajes <span className="text-[#d6006c]">·{unread}</span>
-          </button>
-          <button onClick={goShelf} className={navClass(isShelf)}>
-            Mi estante
-          </button>
-          {isModerator && (
-            <button onClick={goModeration} className={navClass(isModeration)}>
-              Moderación
+      <header className="sticky top-0 z-30 bg-background border-b border-border">
+        <div className="flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16">
+          <div className="flex items-baseline gap-5 min-w-0">
+            {/* Un paso más pequeño por debajo de 360 px: «Librocambio» a 26 px se
+                monta encima de «Publicar» y del botón de menú, que ya están en el
+                mínimo de 44 px y no pueden ceder ancho. */}
+            <button
+              onClick={goMap}
+              className="flex items-center h-11 shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[21px] min-[360px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
+            >
+              Librocambio
             </button>
-          )}
-          <button
-            onClick={goPublish}
-            className="bg-[#0088b0] text-white border-none rounded-[2px] px-[18px] py-[9px] text-[16px] transition-colors hover:bg-[#1186ac] active:bg-[#006786]"
-          >
-            Publicar libro
-          </button>
+            <span className="font-sans text-label uppercase text-muted-foreground hidden xl:inline">
+              Bogotá · {today}
+            </span>
+          </div>
 
-          <div className="w-px h-[22px] bg-[#201e1d]/16" />
-
-          {user ? (
-            <div className="flex items-center gap-[12px]">
-              <span className="text-[14px] text-[#605d5d]">{user.displayName || user.email}</span>
-              <button onClick={() => logOut()} className={linkBtn}>
-                Cerrar sesión
+          {/* Un moderador suma el botón de menú a la derecha, y con separaciones
+              de 24px el menú se monta sobre el logotipo a 1024px. Vuelven a 24px
+              en xl, donde sí sobra ancho. */}
+          <nav aria-label="Principal" className="hidden lg:flex items-center gap-4 xl:gap-6">
+            {items.map((item) => (
+              <button
+                key={item.label}
+                onClick={item.go}
+                aria-current={item.active ? "page" : undefined}
+                className={desktopLink(item)}
+              >
+                {item.label}
+                {item.badge !== undefined && <span className="text-destructive"> ·{item.badge}</span>}
               </button>
-            </div>
-          ) : (
-            <button onClick={() => setLoginOpen(true)} className={linkBtn}>
-              Iniciar sesión
-            </button>
-          )}
-        </nav>
+            ))}
+            <Button onClick={goPublish}>Publicar libro</Button>
+            <Separator orientation="vertical" className="h-6" />
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="font-sans text-small text-muted-foreground max-w-[16ch] truncate">
+                  {user.displayName || user.email}
+                </span>
+                <Button variant="link" onClick={() => logOut()}>
+                  Salir
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={() => setLoginOpen(true)}>
+                Iniciar sesión
+              </Button>
+            )}
+          </nav>
+
+          <div className={`flex items-center gap-2 ${isModerator ? "" : "lg:hidden"}`}>
+            <Button onClick={goPublish} className="px-4 lg:hidden">
+              Publicar
+            </Button>
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Abrir menú">
+                  <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.5" className="size-5">
+                    <path d="M3 6h16M3 11h16M3 16h16" />
+                  </svg>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] bg-background">
+                <SheetHeader>
+                  <SheetTitle className="font-serif text-title">Menú</SheetTitle>
+                </SheetHeader>
+                <nav aria-label="Principal" className="flex flex-col px-4 pb-4">
+                  {menuItems.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => runFromMenu(item.go)}
+                      aria-current={item.active ? "page" : undefined}
+                      className={`h-12 flex items-center justify-between gap-3 border-b border-border font-sans text-body text-left ${
+                        item.active ? "text-primary" : "text-foreground"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span className="text-destructive">·{item.badge}</span>
+                      )}
+                    </button>
+                  ))}
+                  <div className="pt-6">
+                    {user ? (
+                      <div className="flex flex-col gap-3">
+                        <span className="font-sans text-small text-muted-foreground truncate">
+                          {user.displayName || user.email}
+                        </span>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            logOut();
+                          }}
+                        >
+                          Cerrar sesión
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setLoginOpen(true);
+                        }}
+                      >
+                        Iniciar sesión
+                      </Button>
+                    )}
+                  </div>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
       </header>
+
       <AuthModal
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onSuccess={() => setLoginOpen(false)}
-        reason="Inicia sesión para acceder a tu cuenta de El Canje."
+        reason="Inicia sesión para acceder a tu cuenta de Librocambio."
       />
     </>
   );

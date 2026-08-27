@@ -117,14 +117,21 @@ export async function ensureReaderProfile(user: User, coords?: { lat: number; ln
     barrio: "Bogotá",
     lat: coords?.lat ?? BOGOTA_CENTER.lat,
     lng: coords?.lng ?? BOGOTA_CENTER.lng,
-    online: true,
     trades: 0,
-    rating: 5,
     bio: "",
     spot: "",
     interests: [],
+    lastSeenAt: serverTimestamp(),
     createdAt: serverTimestamp(),
   });
+}
+
+// Un latido por sesión y cada pocos minutos mientras la pestaña esté visible.
+// Es lo único que puede escribir la presencia sin un backend: cada lector
+// solo puede tocar su propio documento.
+export async function touchPresence(uid: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, READERS, uid), { lastSeenAt: serverTimestamp() });
 }
 
 // Atomic add/remove on the array (not a read-modify-write of the whole list): two rapid
@@ -153,9 +160,8 @@ export function subscribeReaders(cb: (readers: Reader[]) => void, onError?: (err
             barrio: data.barrio ?? "",
             lat: data.lat ?? BOGOTA_CENTER.lat,
             lng: data.lng ?? BOGOTA_CENTER.lng,
-            online: data.online ?? true,
+            lastSeenAt: data.lastSeenAt?.toMillis?.() ?? null,
             trades: data.trades ?? 0,
-            rating: data.rating ?? 5,
             bio: data.bio ?? "",
             spot: data.spot ?? "",
             interests: data.interests ?? [],
@@ -186,6 +192,7 @@ export function subscribeBooks(cb: (books: Book[]) => void, onError?: (err: unkn
             cat: data.cat ?? "",
             cond: data.cond ?? "",
             desc: data.desc ?? "",
+            cover: data.cover ?? null,
             resUid: data.resUid ?? null,
             createdAt: data.createdAt?.toMillis?.() ?? 0,
           };
@@ -325,9 +332,14 @@ export async function closeThread(threadId: string): Promise<void> {
   await setDoc(doc(db, THREADS, threadId), { closed: true }, { merge: true });
 }
 
-export async function addRating(raterUid: string, ratedUid: string, stars: number): Promise<void> {
+export async function addRating(
+  raterUid: string,
+  ratedUid: string,
+  stars: number,
+  tags: string[]
+): Promise<void> {
   if (!db) throw new FirebaseNotConfiguredError();
-  await addDoc(collection(db, RATINGS), { raterUid, ratedUid, stars, createdAt: serverTimestamp() });
+  await addDoc(collection(db, RATINGS), { raterUid, ratedUid, stars, tags, createdAt: serverTimestamp() });
 }
 
 export function subscribeRatings(cb: (ratings: Rating[]) => void, onError?: (err: unknown) => void): Unsubscribe {
@@ -343,6 +355,7 @@ export function subscribeRatings(cb: (ratings: Rating[]) => void, onError?: (err
             raterUid: data.raterUid,
             ratedUid: data.ratedUid,
             stars: data.stars ?? 0,
+            tags: data.tags ?? [],
             createdAt: data.createdAt?.toMillis?.() ?? 0,
           };
         })
