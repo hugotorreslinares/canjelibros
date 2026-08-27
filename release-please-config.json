@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "include-v-in-tag": true,
+      "changelog-sections": [
+        { "type": "feat", "section": "Novedades" },
+        { "type": "fix", "section": "Correcciones" },
+        { "type": "perf", "section": "Rendimiento" },
+        { "type": "refactor", "section": "Cambios internos" },
+        { "type": "docs", "section": "Documentación", "hidden": true },
+        { "type": "chore", "section": "Mantenimiento", "hidden": true },
+        { "type": "test", "section": "Pruebas", "hidden": true },
+        { "type": "build", "section": "Compilación", "hidden": true },
+        { "type": "ci", "section": "Integración continua", "hidden": true }
+      ]
+    }
+  }
+}

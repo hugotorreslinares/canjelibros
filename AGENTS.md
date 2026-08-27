@@ -83,3 +83,13 @@ App-level components worth knowing before you build a new one: `BookCover` (2:3 
 - The lint here is stricter than most React setups: no `setState` inside an effect body, no reading refs during render. When a shipped shadcn component breaks it (the carousel did), fix the component — don't disable the rule.
 - Firebase/Google Maps/any paid API: never assume a key exists — guard with the `isXConfigured` pattern already established, degrade to a visible-but-non-crashing state.
 - This repo has no test suite — verification is tsc + eslint + build + manual browser check (`preview_start` / Claude Browser tools). Don't claim "tested" without actually driving the browser.
+
+## Commits and releases
+
+Commit subjects are **Conventional Commits** — `type(scope): subject` — because release-please parses them to build the changelog and pick the version. A commit that doesn't parse is not an error: it silently never appears in the release notes, which is the failure mode to watch for. `commitlint` runs on the `commit-msg` hook so a malformed subject is rejected before it lands.
+
+- `feat:` something a reader can now do → minor bump. `fix:` a defect they hit → patch. `perf:`, `refactor:`, `docs:`, `chore:`, `test:`, `build:`, `ci:` for the rest; only the first three reach the published changelog.
+- A breaking change is `feat!:` or a `BREAKING CHANGE:` footer. While the version is 0.x that still bumps the minor, not the major.
+- The subject is the one line a reader sees in the changelog, so it stays plain language in the imperative: `feat: mark reserved books in the catalog`, not `feat: add badge`. **The body keeps carrying the reasoning** — the *why*, the trade-off, what was measured, what was deliberately not done. The type prefix is metadata for the tooling; it doesn't license a thinner message.
+- Releasing is not manual: merging to `main` makes release-please open a release pull request; merging *that* tags the commit and publishes the GitHub Release. Never bump `package.json` or edit `CHANGELOG.md` by hand — both are generated, and a hand edit is overwritten on the next run. To force a specific number, land a commit with a `Release-As: 1.0.0` footer.
+- Vercel deploys every push to `main` regardless of releases. A tag marks what shipped; it doesn't ship it.

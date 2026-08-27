@@ -1,0 +1,24 @@
+# Every merge to main opens (or updates) a release pull request: it collects the
+# conventional commits since the last tag, writes CHANGELOG.md and bumps the
+# version in package.json. Merging that pull request is what actually cuts the
+# release — it tags the commit and publishes a GitHub Release. Nothing here
+# deploys anything; Vercel already builds every push to main on its own.
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
