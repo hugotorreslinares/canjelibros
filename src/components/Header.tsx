@@ -8,7 +8,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { AuthModal } from "./AuthModal";
 
 interface HeaderProps {
-  today: string;
   unread: number;
   isMap: boolean;
   isCatalog: boolean;
@@ -32,7 +31,6 @@ interface NavItem {
 }
 
 export function Header({
-  today,
   unread,
   isMap,
   isCatalog,
@@ -83,7 +81,7 @@ export function Header({
     <>
       <header className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16">
-          <div className="flex items-baseline gap-5 min-w-0">
+          <div className="flex items-baseline min-w-0">
             {/* Un paso más pequeño por debajo de 360 px: «Librocambio» a 26 px se
                 monta encima de «Publicar» y del botón de menú, que ya están en el
                 mínimo de 44 px y no pueden ceder ancho. */}
@@ -93,9 +91,6 @@ export function Header({
             >
               Librocambio
             </button>
-            <span className="font-sans text-label uppercase text-muted-foreground hidden xl:inline">
-              Bogotá · {today}
-            </span>
           </div>
 
           {/* Un moderador suma el botón de menú a la derecha, y con separaciones

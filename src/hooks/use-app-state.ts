@@ -939,7 +939,6 @@ export function useAppState() {
     goPolicies: () => go("policies"),
 
     header: {
-      today: new Date().toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" }),
       unread: myThreads.filter((t) => !t.closed).length,
       isMap: route === "map",
       isCatalog: route === "catalog",
