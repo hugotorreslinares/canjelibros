@@ -1,18 +1,21 @@
 import type { Route } from "./types";
 
-export const SITE_NAME = "Circular";
+export const SITE_NAME = "Librocambio";
 
-// En Vercel el dominio de producción llega en VERCEL_PROJECT_PRODUCTION_URL, así
-// que las URL canónicas salen bien sin configurar nada. NEXT_PUBLIC_SITE_URL
-// manda si algún día hay dominio propio.
+const SITE_DOMAIN = "https://librocambio.com";
+
+// El canonical apunta siempre al dominio propio, incluso desde una preview: dos
+// direcciones sirviendo lo mismo es contenido duplicado, y la que debe ganar es
+// esta. En local se queda en localhost para no anunciar producción desde una
+// máquina de desarrollo. NEXT_PUBLIC_SITE_URL manda sobre todo lo anterior.
 export const SITE_URL = (() => {
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  if (process.env.VERCEL) return SITE_DOMAIN;
   return "http://localhost:3000";
 })();
 
 export const SITE_DESCRIPTION =
-  "Circular es un intercambio vecinal de libros usados en Bogotá: publica los que ya leíste, mira los que tienen cerca de ti y acuerden el canje por mensaje. Sin dinero y sin publicidad.";
+  "Librocambio es un intercambio vecinal de libros usados en Bogotá: publica los que ya leíste, mira los que tienen cerca de ti y acuerden el canje por mensaje. Sin dinero y sin publicidad.";
 
 interface RouteSeo {
   title: string;
@@ -42,7 +45,7 @@ export const ROUTE_SEO: Record<Route, RouteSeo> = {
   policies: {
     title: "Políticas del sitio",
     description:
-      "Qué se puede publicar en Circular y qué no: obras protegidas por derecho de autor, documentos con reserva legal, datos personales de terceros, y cómo reportar una publicación.",
+      "Qué se puede publicar en Librocambio y qué no: obras protegidas por derecho de autor, documentos con reserva legal, datos personales de terceros, y cómo reportar una publicación.",
     index: true,
     changeFrequency: "monthly",
     priority: 0.6,

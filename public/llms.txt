@@ -1,6 +1,6 @@
-# Circular
+# Librocambio
 
-> Circular es un intercambio vecinal de libros usados en Bogotá, Colombia. Cada
+> Librocambio es un intercambio vecinal de libros usados en Bogotá, Colombia. Cada
 > persona publica los libros que ya leyó, ve los que tienen otros lectores cerca
 > y acuerdan el canje por mensaje. El intercambio es libro por libro: no se
 > cobra, no se vende y no hay publicidad.

@@ -1,4 +1,4 @@
-# PLAN — Circular
+# PLAN — Librocambio
 
 Estado del proyecto y trabajo pendiente. Complementa a [AGENTS.md](AGENTS.md), que describe **cómo está hecho**; aquí va **qué falta y en qué orden**.
 
@@ -20,7 +20,7 @@ Autenticación con Firebase (Google y correo). Solo publicar/editar/eliminar y p
 ## 2. Pendiente inmediato
 
 1. **Recorrer la aplicación con sesión iniciada.** Todo el rediseño (fases 0 a 9 de [UI-PLAN.md](UI-PLAN.md)) se verificó vista por vista en el navegador, pero **sin cuenta**: estante, publicar, mensajes y moderación se comprobaron por código, por piezas sueltas o con datos de prueba. El recorrido que falta es publicar → proponer → chatear → confirmar canje → calificar, y moderar un libro.
-2. **Reemplazar `moderacion@elcanje.co`** por una dirección real antes de exponer el sitio: hoy la página de políticas promete un canal de reporte que no existe.
+2. **Reemplazar `moderacion@librocambio.com`** por una dirección real antes de exponer el sitio: hoy la página de políticas promete un canal de reporte que no existe.
 3. **Ver la presencia en verde.** `lastSeenAt` solo existe para quien haya entrado después del latido; los perfiles antiguos no dicen nada hasta que su dueño vuelva a entrar. Es lo correcto, pero conviene confirmarlo con dos sesiones.
 
 ## 3. Backlog priorizado

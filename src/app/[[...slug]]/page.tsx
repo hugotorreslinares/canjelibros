@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (readerId) {
     return {
       title: "Estante de un lector",
-      description: "El estante de un lector de Circular en Bogotá.",
+      description: "El estante de un lector de Librocambio en Bogotá.",
       alternates: { canonical: pathname },
       // El perfil es de una persona y su contenido llega por JavaScript: no hay
       // nada que indexar y sí una privacidad que respetar.

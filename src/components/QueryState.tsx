@@ -34,7 +34,7 @@ export function QueryState({
       <Alert variant="destructive" className="max-w-[46em] p-4">
         <AlertTitle className="font-serif text-subtitle">{errorTitle}</AlertTitle>
         <AlertDescription className="font-serif text-body">
-          Revisa tu conexión y vuelve a intentarlo. Si el problema sigue, escríbenos a moderacion@elcanje.co.
+          Revisa tu conexión y vuelve a intentarlo. Si el problema sigue, escríbenos a moderacion@librocambio.com.
         </AlertDescription>
       </Alert>
     );

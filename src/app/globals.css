@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Sistema de Circular — dirección «Papel y tinta».
+/* Sistema de Librocambio — dirección «Papel y tinta».
    Seis pasos de escala tipográfica y una rejilla de 4 px (el --spacing por
    defecto de Tailwind). Cualquier tamaño fuera de esta tabla es un error:
    antes de esto convivían doce tamaños distintos en una sola pantalla. */

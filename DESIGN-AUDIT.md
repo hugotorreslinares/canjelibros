@@ -1,4 +1,4 @@
-# Auditoría de diseño — Circular
+# Auditoría de diseño — Librocambio
 
 Revisión de interfaz, 25 de agosto de 2026. Solo diagnóstico: **no se corrigió nada**.
 

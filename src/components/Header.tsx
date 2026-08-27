@@ -76,18 +76,21 @@ export function Header({
       <header className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16">
           <div className="flex items-baseline gap-5 min-w-0">
+            {/* Un paso más pequeño por debajo de 360 px: «Librocambio» a 26 px se
+                monta encima de «Publicar» y del botón de menú, que ya están en el
+                mínimo de 44 px y no pueden ceder ancho. */}
             <button
               onClick={goMap}
-              className="flex items-center h-11 shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
+              className="flex items-center h-11 shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[21px] min-[360px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
             >
-              Circular
+              Librocambio
             </button>
             <span className="font-sans text-label uppercase text-muted-foreground hidden xl:inline">
               Bogotá · {today}
             </span>
           </div>
 
-          <nav aria-label="Principal" className="hidden md:flex items-center gap-6">
+          <nav aria-label="Principal" className="hidden lg:flex items-center gap-6">
             {items.map((item) => (
               <button
                 key={item.label}
@@ -117,7 +120,7 @@ export function Header({
             )}
           </nav>
 
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-2">
             <Button onClick={goPublish} className="px-4">
               Publicar
             </Button>
@@ -188,7 +191,7 @@ export function Header({
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onSuccess={() => setLoginOpen(false)}
-        reason="Inicia sesión para acceder a tu cuenta de Circular."
+        reason="Inicia sesión para acceder a tu cuenta de Librocambio."
       />
     </>
   );

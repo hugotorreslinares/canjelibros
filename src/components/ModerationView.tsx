@@ -92,7 +92,7 @@ export function ModerationView({
         <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-[18px]">Panel restringido</h1>
         <p className="text-[17px] leading-[1.5] text-[#444141]">
           {signedIn
-            ? "Tu cuenta no tiene permisos de moderación. Si crees que debería tenerlos, escríbenos a moderacion@elcanje.co."
+            ? "Tu cuenta no tiene permisos de moderación. Si crees que debería tenerlos, escríbenos a moderacion@librocambio.com."
             : "Inicia sesión con una cuenta de moderación para revisar publicaciones reportadas."}
         </p>
         <Button variant="outline" onClick={goPolicies} className="mt-6">
