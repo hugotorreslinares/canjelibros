@@ -57,7 +57,15 @@ export function Header({
     { label: "Mensajes", active: isChat, go: goChat, badge: unread },
     { label: "Mi estante", active: isShelf, go: goShelf },
   ];
-  if (isModerator) items.push({ label: "Moderación", active: isModeration, go: goModeration });
+
+  // Moderación vive solo en el menú lateral. Es un destino administrativo que
+  // usan dos o tres personas, y como quinto enlace del menú de escritorio
+  // ensanchaba la barra hasta montarse encima del logotipo. Por eso un
+  // moderador conserva el botón de menú también en escritorio: es su única
+  // puerta al panel.
+  const menuItems: NavItem[] = isModerator
+    ? [...items, { label: "Moderación", active: isModeration, go: goModeration }]
+    : items;
 
   // El estado activo se marca con aria-current además del subrayado: antes solo
   // lo comunicaba el color, que no llega a un lector de pantalla.
@@ -90,7 +98,10 @@ export function Header({
             </span>
           </div>
 
-          <nav aria-label="Principal" className="hidden lg:flex items-center gap-6">
+          {/* Un moderador suma el botón de menú a la derecha, y con separaciones
+              de 24px el menú se monta sobre el logotipo a 1024px. Vuelven a 24px
+              en xl, donde sí sobra ancho. */}
+          <nav aria-label="Principal" className="hidden lg:flex items-center gap-4 xl:gap-6">
             {items.map((item) => (
               <button
                 key={item.label}
@@ -120,8 +131,8 @@ export function Header({
             )}
           </nav>
 
-          <div className="flex lg:hidden items-center gap-2">
-            <Button onClick={goPublish} className="px-4">
+          <div className={`flex items-center gap-2 ${isModerator ? "" : "lg:hidden"}`}>
+            <Button onClick={goPublish} className="px-4 lg:hidden">
               Publicar
             </Button>
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -137,7 +148,7 @@ export function Header({
                   <SheetTitle className="font-serif text-title">Menú</SheetTitle>
                 </SheetHeader>
                 <nav aria-label="Principal" className="flex flex-col px-4 pb-4">
-                  {items.map((item) => (
+                  {menuItems.map((item) => (
                     <button
                       key={item.label}
                       onClick={() => runFromMenu(item.go)}
