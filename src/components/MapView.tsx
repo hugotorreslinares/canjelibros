@@ -120,7 +120,12 @@ export function MapView({
 }: MapViewProps) {
   return (
     <div className="grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_400px] flex-1 items-stretch">
-      <div className="relative overflow-hidden bg-[#f3f2f2] min-h-[500px] lg:min-h-[640px]">
+      {/* `isolate` no es decorativo: Leaflet reparte z-index de 400 a 1000 entre
+          sus capas, pines y controles, y sin un contexto de apilamiento propio
+          compiten con el resto de la página. En móvil eso ponía los pines y la
+          barra de atribución por encima del menú lateral (z-50), que quedaba
+          visible pero intocable. Aislado, esos valores solo cuentan aquí dentro. */}
+      <div className="relative isolate overflow-hidden bg-[#f3f2f2] min-h-[500px] lg:min-h-[640px]">
         <LeafletMap
           users={users}
           selected={sel ? { lat: sel.lat, lng: sel.lng } : null}
