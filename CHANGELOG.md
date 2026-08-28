@@ -3,6 +3,13 @@
 Las entradas a partir de aquí las genera release-please leyendo los commits.
 No edites este archivo a mano: se regenera y tu cambio se pierde.
 
+## [0.1.1](https://github.com/hugotorreslinares/canjelibros/compare/v0.1.0...v0.1.1) (2026-08-28)
+
+
+### Correcciones
+
+* el mapa ya no tapa el menú lateral en móvil ([d6d1fd1](https://github.com/hugotorreslinares/canjelibros/commit/d6d1fd13b336ed3d8dd6347061523e8a1e65e995))
+
 ## 0.1.0 — línea base (27 de agosto de 2026)
 
 Estado de la aplicación cuando se adoptó el versionado. Los commits anteriores
