@@ -32,7 +32,7 @@ export function HomeHero({ covers, goMap }: HomeHeroProps) {
   };
 
   return (
-    <section className="px-6 sm:px-10 pt-10 pb-12 sm:pt-14 sm:pb-16 border-b border-border">
+    <section className="px-6 sm:px-10 pt-8 pb-8 sm:pt-14 sm:pb-16 border-b border-border">
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16 items-center">
         <div>
           <h1 className="font-serif text-display sm:text-hero m-0 text-foreground">
@@ -41,14 +41,14 @@ export function HomeHero({ covers, goMap }: HomeHeroProps) {
             Comparte <span className="text-accent-warm">historias.</span>
           </h1>
 
-          <div className="h-0.5 w-24 bg-accent-warm mt-6 mb-6" />
+          <div className="h-0.5 w-24 bg-accent-warm mt-5 mb-5 sm:mt-6 sm:mb-6" />
 
           <p className="font-sans text-body text-muted-foreground m-0 max-w-[46ch]">
             Conecta con lectores cerca de ti, descubre nuevos libros y haz que las historias sigan su
             camino.
           </p>
 
-          <div className="flex flex-wrap gap-3 mt-8">
+          <div className="flex flex-wrap gap-3 mt-6 sm:mt-8">
             <Button onClick={goMap}>
               <svg
                 viewBox="0 0 20 20"
