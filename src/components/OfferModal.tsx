@@ -57,7 +57,7 @@ export function OfferModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 sm:[grid-template-columns:1fr_46px_1fr] gap-6 items-start">
+        <div className="grid grid-cols-1 min-[640px]:[grid-template-columns:1fr_46px_1fr] gap-6 items-start">
           <div>
             <h3 className="font-sans text-label uppercase text-muted-foreground mb-3">Pides</h3>
             <div className="grid grid-cols-[66px_minmax(0,1fr)] gap-3.5">
@@ -90,7 +90,7 @@ export function OfferModal({
                   key={i}
                   onClick={b.choose}
                   aria-pressed={b.active}
-                  className={`text-left border rounded-sm px-3.5 py-3 flex flex-col gap-0.5 min-h-11 ${
+                  className={`text-left border rounded-sm px-3.5 py-3 flex flex-col gap-0.5 min-h-[max(44px,2.75rem)] ${
                     b.active ? "bg-accent border-primary" : "bg-transparent border-border-strong hover:bg-muted"
                   }`}
                 >

@@ -68,7 +68,7 @@ function FilterButton({ option, count }: { option: Option; count?: number }) {
     <button
       onClick={option.pick}
       aria-pressed={option.active}
-      className={`flex h-11 items-center gap-2 bg-transparent border-none text-left font-serif text-body ${
+      className={`flex h-11 min-h-[44px] items-center gap-2 bg-transparent border-none text-left font-serif text-body ${
         option.active ? "text-primary" : "text-foreground"
       }`}
     >
@@ -150,7 +150,13 @@ export function CatalogView({
         </section>
       )}
 
-      <div className="grid grid-cols-1 md:[grid-template-columns:230px_minmax(0,1fr)] gap-11 items-start">
+      {/* El corte va en px a propósito, no con el breakpoint `md`. Los breakpoints
+          de Tailwind se declaran en `rem`, así que se mueven con el tamaño de letra
+          del navegador: con la fuente en 12px, `md` deja de valer 768px y vale 576,
+          y a esa anchura la barra de 230px y las filas de la lista ya no caben
+          juntas. Un ancho fijo en píxeles no puede depender de una medida que el
+          visitante cambia. */}
+      <div className="grid grid-cols-1 min-[768px]:[grid-template-columns:230px_minmax(0,1fr)] gap-11 items-start">
         <div className="flex flex-col gap-6 md:sticky md:top-20">
           <div>
             <h2 className="font-sans text-label uppercase text-muted-foreground mb-2">Categoría</h2>
@@ -208,7 +214,7 @@ export function CatalogView({
             {items.map((b, i) => (
               <article
                 key={i}
-                className="grid grid-cols-1 sm:grid-cols-[74px_minmax(0,1fr)_200px] gap-5 border-t border-border py-6 items-start"
+                className="grid grid-cols-1 min-[640px]:grid-cols-[74px_minmax(0,1fr)_minmax(0,200px)] gap-5 border-t border-border py-6 items-start"
               >
                 <BookCover
                   cover={b.cover}

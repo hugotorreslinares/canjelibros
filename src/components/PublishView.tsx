@@ -42,7 +42,7 @@ function ChipRow({ chips }: { chips: Chip[] }) {
           key={c.label}
           onClick={c.pick}
           aria-pressed={c.active}
-          className={`h-11 px-4 rounded-sm border font-sans text-small transition-colors ${
+          className={`h-11 min-h-[44px] px-4 rounded-sm border font-sans text-small transition-colors ${
             c.active
               ? "border-primary bg-accent text-accent-foreground"
               : "border-border-strong bg-transparent text-foreground/85 hover:bg-muted"
@@ -78,7 +78,7 @@ export function PublishView({
   cancel,
 }: PublishViewProps) {
   return (
-    <div className="w-full mx-auto max-w-[1180px] px-6 sm:px-10 pt-8 pb-16 grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_320px] gap-14">
+    <div className="w-full mx-auto max-w-[1180px] px-6 sm:px-10 pt-8 pb-16 grid grid-cols-1 min-[1024px]:[grid-template-columns:minmax(0,1fr)_320px] gap-14">
       <div>
         <h2 className="font-sans text-label uppercase text-muted-foreground">
           {isEditing ? "Editando publicación" : `Nueva publicación · cupo ${nextSlot} de ${totalSlots}`}

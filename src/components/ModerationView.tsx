@@ -177,7 +177,7 @@ export function ModerationView({
                     <div className="flex flex-wrap gap-[8px]">
                       {catChips.map((c) => (
                         <button key={c.label} onClick={c.pick} aria-pressed={c.active}
-                          className={`h-11 px-4 rounded-sm border font-sans text-small transition-colors ${
+                          className={`h-11 min-h-[44px] px-4 rounded-sm border font-sans text-small transition-colors ${
                           c.active
                             ? "border-primary bg-accent text-accent-foreground"
                             : "border-border-strong bg-transparent text-foreground/85 hover:bg-muted"
@@ -192,7 +192,7 @@ export function ModerationView({
                     <div className="flex flex-wrap gap-[8px]">
                       {condChips.map((c) => (
                         <button key={c.label} onClick={c.pick} aria-pressed={c.active}
-                          className={`h-11 px-4 rounded-sm border font-sans text-small transition-colors ${
+                          className={`h-11 min-h-[44px] px-4 rounded-sm border font-sans text-small transition-colors ${
                           c.active
                             ? "border-primary bg-accent text-accent-foreground"
                             : "border-border-strong bg-transparent text-foreground/85 hover:bg-muted"

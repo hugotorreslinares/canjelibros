@@ -87,7 +87,7 @@ export function Header({
                 mínimo de 44 px y no pueden ceder ancho. */}
             <button
               onClick={goCatalog}
-              className="flex items-center h-11 shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[21px] min-[360px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
+              className="flex items-center h-11 min-h-[44px] shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[21px] min-[360px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
             >
               Librocambio
             </button>

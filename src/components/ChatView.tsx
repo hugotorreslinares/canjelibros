@@ -75,7 +75,7 @@ export function ChatView({
   }
 
   return (
-    <div className="w-full mx-auto max-w-shell grid grid-cols-1 md:[grid-template-columns:330px_minmax(0,1fr)] flex-1 items-stretch">
+    <div className="w-full mx-auto max-w-shell grid grid-cols-1 min-[768px]:[grid-template-columns:330px_minmax(0,1fr)] flex-1 items-stretch">
       <div className="border-b md:border-b-0 md:border-r border-border px-6 py-6">
         <h2 className="font-sans text-label uppercase text-muted-foreground mb-3.5">Mensajes</h2>
         <div className="flex flex-col">

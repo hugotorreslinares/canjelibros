@@ -168,7 +168,7 @@ function ReaderMarkers({ users, selectedId }: { users: MapPinUser[]; selectedId:
                   <button
                     key={u.id}
                     onClick={u.select}
-                    className="flex h-11 items-center justify-between gap-3 border-t border-[#201e1d]/16 bg-transparent text-left"
+                    className="flex h-11 min-h-[44px] items-center justify-between gap-3 border-t border-[#201e1d]/16 bg-transparent text-left"
                   >
                     <span className="font-serif text-[17px] text-[#201e1d]">{u.name}</span>
                     <span className="font-sans text-[13px] text-[#605d5d]">

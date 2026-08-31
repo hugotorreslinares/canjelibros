@@ -62,7 +62,7 @@ export function RatingModal({ open, name, starPicks, ratingTags, submit, close }
               key={t.label}
               onClick={t.toggle}
               aria-pressed={t.active}
-              className={`h-11 px-4 rounded-sm border font-sans text-small transition-colors ${
+              className={`h-11 min-h-[44px] px-4 rounded-sm border font-sans text-small transition-colors ${
                 t.active
                   ? "border-primary bg-accent text-accent-foreground"
                   : "border-border-strong bg-transparent text-foreground/85 hover:bg-muted"
