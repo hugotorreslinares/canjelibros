@@ -3,6 +3,20 @@
 Las entradas a partir de aquí las genera release-please leyendo los commits.
 No edites este archivo a mano: se regenera y tu cambio se pierde.
 
+## [0.2.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.1.1...v0.2.0) (2026-08-31)
+
+
+### Novedades
+
+* añade un hero a la portada ([2af43a4](https://github.com/hugotorreslinares/canjelibros/commit/2af43a426f77f808ca2e40488c3ce8dfb7d7503c))
+* el catálogo pasa a ser la portada ([d0a6421](https://github.com/hugotorreslinares/canjelibros/commit/d0a6421cd6494143b62a0f31ce9821ac371e1d3e))
+
+
+### Correcciones
+
+* aprieta el hero en móvil para que asomen los libros ([9bf0919](https://github.com/hugotorreslinares/canjelibros/commit/9bf0919769120c1bf917f6d1e24604172d211248))
+* limita el ancho del contenido en pantallas grandes ([1030b35](https://github.com/hugotorreslinares/canjelibros/commit/1030b35145d2f9cc5ecbceee8f8cd5f8f9bcb4bb))
+
 ## [0.1.1](https://github.com/hugotorreslinares/canjelibros/compare/v0.1.0...v0.1.1) (2026-08-28)
 
 
