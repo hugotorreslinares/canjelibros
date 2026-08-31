@@ -13,8 +13,8 @@ cada parte puede calificar a la otra.
 
 ## Páginas
 
-- [Mapa de lectores](/): quiénes están publicando cerca y cuántos libros tiene cada uno.
-- [Catálogo](/catalogo): todos los libros disponibles, con filtros por categoría y estado.
+- [Catálogo](/): todos los libros disponibles, con filtros por categoría y estado. Es la portada.
+- [Mapa de lectores](/mapa): en qué zonas de Bogotá hay lectores publicando y cuántos libros tiene cada uno.
 - [Políticas del sitio](/politicas): qué se puede publicar y qué no, cómo funciona la moderación y cómo reportar.
 
 ## Qué no es

@@ -27,17 +27,19 @@ interface RouteSeo {
 }
 
 export const ROUTE_SEO: Record<Route, RouteSeo> = {
-  map: {
+  // El catálogo es la portada, así que carga el título y la descripción
+  // principales y la prioridad más alta del sitemap.
+  catalog: {
     title: "Intercambio de libros usados en Bogotá",
     description: SITE_DESCRIPTION,
     index: true,
     changeFrequency: "daily",
     priority: 1,
   },
-  catalog: {
-    title: "Catálogo de libros disponibles para canje",
+  map: {
+    title: "Mapa de lectores en Bogotá",
     description:
-      "Mira qué libros usados tienen los lectores cerca de ti en Bogotá, filtra por categoría y estado, y propón un canje uno por uno.",
+      "Mira en qué zonas de Bogotá hay lectores publicando libros, cuántos tiene cada uno y a qué distancia están de ti.",
     index: true,
     changeFrequency: "daily",
     priority: 0.9,

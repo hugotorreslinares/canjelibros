@@ -12,7 +12,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Book-exchange app, Bogotá. Next.js 16 App Router, TS, Tailwind v4, React 19, Firebase Auth + Firestore, Leaflet/OSM map, shadcn/ui on a Radix base.
 
-**Routing**: one optional catch-all segment (`src/app/[[...slug]]/page.tsx`) serves every path, and `src/lib/routes.ts` maps a path to a view (`/catalogo`, `/estante`, `/publicar`, `/mensajes`, `/moderacion`, `/politicas`, `/lector/<uid>`). `use-app-state` reads `usePathname()` and derives the route from it; navigation goes through `window.history.pushState`, which Next syncs with its router — that is what keeps filters, drafts and selections alive across a view change. Don't add a `page.tsx` per view: that would remount the tree and throw that state away.
+**Routing**: one optional catch-all segment (`src/app/[[...slug]]/page.tsx`) serves every path, and `src/lib/routes.ts` maps a path to a view (`/` is the catalog, then `/mapa`, `/estante`, `/publicar`, `/mensajes`, `/moderacion`, `/politicas`, `/lector/<uid>`; `/catalogo` is a permanent redirect to `/`, kept because it was in the sitemap). `use-app-state` reads `usePathname()` and derives the route from it; navigation goes through `window.history.pushState`, which Next syncs with its router — that is what keeps filters, drafts and selections alive across a view change. Don't add a `page.tsx` per view: that would remount the tree and throw that state away.
 
 Read this before exploring the codebase — it's the map so you don't have to rediscover it. Setup/env steps: [README.md](README.md). Firestore migration history/rationale: [RESULTS.md](RESULTS.md) (keep or fold into here, don't duplicate).
 
@@ -61,7 +61,7 @@ Everything is real/Firestore now: readers, books, reservations, chat threads + m
 - The catch-all page's `generateMetadata` gives every view its own title, description and canonical, and marks the personal ones (`/estante`, `/publicar`, `/mensajes`, `/moderacion`, `/lector/*`) `noindex`. `robots.ts` disallows the same set; `sitemap.ts` lists only the indexable ones.
 - An unknown path **404s** (`isKnownPath` in `src/lib/routes.ts`). Without that check a catch-all answers 200 to any URL, which is duplicate content at infinite addresses.
 - `public/llms.txt` describes the site for AI crawlers, and `src/app/opengraph-image.tsx` generates the share card. Its type falls back to Satori's sans — a serif would need the font file fetched into the route.
-- **The limit worth knowing**: books and readers come from Firestore in the browser, so the served HTML carries the shell and the static copy but no catalog. `/politicas` is fully in the HTML; `/catalogo` is not. Server-rendering real listings needs a server-side read (Admin SDK, hence a paid plan) — until then, no crawler and no model sees an actual book.
+- **The limit worth knowing**: books and readers come from Firestore in the browser, so the served HTML carries the shell and the static copy but no catalog. `/politicas` is fully in the HTML; the catalog at `/` is not. Server-rendering real listings needs a server-side read — which the free Spark plan does allow (Firestore is included, 50k reads/day; only Cloud Storage and unlimited Functions need Blaze). The blocker is work, not billing: a real route per book, ISR, and a rule for which books are worth indexing.
 
 ## Design system (read before writing any markup)
 

@@ -50,8 +50,8 @@ export function Header({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const items: NavItem[] = [
-    { label: "Mapa", active: isMap, go: goMap },
     { label: "Catálogo", active: isCatalog, go: goCatalog },
+    { label: "Mapa", active: isMap, go: goMap },
     { label: "Mensajes", active: isChat, go: goChat, badge: unread },
     { label: "Mi estante", active: isShelf, go: goShelf },
   ];
@@ -86,7 +86,7 @@ export function Header({
                 monta encima de «Publicar» y del botón de menú, que ya están en el
                 mínimo de 44 px y no pueden ceder ancho. */}
             <button
-              onClick={goMap}
+              onClick={goCatalog}
               className="flex items-center h-11 shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[21px] min-[360px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
             >
               Librocambio

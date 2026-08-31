@@ -991,7 +991,7 @@ export function useAppState() {
 
     policiesView: {
       isPolicies: route === "policies",
-      goMap: () => go("map"),
+      goHome: () => go("catalog"),
     },
 
     mapView: {

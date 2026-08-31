@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 
 interface PoliciesViewProps {
-  goMap: () => void;
+  goHome: () => void;
 }
 
 const PROHIBITED = [
@@ -25,7 +25,7 @@ const RULES = [
   "Trata a los demás lectores con respeto en los mensajes: no se toleran insultos, acoso ni spam.",
 ];
 
-export function PoliciesView({ goMap }: PoliciesViewProps) {
+export function PoliciesView({ goHome }: PoliciesViewProps) {
   return (
     <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[820px]">
       <div className="font-sans text-label uppercase text-muted-foreground">Políticas del sitio</div>
@@ -97,8 +97,8 @@ export function PoliciesView({ goMap }: PoliciesViewProps) {
         </p>
       </section>
 
-      <Button variant="outline" onClick={goMap}>
-        Volver al mapa
+      <Button variant="outline" onClick={goHome}>
+        Volver al catálogo
       </Button>
     </div>
   );

@@ -3,9 +3,12 @@ import type { Route } from "./types";
 // La URL es el estado de navegación, no una copia suya. Antes todo vivía en un
 // `route` de React y la aplicación entera era una sola dirección: no se podía
 // compartir un lector ni citar las políticas, y «atrás» sacaba del sitio.
+// El catálogo es la portada: quien llega quiere ver libros, y el mapa contesta
+// una pregunta posterior —quién los tiene cerca—. `/catalogo` sigue existiendo
+// como redirección permanente en next.config.ts, porque estaba en el sitemap.
 const ROUTE_PATHS: Record<Route, string> = {
-  map: "/",
-  catalog: "/catalogo",
+  catalog: "/",
+  map: "/mapa",
   shelf: "/estante",
   publish: "/publicar",
   chat: "/mensajes",
@@ -50,5 +53,5 @@ export function locationFromPath(pathname: string): Location {
   }
 
   const entry = (Object.entries(ROUTE_PATHS) as [Route, string][]).find(([, path]) => path === clean);
-  return { route: entry ? entry[0] : "map", readerId: null };
+  return { route: entry ? entry[0] : "catalog", readerId: null };
 }
