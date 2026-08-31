@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
 import { CatalogView } from "./CatalogView";
+import { HomeHero } from "./HomeHero";
 import { DeleteDialog } from "./DeleteDialog";
 import { ChatView } from "./ChatView";
 import { Header } from "./Header";
@@ -25,6 +26,7 @@ export function ElCanjeApp() {
       <Header {...state.header} />
       <main className="flex-1 flex flex-col">
         {state.mapView.isMap && <MapView {...state.mapView} />}
+        {state.homeHero.show && <HomeHero {...state.homeHero} />}
         {state.catalogView.isCatalog && <CatalogView {...state.catalogView} />}
         {state.shelfView.isShelf && <ShelfView {...state.shelfView} />}
         {state.publishView.isPublish && <PublishView {...state.publishView} />}

@@ -99,9 +99,9 @@ export function CatalogView({
   const usableCats = catOptions.filter((o) => o.n > 0 || o.active);
 
   return (
-    <div className="px-6 sm:px-10 pt-8 pb-16">
+    <div id="catalogo" className="px-6 sm:px-10 pt-8 pb-16 scroll-mt-16">
       <div className="flex items-baseline justify-between gap-8 flex-wrap mb-2">
-        <h1 className="font-serif text-display m-0">Catálogo</h1>
+        <h2 className="font-serif text-display m-0">Catálogo</h2>
         <p className="font-sans text-small text-muted-foreground">
           {loading ? "Cargando libros…" : error ? "No se pudo cargar el catálogo" : `${count} libros disponibles · ordenados por ${sortLabel}`}
         </p>

@@ -29,6 +29,12 @@
   --text-display: 2.75rem;
   --text-display--line-height: 1.02;
   --text-display--letter-spacing: -0.02em;
+  /* Séptimo paso, y el único que no se usa dentro de la aplicación: el titular
+     de la portada. A 44px competía de tú a tú con los encabezados del catálogo
+     que tiene justo debajo, y un hero que no manda no es un hero. */
+  --text-hero: 3.75rem;
+  --text-hero--line-height: 0.98;
+  --text-hero--letter-spacing: -0.03em;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,6 +51,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-warm: var(--accent-warm);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-placeholder: var(--placeholder);
@@ -82,6 +89,10 @@
   --muted-foreground: #605d5d;
   --accent: #cbeeff;
   --accent-foreground: #004961;
+  /* El único cálido de la paleta, y solo para destacar una palabra del titular
+     de la portada. 5,37:1 sobre el papel. No es un color de estado: no
+     significa error ni éxito, y no debe usarse en la interfaz de la app. */
+  --accent-warm: #a8432a;
 
   /* Magenta solo para lo destructivo: antes también significaba «canje
      cerrado con éxito», que es lo contrario. */
@@ -113,6 +124,8 @@
   --muted-foreground: #a5a1a1;
   --accent: #123240;
   --accent-foreground: #bfe6f5;
+  /* El rústico del modo claro da 3:1 aquí; este da 5,41:1. */
+  --accent-warm: #d2734f;
   --destructive: #f0679f;
   --destructive-foreground: #17161a;
   --placeholder: #8d8989;

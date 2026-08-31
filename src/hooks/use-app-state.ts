@@ -1021,6 +1021,23 @@ export function useAppState() {
         : "Inicia sesión para ver a qué distancia queda cada lector.",
     },
 
+    // El hero solo existe en la portada, y toma sus portadas de las mismas
+    // recomendaciones que ya se calcularon para el catálogo: cero lecturas
+    // extra y siempre libros libres, porque los reservados ya están fuera.
+    // Del final de la lista, no del principio: el carrusel de «Recomendados»
+    // queda inmediatamente debajo y empieza por los primeros.
+    homeHero: {
+      show: route === "catalog",
+      covers: vals.recommended.items.slice(-3).map((b) => ({
+        id: b.id,
+        cover: b.cover,
+        plate: b.plate,
+        t: b.t,
+        a: b.a,
+      })),
+      goMap: () => go("map"),
+    },
+
     catalogView: {
       isCatalog: route === "catalog",
       loading: dataLoading,
