@@ -80,7 +80,7 @@ export function Header({
   return (
     <>
       <header className="sticky top-0 z-30 bg-background border-b border-border">
-        <div className="flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16">
+        <div className="w-full mx-auto max-w-shell flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16">
           <div className="flex items-baseline min-w-0">
             {/* Un paso más pequeño por debajo de 360 px: «Librocambio» a 26 px se
                 monta encima de «Publicar» y del botón de menú, que ya están en el

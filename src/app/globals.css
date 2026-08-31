@@ -52,6 +52,12 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-warm: var(--accent-warm);
+
+  /* El ancho de la caja de contenido, y la única fuente de ese número. A pantalla
+     completa en un monitor ancho las filas del catálogo se estiraban hasta que el
+     ojo perdía el renglón, y el encabezado dejaba el logotipo y el menú en
+     esquinas opuestas. Genera `max-w-shell`. */
+  --container-shell: 90rem;
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-placeholder: var(--placeholder);

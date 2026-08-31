@@ -67,7 +67,7 @@ export function ShelfView({
 }: ShelfViewProps) {
   if (!signedIn) {
     return (
-      <div className="px-6 sm:px-10 pt-8 pb-16 max-w-[720px]">
+      <div className="w-full mx-auto max-w-[720px] px-6 sm:px-10 pt-8 pb-16">
         <SectionLabel>Mi estante</SectionLabel>
         <h1 className="font-serif text-display mt-2 mb-4">Inicia sesión para ver tu estante</h1>
         <p className="font-serif text-body text-foreground/85">
@@ -81,7 +81,7 @@ export function ShelfView({
   }
 
   return (
-    <div className="px-6 sm:px-10 pt-8 pb-16 max-w-[1180px]">
+    <div className="w-full mx-auto max-w-[1180px] px-6 sm:px-10 pt-8 pb-16">
       <SectionLabel>Mi estante</SectionLabel>
       <h1 className="font-serif text-display mt-2 mb-0">{readerName}</h1>
       <p className="font-serif text-body text-foreground/85 mt-2">

@@ -78,7 +78,7 @@ export function PublishView({
   cancel,
 }: PublishViewProps) {
   return (
-    <div className="px-6 sm:px-10 pt-8 pb-16 grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_320px] gap-14 max-w-[1180px]">
+    <div className="w-full mx-auto max-w-[1180px] px-6 sm:px-10 pt-8 pb-16 grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_320px] gap-14">
       <div>
         <h2 className="font-sans text-label uppercase text-muted-foreground">
           {isEditing ? "Editando publicación" : `Nueva publicación · cupo ${nextSlot} de ${totalSlots}`}

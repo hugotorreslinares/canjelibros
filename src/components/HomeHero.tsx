@@ -33,7 +33,7 @@ export function HomeHero({ covers, goMap }: HomeHeroProps) {
 
   return (
     <section className="px-6 sm:px-10 pt-8 pb-8 sm:pt-14 sm:pb-16 border-b border-border">
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16 items-center">
+      <div className="w-full mx-auto max-w-shell grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16 items-center">
         <div>
           <h1 className="font-serif text-display sm:text-hero m-0 text-foreground">
             Cambia libros.

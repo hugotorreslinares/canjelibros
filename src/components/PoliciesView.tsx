@@ -27,7 +27,7 @@ const RULES = [
 
 export function PoliciesView({ goHome }: PoliciesViewProps) {
   return (
-    <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[820px]">
+    <div className="w-full mx-auto max-w-[820px] px-[24px] sm:px-[40px] pt-[34px] pb-[60px]">
       <div className="font-sans text-label uppercase text-muted-foreground">Políticas del sitio</div>
       <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-0">Qué se puede publicar en Librocambio</h1>
       <p className="text-[17px] leading-[1.5] text-[#444141] mt-[12px]">

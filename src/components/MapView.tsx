@@ -119,7 +119,7 @@ export function MapView({
   zoneNote,
 }: MapViewProps) {
   return (
-    <div className="grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_400px] flex-1 items-stretch">
+    <div className="w-full mx-auto max-w-shell grid grid-cols-1 lg:[grid-template-columns:minmax(0,1fr)_400px] flex-1 items-stretch">
       {/* `isolate` no es decorativo: Leaflet reparte z-index de 400 a 1000 entre
           sus capas, pines y controles, y sin un contexto de apilamiento propio
           compiten con el resto de la página. En móvil eso ponía los pines y la

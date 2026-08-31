@@ -35,11 +35,13 @@ export function ElCanjeApp() {
         {state.policiesView.isPolicies && <PoliciesView {...state.policiesView} />}
       </main>
 
-      <footer className="mt-auto px-4 sm:px-10 py-3 border-t border-border flex items-center gap-4 flex-wrap font-sans text-small text-muted-foreground">
-        <span>Librocambio · Bogotá</span>
-        <Button variant="link" asChild className="px-0">
-          <Link href="/politicas">Políticas del sitio</Link>
-        </Button>
+      <footer className="mt-auto border-t border-border">
+        <div className="w-full mx-auto max-w-shell px-4 sm:px-10 py-3 flex items-center gap-4 flex-wrap font-sans text-small text-muted-foreground">
+          <span>Librocambio · Bogotá</span>
+          <Button variant="link" asChild className="px-0">
+            <Link href="/politicas">Políticas del sitio</Link>
+          </Button>
+        </div>
       </footer>
 
       <Toaster position="bottom-center" />
