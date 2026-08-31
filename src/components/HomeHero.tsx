@@ -16,7 +16,9 @@ interface HomeHeroProps {
 
 // Un giro y un desplazamiento distintos por portada: tres rectángulos
 // perfectamente alineados leen como una plantilla, no como libros sobre una
-// mesa.
+// mesa. Los z-index de la pila solo ordenan estas tres entre sí — por eso el
+// contenedor lleva `isolate`: sin él empataban con el z-30 del encabezado
+// pegajoso y, al ir después en el DOM, las portadas lo tapaban al desplazarse.
 const STACK = [
   "z-30 -rotate-6 translate-y-2",
   "z-20 rotate-2 -translate-y-3",
@@ -84,7 +86,7 @@ export function HomeHero({ covers, goMap }: HomeHeroProps) {
             todavía no hay libros, la columna entera desaparece en vez de dejar
             un hueco decorado. */}
         {covers.length > 0 && (
-          <div className="relative hidden lg:block" aria-hidden="true">
+          <div className="relative isolate hidden lg:block" aria-hidden="true">
             <div className="absolute inset-x-6 inset-y-0 bg-accent" />
             <div className="relative flex items-center justify-center gap-4 py-12">
               {covers.slice(0, 3).map((b, i) => (
