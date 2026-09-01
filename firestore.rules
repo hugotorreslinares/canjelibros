@@ -59,6 +59,13 @@ service cloud.firestore {
         (resource.data.resUid == request.auth.uid &&
           request.resource.data.ownerId == request.auth.uid &&
           request.resource.data.resUid == null) ||
+        // Whoever a book is reserved for may also release it without taking it:
+        // cancelling a trade has to free the other side's book, and only the
+        // person it is reserved for can prove they are the one giving it up.
+        // Owner untouched, resUid only ever cleared — never pointed elsewhere.
+        (resource.data.resUid == request.auth.uid &&
+          request.resource.data.ownerId == resource.data.ownerId &&
+          request.resource.data.resUid == null) ||
         isModerator()
       ) && coverOk();
       allow delete: if request.auth != null && (

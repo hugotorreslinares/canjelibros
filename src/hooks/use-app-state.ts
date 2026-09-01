@@ -352,14 +352,14 @@ export function useAppState() {
       }
       const b = myBooks.find((x) => x.id === bookId);
       if (!b) return;
-      const reservedThread = b.resUid ? myThreads.find((t) => t.participants.includes(b.resUid as string)) : undefined;
-      if (b.resUid && !reservedThread?.closed) {
-        showToast("No puedes eliminar un libro reservado en un intercambio activo.");
-        return;
-      }
-      setPendingDelete({ scope: "shelf", bookId, title: b.t, reserved: false });
+      // Una propuesta no es un compromiso mientras nadie la haya cerrado, así que
+      // no bloquea el borrado: solo obliga a avisar de lo que se lleva por delante.
+      const enCanje = myThreads.some(
+        (t) => !t.closed && (t.fromBookId === bookId || t.toBookId === bookId)
+      );
+      setPendingDelete({ scope: "shelf", bookId, title: b.t, reserved: enCanje });
     },
-    [user, promptAuth, myBooks, myThreads, showToast]
+    [user, promptAuth, myBooks, myThreads]
   );
 
   const toggleInterest = useCallback(
@@ -479,17 +479,47 @@ export function useAppState() {
     const { scope, bookId } = pendingDelete;
 
     if (scope === "shelf") {
+      if (!user) return;
+      const canjesAbiertos = myThreads.filter(
+        (t) => !t.closed && (t.fromBookId === bookId || t.toBookId === bookId)
+      );
       try {
         await deleteBookDoc(bookId);
-        if (editingBookId === bookId) {
-          setEditingBookId(null);
-          setForm(EMPTY_FORM);
-        }
-        showToast("Libro eliminado de tu estante.");
       } catch {
         showToast("No se pudo eliminar. Intenta de nuevo.");
+        return;
+      }
+      if (editingBookId === bookId) {
+        setEditingBookId(null);
+        setForm(EMPTY_FORM);
       }
       setPendingDelete(null);
+
+      if (canjesAbiertos.length === 0) {
+        showToast("Libro eliminado de tu estante.");
+        return;
+      }
+      try {
+        for (const t of canjesAbiertos) {
+          // La reserva vive siempre en el libro ofrecido (`fromBookId`, ver
+          // `sendOffer`). Si el que se borra es el pedido, el ofrecido a cambio
+          // se queda colgado reservado para siempre: hay que soltarlo.
+          if (t.fromBookId !== bookId) await reserveBook(t.fromBookId, null);
+          await sendThreadMessage(
+            t.id,
+            user.uid,
+            `Cancelo el canje: eliminé «${pendingDelete.title}» de mi estante.`
+          );
+          await closeThread(t.id);
+        }
+        showToast(
+          canjesAbiertos.length === 1
+            ? "Libro eliminado y canje cancelado."
+            : `Libro eliminado y ${canjesAbiertos.length} canjes cancelados.`
+        );
+      } catch {
+        showToast("Libro eliminado, pero no se pudo cancelar el canje. Avísale por el chat.");
+      }
       return;
     }
 
@@ -530,7 +560,7 @@ export function useAppState() {
     } catch {
       showToast("Publicación eliminada, pero no se pudo registrar en la bitácora.");
     }
-  }, [pendingDelete, deleteReason, user, books, readers, editingBookId, modEditingId, moderatorName, showToast]);
+  }, [pendingDelete, deleteReason, user, books, readers, myThreads, editingBookId, modEditingId, moderatorName, showToast]);
 
   const vals = useMemo(() => {
     const totalSlots = BASE_SLOTS + Math.floor((myReader?.trades ?? 0) / TRADES_PER_SLOT);
@@ -1179,7 +1209,7 @@ export function useAppState() {
       title: pendingDelete?.scope === "moderation" ? "Eliminar por incumplir las políticas" : "Eliminar de tu estante",
       bookTitle: pendingDelete?.title ?? "",
       warning: pendingDelete?.reserved
-        ? "Está reservado en un intercambio: eliminarlo impedirá cerrar ese canje."
+        ? "Tiene un canje abierto: al eliminarlo se cancela, y el libro que te ofrecían a cambio queda libre."
         : null,
       reason: deleteReason,
       setReason: (v: string) => setDeleteReason(v),
