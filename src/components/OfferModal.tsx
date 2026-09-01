@@ -27,6 +27,8 @@ interface OfferModalProps {
   bookCover: string | null;
   bookPlate: string;
   myOfferables: Offerable[];
+  /** Por qué no hay nada que ofrecer, si es que no lo hay. */
+  emptyReason: "sin-libros" | "todos-en-canje" | null;
   hint: string;
   close: () => void;
   send: () => void;
@@ -43,6 +45,7 @@ export function OfferModal({
   bookCover,
   bookPlate,
   myOfferables,
+  emptyReason,
   hint,
   goPublish,
   close,
@@ -86,16 +89,18 @@ export function OfferModal({
 
           <div>
             <h3 className="font-sans text-label uppercase text-muted-foreground mb-3">Ofreces uno de los tuyos</h3>
-            {/* Sin libros publicados esta columna quedaba vacía y el pie pedía
-                elegir uno, que es imposible. El canje es uno por uno: si no
-                tienes nada que dar, lo que falta no es elegir sino publicar. */}
-            {myOfferables.length === 0 ? (
+            {/* Esta columna quedaba vacía y el pie pedía elegir uno, que es
+                imposible. Y los dos motivos por los que puede estar vacía tienen
+                salidas distintas. */}
+            {emptyReason ? (
               <div className="flex flex-col items-start gap-4">
                 <p className="font-serif text-body text-foreground/85 m-0">
-                  El canje es libro por libro, y todavía no tienes ninguno publicado.
+                  {emptyReason === "sin-libros"
+                    ? "El canje es libro por libro, y todavía no tienes ninguno publicado."
+                    : "Todos tus libros están comprometidos en otro canje. Publica uno más, o cierra o cancela alguno de los que tienes abiertos."}
                 </p>
                 <Button variant="outline" onClick={goPublish}>
-                  Publicar mi primer libro
+                  {emptyReason === "sin-libros" ? "Publicar mi primer libro" : "Publicar otro libro"}
                 </Button>
               </div>
             ) : (

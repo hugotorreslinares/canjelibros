@@ -690,6 +690,11 @@ export function useAppState() {
     const offerBook = offer ? books.find((b) => b.id === offer.bookId) || null : null;
     const offerUser = offer ? otherReaders.find((r) => r.id === offer.uid) || null : null;
 
+    // Un libro ya comprometido en un canje abierto no puede ofrecerse otra vez:
+    // `sendOffer` sobrescribe `resUid`, así que la segunda propuesta se llevaba
+    // la reserva de la primera sin avisar a nadie de las dos.
+    const myFreeBooks = myBooks.filter((b) => !b.resUid || threadForUid(b.resUid)?.closed);
+
     const pendingBook = myBooks.find((b) => b.resUid && !threadForUid(b.resUid)?.closed) || null;
     const pendingUser = pendingBook ? otherReaders.find((r) => r.id === pendingBook.resUid) || null : null;
 
@@ -775,6 +780,7 @@ export function useAppState() {
       recommended,
       offerUser,
       offerBook,
+      myFreeBooks,
       pendingBook,
       pendingUser,
       mappedMyBooks,
@@ -1194,10 +1200,13 @@ export function useAppState() {
       bookCat: vals.offerBook?.cat || "",
       bookCover: vals.offerBook?.cover ?? null,
       bookPlate: plateFor(1),
-      myOfferables: myBooks.map((b) => ({ ...b, active: offerMineId === b.id, choose: () => setOfferMineId(b.id) })),
+      myOfferables: vals.myFreeBooks.map((b) => ({ ...b, active: offerMineId === b.id, choose: () => setOfferMineId(b.id) })),
+      // Sin libros y con todos comprometidos son callejones distintos, y la salida
+      // también: publicar en el primer caso, esperar o cancelar en el segundo.
+      emptyReason: myBooks.length === 0 ? ("sin-libros" as const) : vals.myFreeBooks.length === 0 ? ("todos-en-canje" as const) : null,
       hint:
-        myBooks.length === 0
-          ? "Publica un libro y podrás proponer canjes."
+        vals.myFreeBooks.length === 0
+          ? "Necesitas un libro libre para proponer un canje."
           : offerMineId === null
             ? "Elige qué libro tuyo ofreces."
             : "Si acepta, ambos libros quedan reservados hasta el encuentro.",
