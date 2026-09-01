@@ -3,6 +3,20 @@
 Las entradas a partir de aquí las genera release-please leyendo los commits.
 No edites este archivo a mano: se regenera y tu cambio se pierde.
 
+## [0.3.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.2.0...v0.3.0) (2026-09-01)
+
+
+### Novedades
+
+* eliminar un libro cancela el canje y libera el que te ofrecían ([63b4606](https://github.com/hugotorreslinares/canjelibros/commit/63b46069f8b6b9118fa0868fddbbadabebb52ad3))
+
+
+### Correcciones
+
+* el catálogo dice que no muestra tus propios libros ([78fb9f3](https://github.com/hugotorreslinares/canjelibros/commit/78fb9f333a7d3060434009362741ea1825a371e1))
+* el hero ya no tapa el encabezado al desplazar ([bc7221d](https://github.com/hugotorreslinares/canjelibros/commit/bc7221d68cb44589c85729816806894c427bf74c))
+* la maquetación deja de depender del tamaño de letra del navegador ([03c58d3](https://github.com/hugotorreslinares/canjelibros/commit/03c58d309cb3320888ffda180a6c386c5ddac2fd))
+
 ## [0.2.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.1.1...v0.2.0) (2026-08-31)
 
 
