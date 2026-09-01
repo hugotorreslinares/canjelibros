@@ -52,6 +52,8 @@ interface CatalogViewProps {
   items: CatalogItem[];
   empty: boolean;
   count: string;
+  /** El catálogo oculta los libros de quien mira: hay que decirlo, o parece que su publicación falló. */
+  hidesMine: boolean;
   sortLabel: string;
   hasLocation: boolean;
   recommended: { title: string; note: string | null; items: RecommendedItem[] };
@@ -84,6 +86,7 @@ export function CatalogView({
   items,
   empty,
   count,
+  hidesMine,
   sortLabel,
   hasLocation,
   recommended,
@@ -103,7 +106,11 @@ export function CatalogView({
       <div className="flex items-baseline justify-between gap-8 flex-wrap mb-2">
         <h2 className="font-serif text-display m-0">Catálogo</h2>
         <p className="font-sans text-small text-muted-foreground">
-          {loading ? "Cargando libros…" : error ? "No se pudo cargar el catálogo" : `${count} libros disponibles · ordenados por ${sortLabel}`}
+          {loading
+            ? "Cargando libros…"
+            : error
+              ? "No se pudo cargar el catálogo"
+              : `${count} libros ${hidesMine ? "de otros lectores" : "disponibles"} · ordenados por ${sortLabel}`}
         </p>
       </div>
       <div className="h-[5px] bg-foreground mt-4 mb-0.5" />

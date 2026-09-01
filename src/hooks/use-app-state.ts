@@ -1045,6 +1045,12 @@ export function useAppState() {
       items: vals.catalog,
       empty: vals.catalogEmpty,
       count: vals.catCount,
+      // El catálogo esconde los libros propios —no puedes canjear contigo
+      // mismo—, y quien acaba de publicar busca el suyo aquí y concluye que la
+      // publicación falló. Solo hace falta decirlo si de verdad se está
+      // escondiendo algo: para un visitante sin libros, «de otros lectores» no
+      // significa nada.
+      hidesMine: myBooks.length > 0,
       recommended: vals.recommended,
       // Sin ubicación no se ordena por distancia (ver readerDist): el rótulo
       // dice lo que de verdad está pasando.
