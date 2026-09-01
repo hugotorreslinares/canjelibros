@@ -30,6 +30,7 @@ interface OfferModalProps {
   hint: string;
   close: () => void;
   send: () => void;
+  goPublish: () => void;
 }
 
 export function OfferModal({
@@ -43,6 +44,7 @@ export function OfferModal({
   bookPlate,
   myOfferables,
   hint,
+  goPublish,
   close,
   send,
 }: OfferModalProps) {
@@ -84,6 +86,19 @@ export function OfferModal({
 
           <div>
             <h3 className="font-sans text-label uppercase text-muted-foreground mb-3">Ofreces uno de los tuyos</h3>
+            {/* Sin libros publicados esta columna quedaba vacía y el pie pedía
+                elegir uno, que es imposible. El canje es uno por uno: si no
+                tienes nada que dar, lo que falta no es elegir sino publicar. */}
+            {myOfferables.length === 0 ? (
+              <div className="flex flex-col items-start gap-4">
+                <p className="font-serif text-body text-foreground/85 m-0">
+                  El canje es libro por libro, y todavía no tienes ninguno publicado.
+                </p>
+                <Button variant="outline" onClick={goPublish}>
+                  Publicar mi primer libro
+                </Button>
+              </div>
+            ) : (
             <div className="flex flex-col gap-0.5">
               {myOfferables.map((b, i) => (
                 <button
@@ -101,11 +116,12 @@ export function OfferModal({
                 </button>
               ))}
             </div>
+            )}
           </div>
         </div>
 
         <DialogFooter className="border-t border-border pt-5 sm:justify-start items-center">
-          <Button onClick={send} size="lg">
+          <Button onClick={send} size="lg" disabled={!myOfferables.some((b) => b.active)}>
             Enviar propuesta
           </Button>
           <span className="font-sans text-small text-muted-foreground">{hint}</span>

@@ -1195,12 +1195,22 @@ export function useAppState() {
       bookCover: vals.offerBook?.cover ?? null,
       bookPlate: plateFor(1),
       myOfferables: myBooks.map((b) => ({ ...b, active: offerMineId === b.id, choose: () => setOfferMineId(b.id) })),
-      hint: offerMineId === null ? "Elige qué libro tuyo ofreces." : "Si acepta, ambos libros quedan reservados hasta el encuentro.",
+      hint:
+        myBooks.length === 0
+          ? "Publica un libro y podrás proponer canjes."
+          : offerMineId === null
+            ? "Elige qué libro tuyo ofreces."
+            : "Si acepta, ambos libros quedan reservados hasta el encuentro.",
       close: () => {
         setOffer(null);
         setOfferMineId(null);
       },
       send: sendOffer,
+      goPublish: () => {
+        setOffer(null);
+        setOfferMineId(null);
+        go("publish");
+      },
     },
 
     deleteDialog: {
