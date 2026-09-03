@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { plateFor, stars } from "@/lib/design-utils";
+import { plateFor } from "@/lib/design-utils";
 import { distanceKm } from "@/lib/geo";
 import {
   addRating,
@@ -61,10 +61,6 @@ type PendingAction = { kind: "goPublish" } | { kind: "openOffer"; uid: string; b
 // estilar, no es accesible y en moderación además tenía que pedir el motivo
 // por window.prompt, que en móvil se pierde.
 type PendingDelete = { scope: "shelf" | "moderation"; bookId: string; title: string; reserved: boolean };
-
-function round1(n: number): number {
-  return Math.round(n * 10) / 10;
-}
 
 function formatDateTime(ms: number): string {
   if (!ms) return "hace un momento";
@@ -162,9 +158,12 @@ export function useAppState() {
       arr.push(r.stars);
       byUid.set(r.ratedUid, arr);
     });
-    return (uid: string) => {
+    // null, no 5: sin calificaciones no hay reputación que mostrar. Devolver un
+    // 5 por defecto pintaba cinco estrellas a todo el mundo y vaciaba la señal.
+    return (uid: string): number | null => {
       const arr = byUid.get(uid);
-      return arr && arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : 5;
+      if (!arr || !arr.length) return null;
+      return Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10;
     };
   }, [ratings]);
 
@@ -570,8 +569,10 @@ export function useAppState() {
     const nameOf = (id: string) => readers.find((r) => r.id === id)?.name.split(" ")[0] ?? "";
     // null = no sabemos dónde está el visitante. Antes esto devolvía 0 y la
     // interfaz publicaba «0 km» como si fuera un dato medido.
+    // Sin redondear: `DistanceLabel` decide cómo se dice según la escala, y el
+    // filtro de «X km a la redonda» compara contra el valor real.
     const readerDist = (r: { lat: number; lng: number }): number | null =>
-      myReader ? round1(distanceKm(myReader.lat, myReader.lng, r.lat, r.lng)) : null;
+      myReader ? distanceKm(myReader.lat, myReader.lng, r.lat, r.lng) : null;
     const threadForUid = (uid: string) => myThreads.find((t) => t.participants.includes(uid));
 
     const selUser = otherReaders.find((r) => r.id === sel) || null;
@@ -584,7 +585,6 @@ export function useAppState() {
         dist: readerDist(r),
         rating,
         count: readerBooks.length,
-        starsLabel: stars(rating),
         ink: isOnline(r.lastSeenAt, now) ? "#00769a" : "#7d7979",
         haloInk: isOnline(r.lastSeenAt, now) ? "rgba(0,118,154,.30)" : "rgba(32,30,29,.16)",
         pulse: isOnline(r.lastSeenAt, now) && ANIMATE_PINS ? 3.4 + i * 0.6 : 0,
@@ -615,7 +615,7 @@ export function useAppState() {
       owner: string;
       barrio: string;
       dist: number | null;
-      starsLabel: string;
+      rating: number | null;
       plate: string;
       reserved: boolean;
       createdAt: number;
@@ -637,7 +637,7 @@ export function useAppState() {
             owner: r.name,
             barrio: r.barrio,
             dist: readerDist(r),
-            starsLabel: stars(avgRatingFor(r.id)),
+            rating: avgRatingFor(r.id),
             plate: plateFor(catalogAll.length),
             reserved: !!b.resUid,
             createdAt: b.createdAt,
@@ -1115,7 +1115,6 @@ export function useAppState() {
       readerBarrio: myReader?.barrio ?? "",
       isShelf: route === "shelf",
       myBooks: vals.mappedMyBooks,
-      myStars: stars(avgRatingFor(myUid ?? "")),
       myRating: avgRatingFor(myUid ?? ""),
       myTrades: myReader?.trades ?? 0,
       usedSlots: vals.used,

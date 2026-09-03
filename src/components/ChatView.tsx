@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
+import { DistanceLabel } from "./DistanceLabel";
 import { Button } from "@/components/ui/button";
 import {
   MessageScroller,
@@ -107,7 +108,13 @@ export function ChatView({
             <h2 className="font-serif text-title m-0">{thread.name}</h2>
             <p className="font-sans text-small text-muted-foreground">
               {thread.barrio}
-              {thread.dist !== null && <> · {thread.dist} km</>} · {thread.statusLine}
+              {thread.dist !== null && (
+                <>
+                  {" · "}
+                  <DistanceLabel km={thread.dist} />
+                </>
+              )}
+              {thread.statusLine && <>{" · "}{thread.statusLine}</>}
             </p>
           </div>
           <div className="text-right">

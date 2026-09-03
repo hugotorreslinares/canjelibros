@@ -5,6 +5,7 @@ import { BookCover } from "./BookCover";
 import { ReaderListSkeleton } from "./BookGridSkeleton";
 import { QueryState } from "./QueryState";
 import { DistanceLabel } from "./DistanceLabel";
+import { Reputation } from "./Reputation";
 
 const LeafletMap = dynamic(() => import("./LeafletMap").then((m) => m.LeafletMap), {
   ssr: false,
@@ -19,8 +20,7 @@ interface MapUser {
   lat: number;
   lng: number;
   count: number;
-  starsLabel: string;
-  rating: number;
+  rating: number | null;
   trades: number;
   ink: string;
   haloInk: string;
@@ -52,8 +52,7 @@ interface MapViewProps {
     dist: number | null;
     lat: number;
     lng: number;
-    starsLabel: string;
-    rating: number;
+    rating: number | null;
     trades: number;
     bio: string;
     spot: string;
@@ -169,7 +168,7 @@ export function MapView({
                     <DistanceLabel km={u.dist} className="text-[14px] text-[#605d5d]" />
                   </div>
                   <div className="text-[14px] text-[#605d5d]">
-                    {u.barrio} · {u.starsLabel} {u.rating} · {u.trades} intercambios
+                    {u.barrio} · <Reputation rating={u.rating} /> · {u.trades} intercambios
                     {u.statusLine && <> · {u.statusLine}</>}
                   </div>
                   <div className="text-[16px] text-[#201e1d]">{u.teaser}</div>
@@ -186,11 +185,16 @@ export function MapView({
             </button>
             <div className="font-sans text-label uppercase text-muted-foreground">
               {sel.barrio}
-              {sel.dist !== null && <> · {sel.dist} km</>}
+              {sel.dist !== null && (
+                <>
+                  {" · "}
+                  <DistanceLabel km={sel.dist} />
+                </>
+              )}
             </div>
             <h2 className="text-[36px] leading-[1.05] mt-[8px] mb-[6px]">{sel.name}</h2>
             <div className="text-[16px] text-[#444141] mb-[6px]">
-              {sel.starsLabel} {sel.rating} de 5 · {sel.trades} intercambios
+              <Reputation rating={sel.rating} /> · {sel.trades} intercambios
               {sel.statusLine && <> · {sel.statusLine}</>}
             </div>
             {sel.tags.length > 0 && (

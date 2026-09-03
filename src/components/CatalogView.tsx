@@ -10,6 +10,8 @@ import {
 import { BookCover } from "./BookCover";
 import { BookRowsSkeleton } from "./BookGridSkeleton";
 import { QueryState } from "./QueryState";
+import { DistanceLabel } from "./DistanceLabel";
+import { Reputation } from "./Reputation";
 
 interface CatalogItem {
   cover: string | null;
@@ -22,7 +24,7 @@ interface CatalogItem {
   owner: string;
   barrio: string;
   dist: number | null;
-  starsLabel: string;
+  rating: number | null;
   plate: string;
   selectOwner: () => void;
   propose: () => void;
@@ -254,7 +256,13 @@ export function CatalogView({
                     </button>
                     <br />
                     {b.barrio}
-                    {b.dist !== null && <> · {b.dist} km</>} · {b.starsLabel}
+                    {b.dist !== null && (
+                      <>
+                        {" · "}
+                        <DistanceLabel km={b.dist} />
+                      </>
+                    )}{" · "}
+                    <Reputation rating={b.rating} />
                   </p>
                   {b.reserved ? (
                     <div className="flex flex-col gap-1 items-start">

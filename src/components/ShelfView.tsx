@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookCover } from "./BookCover";
+import { Reputation } from "./Reputation";
 
 interface ShelfBook {
   cover: string | null;
@@ -27,8 +28,7 @@ interface ShelfViewProps {
   readerName: string;
   readerBarrio: string;
   myBooks: ShelfBook[];
-  myStars: string;
-  myRating: number;
+  myRating: number | null;
   myTrades: number;
   usedSlots: number;
   totalSlots: number;
@@ -51,7 +51,6 @@ export function ShelfView({
   readerName,
   readerBarrio,
   myBooks,
-  myStars,
   myRating,
   myTrades,
   usedSlots,
@@ -85,7 +84,7 @@ export function ShelfView({
       <SectionLabel>Mi estante</SectionLabel>
       <h1 className="font-serif text-display mt-2 mb-0">{readerName}</h1>
       <p className="font-serif text-body text-foreground/85 mt-2">
-        {readerBarrio} · {myStars} {myRating} de 5
+        {readerBarrio} · <Reputation rating={myRating} />
       </p>
       <div className="h-[5px] bg-foreground mt-5 mb-0.5" />
       <div className="h-px bg-foreground mb-8" />
