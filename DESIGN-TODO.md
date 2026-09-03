@@ -7,47 +7,29 @@ aplicación desplegada, no sobre impresiones.
 
 ## Si solo se hacen tres cosas
 
-1. **Terminar la migración al sistema de diseño en las tres vistas que se
-   quedaron fuera.** Es lo que hace que la aplicación se sienta a medio hacer.
-2. **Dejar de inventar reputación y distancia.** Hoy las dos mienten, y son
-   justo los dos datos con los que alguien decide si le escribe a un
-   desconocido.
+1. ~~Terminar la migración al sistema de diseño.~~ **Hecho** el 3 de septiembre.
+2. ~~Dejar de inventar reputación y distancia.~~ **Hecho** el 3 de septiembre.
 3. **Dar URL propia a cada libro.** Desbloquea compartir, indexar y el resto del
-   producto.
+   producto. Es lo siguiente.
 
 ---
 
-## 1. Sistema de diseño: la deuda que se ve
+## 1. Sistema de diseño
 
-El sistema —seis pasos de tipografía, rejilla de 4 px, color solo por tokens— se
-adoptó en la migración a shadcn, pero **tres vistas nunca se convirtieron**. Los
-números salen de contar en `src/components/`:
+**Migrado el 3 de septiembre de 2026.** `MapView`, `ModerationView`, `PoliciesView`
+y `LeafletMap` pasaron a tokens, a los seis pasos de tipografía y a la rejilla de
+4 px. Los colores escritos a mano bajaron de **52 a 3** y los tamaños de texto
+arbitrarios de **69 a 12**. `DistanceLabel` ya se usa en los cuatro sitios donde
+se escribe una distancia, y `Reputation` centraliza las estrellas.
 
-| Vista | Colores en hex | Notas |
-|---|---|---|
-| `ModerationView` | 14 | nunca migrada |
-| `LeafletMap` | 13 | parcialmente justificable: Leaflet pinta fuera de React |
-| `MapView` | 13 | nunca migrada |
-| `PoliciesView` | 9 | nunca migrada |
-| `BookCover` | 3 | el crema de las placas, revisable |
+Lo que queda no es deuda sino composición, y conviene que siga así:
 
-- [ ] **52 colores escritos a mano** donde el sistema dice «sin hex en un
-      componente». Cambiar un token hoy no cambia esas vistas: el modo oscuro y
-      cualquier ajuste de contraste se quedan a medias.
-- [ ] **21 tamaños de texto distintos** en `text-[NNpx]` (69 usos) frente a los
-      seis pasos declarados. La auditoría original señaló «doce tamaños en una
-      pantalla» como hallazgo grave; en el código hay 21.
-- [ ] **95 espaciados arbitrarios, 41 fuera de la rejilla de 4 px** (1, 2, 3, 5,
-      6, 9, 10, 14, 18, 26 px). El ritmo vertical se pierde justo donde más se
-      nota: fichas y paneles.
-- [ ] **`DistanceLabel` se usa en 1 de 4 sitios.** Se creó para que la distancia
-      se escribiera igual en todas partes; `MapView:189`, `ChatView:110` y
-      `CatalogView:257` la repiten a mano. Un componente compartido que se
-      esquiva no es un sistema.
-
-**Por qué importa más de lo que parece:** mientras esas vistas no usen tokens, el
-sistema no es una fuente de verdad sino una sugerencia, y la siguiente persona
-que toque el código no sabrá cuál de las dos formas es la buena.
+- [ ] Dejarlo escrito en `AGENTS.md`: la escala gobierna la tipografía de
+      interfaz, no las composiciones. Las placas de `BookCover` (12/17/24 px con
+      su crema), el logotipo del encabezado (21/26/30 px), el selector de
+      estrellas y el numeral de intercambios son piezas dibujadas, y forzarlas a
+      la escala las empeora. Sin esa frase, el próximo que cuente creerá que
+      siguen siendo deuda.
 
 ## 2. Decisiones que quedaron a medias
 
@@ -64,20 +46,13 @@ que toque el código no sabrá cuál de las dos formas es la buena.
       subirlos cambia la altura del encabezado, así que es una decisión de
       diseño, no un parche.
 
-## 3. Confianza: dos datos que hoy mienten
+## 3. Confianza
 
-- [ ] **Todo el mundo aparece con ★★★★★ 5.** `avgRatingFor` devuelve 5 cuando no
-      hay calificaciones, así que la estrella no distingue a quien tiene diez
-      canjes impecables de quien acaba de llegar. Una reputación inventada es
-      peor que ninguna: quita la señal y además engaña. Alternativa: no mostrar
-      estrellas sin calificaciones y poner «sin canjes todavía», que es
-      información real y además invita a ser el primero.
-- [ ] **La distancia tampoco informa.** En los datos actuales casi todos los
-      lectores salen a «0 km» —comparten coordenadas porque el perfil se crea
-      con la ubicación del dispositivo— y uno aparece a «8.476,6 km» sin que nada
-      lo filtre. La cercanía es el argumento del producto; hoy es ruido.
-      Hace falta redondeo con sentido («a menos de 1 km», «en tu barrio»), un
-      tope razonable y decidir qué hacer con quien está claramente fuera.
+**Resuelto el 3 de septiembre.** El promedio de calificaciones devuelve `null` en
+vez de 5, así que quien no tiene calificaciones lo dice en lugar de lucir cinco
+estrellas; de nueve lectores, dos tienen reputación real. Y la distancia se
+escribe según la escala —«en tu misma zona», «a menos de 1 km», «a 3,4 km», «a
+8.477 km»— en vez de publicar el resultado crudo de la fórmula.
 
 ## 4. Usabilidad del canje
 

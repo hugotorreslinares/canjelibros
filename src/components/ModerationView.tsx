@@ -87,10 +87,10 @@ export function ModerationView({
 }: ModerationViewProps) {
   if (!allowed) {
     return (
-      <div className="px-[24px] sm:px-[40px] pt-[34px] pb-[60px] max-w-[720px]">
+      <div className="px-6 sm:px-10 pt-8 pb-16 max-w-[720px]">
         <div className="font-sans text-label uppercase text-muted-foreground">Moderación</div>
-        <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-[18px]">Panel restringido</h1>
-        <p className="text-[17px] leading-[1.5] text-[#444141]">
+        <h1 className="font-serif text-display mt-2 mb-5">Panel restringido</h1>
+        <p className="font-serif text-body text-foreground/85">
           {signedIn
             ? "Tu cuenta no tiene permisos de moderación. Si crees que debería tenerlos, escríbenos a moderacion@librocambio.com."
             : "Inicia sesión con una cuenta de moderación para revisar publicaciones reportadas."}
@@ -103,10 +103,10 @@ export function ModerationView({
   }
 
   return (
-    <div className="w-full mx-auto max-w-[1180px] px-[24px] sm:px-[40px] pt-[34px] pb-[60px]">
+    <div className="w-full mx-auto max-w-[1180px] px-6 sm:px-10 pt-8 pb-16">
       <div className="font-sans text-label uppercase text-muted-foreground">Moderación</div>
-      <h1 className="text-[40px] sm:text-[52px] leading-none mt-[8px] mb-0">Publicaciones de la comunidad</h1>
-      <p className="text-[17px] leading-[1.5] text-[#444141] mt-[10px] max-w-[46em]">
+      <h1 className="font-serif text-display mt-2 mb-0">Publicaciones de la comunidad</h1>
+      <p className="font-serif text-body text-foreground/85 mt-3 max-w-[46em]">
         Edita una publicación para corregir o retirar datos que incumplan las{" "}
         <Button variant="link" onClick={goPolicies} className="px-0 h-auto">
           políticas del sitio
@@ -114,11 +114,11 @@ export function ModerationView({
         , o elimínala si el contenido no puede corregirse. Toda acción aquí es inmediata y visible para el lector dueño
         del libro.
       </p>
-      <div className="h-[5px] bg-[#201e1d] mt-[20px] mb-[2px]" />
-      <div className="h-px bg-[#201e1d] mb-[24px]" />
+      <div className="h-[5px] bg-foreground mt-5 mb-0.5" />
+      <div className="h-px bg-foreground mb-6" />
 
-      <div className="flex items-end gap-[16px] flex-wrap mb-[30px]">
-        <label className="grid gap-[6px] flex-1 min-w-[260px]">
+      <div className="flex items-end gap-4 flex-wrap mb-8">
+        <label className="grid gap-1.5 flex-1 min-w-[260px]">
           <span className="font-sans text-label uppercase text-muted-foreground">Buscar</span>
           <input
             value={query}
@@ -127,14 +127,14 @@ export function ModerationView({
             className="border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder"
           />
         </label>
-        <div className="text-[15px] text-[#605d5d] pb-[14px]">
+        <div className="font-sans text-small text-muted-foreground pb-3.5">
           {count === 1 ? "1 publicación" : `${count} publicaciones`}
         </div>
       </div>
 
-      {count === 0 && <p className="text-[19px] text-[#444141]">No hay publicaciones que coincidan con la búsqueda.</p>}
+      {count === 0 && <p className="font-serif text-body text-foreground/85">No hay publicaciones que coincidan con la búsqueda.</p>}
 
-      <div className="grid gap-[26px]">
+      <div className="grid gap-6">
         {items.map((b) => (
           <div key={b.id} className="border-t border-border pt-5 grid [grid-template-columns:110px_1fr] gap-5">
             <BookCover
@@ -146,24 +146,24 @@ export function ModerationView({
               className="h-[165px] w-[110px] rounded-sm"
             />
 
-            <div className="grid gap-[8px]">
-              <div className="text-[13px] tracking-[.14em] uppercase text-[#605d5d]">
+            <div className="grid gap-2">
+              <div className="font-sans text-label uppercase text-muted-foreground">
                 {b.ownerName}
                 {b.isMine && " · tu cuenta"}
                 {b.reserved && ` · reservado con ${b.reservedWith}`}
               </div>
 
               {b.editing ? (
-                <div className="grid gap-[14px] max-w-[640px]">
-                  <label className="grid gap-[6px]">
+                <div className="grid gap-3.5 max-w-[640px]">
+                  <label className="grid gap-1.5">
                     <span className="font-sans text-label uppercase text-muted-foreground">Título</span>
                     <input value={form.t} onChange={(e) => setTitle(e.target.value)} className="border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder" />
                   </label>
-                  <label className="grid gap-[6px]">
+                  <label className="grid gap-1.5">
                     <span className="font-sans text-label uppercase text-muted-foreground">Autor</span>
                     <input value={form.a} onChange={(e) => setAuthor(e.target.value)} className="border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder" />
                   </label>
-                  <label className="grid gap-[6px]">
+                  <label className="grid gap-1.5">
                     <span className="font-sans text-label uppercase text-muted-foreground">Descripción</span>
                     <textarea
                       value={form.desc}
@@ -172,9 +172,9 @@ export function ModerationView({
                       className={`border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder resize-y`}
                     />
                   </label>
-                  <div className="grid gap-[6px]">
+                  <div className="grid gap-1.5">
                     <span className="font-sans text-label uppercase text-muted-foreground">Categoría</span>
-                    <div className="flex flex-wrap gap-[8px]">
+                    <div className="flex flex-wrap gap-2">
                       {catChips.map((c) => (
                         <button key={c.label} onClick={c.pick} aria-pressed={c.active}
                           className={`h-11 min-h-[44px] px-4 rounded-sm border font-sans text-small transition-colors ${
@@ -187,9 +187,9 @@ export function ModerationView({
                       ))}
                     </div>
                   </div>
-                  <div className="grid gap-[6px]">
+                  <div className="grid gap-1.5">
                     <span className="font-sans text-label uppercase text-muted-foreground">Estado</span>
-                    <div className="flex flex-wrap gap-[8px]">
+                    <div className="flex flex-wrap gap-2">
                       {condChips.map((c) => (
                         <button key={c.label} onClick={c.pick} aria-pressed={c.active}
                           className={`h-11 min-h-[44px] px-4 rounded-sm border font-sans text-small transition-colors ${
@@ -202,10 +202,10 @@ export function ModerationView({
                       ))}
                     </div>
                   </div>
-                  <div className="grid gap-[6px]">
+                  <div className="grid gap-1.5">
                     <span className="font-sans text-label uppercase text-muted-foreground">Portada</span>
                     {cover ? (
-                      <div className="flex items-center gap-[14px]">
+                      <div className="flex items-center gap-3.5">
                         <BookCover
                           cover={cover}
                           plate={b.plate}
@@ -218,10 +218,10 @@ export function ModerationView({
                         </Button>
                       </div>
                     ) : (
-                      <span className="text-[16px] text-[#605d5d]">Sin foto · portada tipográfica.</span>
+                      <span className="font-sans text-small text-muted-foreground">Sin foto · portada tipográfica.</span>
                     )}
                   </div>
-                  <label className="grid gap-[6px]">
+                  <label className="grid gap-1.5">
                     <span className="font-sans text-label uppercase text-muted-foreground">Motivo de la edición</span>
                     <input
                       value={reason}
@@ -230,7 +230,7 @@ export function ModerationView({
                       className="border border-input rounded-sm bg-card px-3.5 py-3 font-serif text-body text-foreground w-full outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder"
                     />
                   </label>
-                  <div className="flex gap-[14px] items-center flex-wrap">
+                  <div className="flex gap-3.5 items-center flex-wrap">
                     <Button onClick={save}>Guardar cambios</Button>
                     <Button variant="link" onClick={cancelEdit}>
                       Cancelar
@@ -239,14 +239,14 @@ export function ModerationView({
                 </div>
               ) : (
                 <>
-                  <div className="text-[24px] leading-[1.15]">{b.t}</div>
-                  <div className="text-[15px] text-[#605d5d]">{b.a}</div>
-                  <div className="flex gap-[8px] flex-wrap">
+                  <div className="font-serif text-subtitle">{b.t}</div>
+                  <div className="font-sans text-small text-muted-foreground">{b.a}</div>
+                  <div className="flex gap-2 flex-wrap">
                     <Badge variant="secondary">{b.cat}</Badge>
                     <Badge variant="outline">{b.cond}</Badge>
                   </div>
-                  {b.desc && <p className="text-[16px] leading-[1.5] text-[#444141] max-w-[46em]">{b.desc}</p>}
-                  <div className="flex gap-[16px] items-center mt-[4px]">
+                  {b.desc && <p className="font-serif text-body text-foreground/85 max-w-[46em]">{b.desc}</p>}
+                  <div className="flex gap-4 items-center mt-1">
                     <Button variant="link" onClick={b.edit} className="px-0">
                       Editar publicación
                     </Button>
@@ -261,10 +261,10 @@ export function ModerationView({
         ))}
       </div>
 
-      <section className="mt-[54px]">
+      <section className="mt-14">
         <div className="font-sans text-label uppercase text-muted-foreground">Bitácora de moderación</div>
-        <h2 className="text-[28px] leading-[1.15] mt-[6px] mb-[10px]">Últimas 50 acciones</h2>
-        <p className="text-[16px] leading-[1.5] text-[#444141] max-w-[46em] mb-[20px]">
+        <h2 className="font-serif text-title mt-1.5 mb-3">Últimas 50 acciones</h2>
+        <p className="font-serif text-body text-foreground/85 max-w-[46em] mb-5">
           Cada edición y cada eliminación queda registrada con su motivo. Los registros no se pueden modificar ni
           borrar, ni siquiera por quien los creó.
         </p>
@@ -274,17 +274,17 @@ export function ModerationView({
             Todavía no hay acciones de moderación registradas.
           </p>
         ) : (
-          <div className="grid gap-[16px]">
+          <div className="grid gap-4">
             {log.map((e) => (
               <div key={e.id} className="border-t border-border pt-3.5 grid gap-1.5">
-                <div className="text-[13px] tracking-[.14em] uppercase text-[#605d5d]">{e.when}</div>
-                <div className="text-[18px] leading-[1.4]">
+                <div className="font-sans text-label uppercase text-muted-foreground">{e.when}</div>
+                <div className="font-serif text-body">
                   <span style={{ color: e.isDelete ? "#aa0b56" : "#006786" }}>{e.action}</span> «{e.bookTitle}» de{" "}
                   {e.ownerName} · {e.moderatorName}
                 </div>
-                <div className="text-[16px] leading-[1.5] text-[#444141]">Motivo: {e.reason}</div>
+                <div className="font-serif text-body text-foreground/85">Motivo: {e.reason}</div>
                 {e.changes.length > 0 && (
-                  <ul className="grid gap-[2px] text-[15px] leading-[1.45] text-[#605d5d]">
+                  <ul className="grid gap-0.5 font-sans text-small text-muted-foreground">
                     {e.changes.map((c) => (
                       <li key={c}>{c}</li>
                     ))}

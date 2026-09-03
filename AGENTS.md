@@ -67,6 +67,7 @@ Everything is real/Firestore now: readers, books, reservations, chat threads + m
 
 The px-for-px parity with `design_source/` is **over** — that file is historical reference now. What governs is the token system in `src/app/globals.css`, direction «Papel y tinta», and [UI-PLAN.md](UI-PLAN.md) records why each piece exists. [DESIGN-AUDIT.md](DESIGN-AUDIT.md) is the audit it answers; its finding ids (`4.1`, `5.2`) are cited in commits.
 
+- **La escala gobierna la tipografía de interfaz, no las composiciones.** Las placas de `BookCover` (12/17/24 px, con su propio crema), el logotipo del encabezado (21/26/30 px) y el numeral de intercambios son piezas dibujadas: el tamaño *es* el diseño y forzarlas a la escala las empeora. Todo lo demás sí se somete a los seis pasos. Contar `text-[NNpx]` sin esta distinción da un número engañoso.
 - **Six type steps, nothing else**: `text-label` (12, uppercase, tracked), `text-small` (15), `text-body` (17), `text-subtitle` (21), `text-title` (28), `text-display` (44). A size outside this table is a bug. Twelve sizes on one screen is what the audit found.
 - **Spacing on the 4px grid** — Tailwind's default `--spacing`. No new arbitrary `[13px]` values.
 - **Colour only through tokens**: `bg-background`, `text-foreground`, `text-muted-foreground`, `bg-primary`, `text-destructive`, `border-border`. No hex in a component. `--primary` is `#00769a`, not the old `#0088b0`, because white-on-teal has to clear 4.5:1. `--destructive` means destructive **only** — it is not the colour of a completed trade.

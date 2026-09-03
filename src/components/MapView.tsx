@@ -124,27 +124,27 @@ export function MapView({
           compiten con el resto de la página. En móvil eso ponía los pines y la
           barra de atribución por encima del menú lateral (z-50), que quedaba
           visible pero intocable. Aislado, esos valores solo cuentan aquí dentro. */}
-      <div className="relative isolate overflow-hidden bg-[#f3f2f2] min-h-[500px] lg:min-h-[640px]">
+      <div className="relative isolate overflow-hidden bg-background min-h-[500px] lg:min-h-[640px]">
         <LeafletMap
           users={users}
           selected={sel ? { lat: sel.lat, lng: sel.lng } : null}
           selectedId={sel?.id ?? null}
         />
 
-        <div className="absolute left-[24px] bottom-[24px] bg-[#f8f4f4]/92 border border-[#201e1d]/16 rounded-[2px] px-[16px] py-[12px] max-w-[300px] pointer-events-none z-[1000]">
-          <div className="text-[12px] tracking-[.16em] uppercase text-[#605d5d] mb-[6px]">Tu zona</div>
-          <div className="text-[16px] leading-[1.4]">{zoneNote}</div>
+        <div className="absolute left-6 bottom-6 bg-card/92 border border-border rounded-sm px-4 py-3 max-w-[300px] pointer-events-none z-[1000]">
+          <div className="font-sans text-label uppercase text-muted-foreground mb-1.5">Tu zona</div>
+          <div className="font-serif text-body">{zoneNote}</div>
         </div>
       </div>
 
-      <aside className="border-l-0 lg:border-l border-[#201e1d]/16 px-[24px] lg:px-[30px] pt-[28px] pb-[40px] overflow-auto">
+      <aside className="border-l-0 lg:border-l border-border px-6 lg:px-7 pt-7 pb-10 overflow-auto">
         {noSelection && (
           <div>
             <div className="font-sans text-label uppercase text-muted-foreground">Cerca de ti</div>
-            <h2 className="text-[34px] leading-[1.05] my-[8px] mb-[14px]">
+            <h2 className="font-serif text-title my-2 mb-3.5">
               {loading ? "Buscando lectores…" : error ? "Lectores cerca de ti" : nearHeading}
             </h2>
-            <p className="text-[17px] leading-[1.5] text-[#444141] mb-[26px] [text-wrap:pretty]">
+            <p className="font-serif text-body text-foreground/85 mb-6 [text-wrap:pretty]">
               Toca una zona en el mapa para ver el estante de esa persona. El número dentro del círculo es cuántos
               libros tiene disponibles.
             </p>
@@ -156,22 +156,22 @@ export function MapView({
               emptyTitle="Todavía no hay lectores publicando"
               emptyDescription="Publica el primer libro y el mapa deja de estar vacío."
             >
-            <div className="grid gap-[18px]">
+            <div className="grid gap-4">
               {users.map((u) => (
                 <button
                   key={u.id}
                   onClick={u.select}
                   className="text-left bg-transparent border-none border-t border-border pt-4 grid gap-1 hover:bg-muted"
                 >
-                  <div className="flex justify-between items-baseline gap-[12px]">
-                    <span className="text-[21px]">{u.name}</span>
-                    <DistanceLabel km={u.dist} className="text-[14px] text-[#605d5d]" />
+                  <div className="flex justify-between items-baseline gap-3">
+                    <span className="font-serif text-subtitle">{u.name}</span>
+                    <DistanceLabel km={u.dist} className="font-sans text-small text-muted-foreground shrink-0" />
                   </div>
-                  <div className="text-[14px] text-[#605d5d]">
+                  <div className="font-sans text-small text-muted-foreground">
                     {u.barrio} · <Reputation rating={u.rating} /> · {u.trades} intercambios
                     {u.statusLine && <> · {u.statusLine}</>}
                   </div>
-                  <div className="text-[16px] text-[#201e1d]">{u.teaser}</div>
+                  <div className="font-serif text-body text-foreground">{u.teaser}</div>
                 </button>
               ))}
             </div>
@@ -180,7 +180,7 @@ export function MapView({
         )}
         {hasSelection && sel && (
           <div>
-            <button onClick={clearSelection} className="bg-transparent border-none p-0 pb-[18px] text-[15px] text-[#006786] hover:text-[#d6006c]">
+            <button onClick={clearSelection} className="bg-transparent border-none p-0 pb-4 font-sans text-small text-primary underline-offset-4 hover:underline">
               ← Volver a la lista
             </button>
             <div className="font-sans text-label uppercase text-muted-foreground">
@@ -192,8 +192,8 @@ export function MapView({
                 </>
               )}
             </div>
-            <h2 className="text-[36px] leading-[1.05] mt-[8px] mb-[6px]">{sel.name}</h2>
-            <div className="text-[16px] text-[#444141] mb-[6px]">
+            <h2 className="font-serif text-title mt-2 mb-1.5">{sel.name}</h2>
+            <div className="font-sans text-small text-muted-foreground mb-1.5">
               <Reputation rating={sel.rating} /> · {sel.trades} intercambios
               {sel.statusLine && <> · {sel.statusLine}</>}
             </div>
@@ -207,12 +207,12 @@ export function MapView({
                 ))}
               </div>
             )}
-            <div className="text-[16px] leading-[1.5] text-[#444141] mb-[8px] italic">{sel.bio}</div>
+            <div className="font-serif text-body text-foreground/85 mb-2 italic">{sel.bio}</div>
             <div className="font-sans text-small text-muted-foreground border-t border-border pt-2.5 mb-6">
               Punto de encuentro que propone: {sel.spot}
             </div>
             <div className="font-sans text-label uppercase text-muted-foreground mb-3.5">Su estante · {sel.count} disponibles</div>
-            <div className="grid gap-[20px]">
+            <div className="grid gap-5">
               {selBooks.map((b, i) => (
                 <div key={i} className="grid grid-cols-[56px_minmax(0,1fr)] gap-3.5 border-t border-border pt-4">
                   <BookCover
@@ -222,11 +222,11 @@ export function MapView({
                     size="sm"
                     className="h-[84px] w-[56px] rounded-sm"
                   />
-                  <div className="grid gap-[5px]">
-                    <div className="text-[20px] leading-[1.15]">{b.t}</div>
-                    <div className="text-[15px] text-[#605d5d]">{b.a}</div>
-                    <div className="text-[15px] leading-[1.45] text-[#444141]">{b.desc}</div>
-                    <div className="flex gap-[8px] flex-wrap mt-[3px]">
+                  <div className="grid gap-1">
+                    <div className="font-serif text-subtitle">{b.t}</div>
+                    <div className="font-sans text-small text-muted-foreground">{b.a}</div>
+                    <div className="font-serif text-small text-foreground/85">{b.desc}</div>
+                    <div className="flex gap-2 flex-wrap mt-1">
                       <Badge variant="secondary">{b.cat}</Badge>
                       <Badge variant="outline">{b.cond}</Badge>
                     </div>
