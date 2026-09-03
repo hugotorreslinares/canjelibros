@@ -103,7 +103,7 @@ export function CatalogView({
 
   return (
     <div id="catalogo" className="w-full mx-auto max-w-shell px-6 sm:px-10 pt-8 pb-16 scroll-mt-16">
-      <div className="flex items-baseline justify-between gap-8 flex-wrap mb-2">
+      <div className="flex items-baseline justify-between gap-8 flex-wrap mb-2" data-reveal>
         <h2 className="font-serif text-display m-0">Catálogo</h2>
         <p className="font-sans text-small text-muted-foreground">
           {loading
@@ -117,7 +117,7 @@ export function CatalogView({
       <div className="h-px bg-foreground mb-6" />
 
       {recommended.items.length > 0 && (
-        <section className="mb-8" aria-label={recommended.title}>
+        <section className="mb-8" aria-label={recommended.title} data-reveal>
           <h2 className="font-sans text-label uppercase text-muted-foreground mb-3">
             {recommended.title}
             {recommended.note && <span className="ml-2 normal-case tracking-normal">· {recommended.note}</span>}
@@ -221,6 +221,7 @@ export function CatalogView({
             {items.map((b, i) => (
               <article
                 key={i}
+                data-reveal
                 className="grid grid-cols-1 min-[640px]:grid-cols-[74px_minmax(0,1fr)_minmax(0,200px)] gap-5 border-t border-border py-6 items-start"
               >
                 <BookCover

@@ -36,7 +36,7 @@ export function HomeHero({ covers, goMap }: HomeHeroProps) {
   return (
     <section className="px-6 sm:px-10 pt-8 pb-8 sm:pt-14 sm:pb-16 border-b border-border">
       <div className="w-full mx-auto max-w-shell grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16 items-center">
-        <div>
+        <div data-reveal>
           <h1 className="font-serif text-display sm:text-hero m-0 text-foreground">
             Cambia libros.
             <br />
@@ -86,7 +86,7 @@ export function HomeHero({ covers, goMap }: HomeHeroProps) {
             todavía no hay libros, la columna entera desaparece en vez de dejar
             un hueco decorado. */}
         {covers.length > 0 && (
-          <div className="relative isolate hidden lg:block" aria-hidden="true">
+          <div className="relative isolate hidden lg:block" aria-hidden="true" data-reveal>
             <div className="absolute inset-x-6 inset-y-0 bg-accent" />
             <div className="relative flex items-center justify-center gap-4 py-12">
               {covers.slice(0, 3).map((b, i) => (

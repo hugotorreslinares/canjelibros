@@ -37,7 +37,7 @@ export function PoliciesView({ goHome }: PoliciesViewProps) {
       <div className="h-[5px] bg-[#201e1d] mt-[20px] mb-[2px]" />
       <div className="h-px bg-[#201e1d] mb-[34px]" />
 
-      <section className="mb-[38px]">
+      <section data-reveal className="mb-[38px]">
         <h2 className="text-[28px] leading-[1.15] mb-[10px]">1. Para qué sirve Librocambio</h2>
         <p className="text-[18px] leading-[1.55] text-[#201e1d]">
           Librocambio es una plataforma vecinal para intercambiar libros físicos usados entre lectores de Bogotá. No es una
@@ -46,7 +46,7 @@ export function PoliciesView({ goHome }: PoliciesViewProps) {
         </p>
       </section>
 
-      <section className="mb-[38px]">
+      <section data-reveal className="mb-[38px]">
         <h2 className="text-[28px] leading-[1.15] mb-[10px]">2. Contenido prohibido</h2>
         <p className="text-[18px] leading-[1.55] text-[#201e1d] mb-[16px]">
           Está prohibido publicar, ofrecer, solicitar o compartir por este medio libros, documentos o artículos cuya
@@ -66,7 +66,7 @@ export function PoliciesView({ goHome }: PoliciesViewProps) {
         </p>
       </section>
 
-      <section className="mb-[38px]">
+      <section data-reveal className="mb-[38px]">
         <h2 className="text-[28px] leading-[1.15] mb-[10px]">3. Reglas de convivencia</h2>
         <ul className="grid gap-[12px]">
           {RULES.map((item) => (
@@ -77,7 +77,7 @@ export function PoliciesView({ goHome }: PoliciesViewProps) {
         </ul>
       </section>
 
-      <section className="mb-[38px]">
+      <section data-reveal className="mb-[38px]">
         <h2 className="text-[28px] leading-[1.15] mb-[10px]">4. Moderación</h2>
         <p className="text-[18px] leading-[1.55] text-[#201e1d]">
           Un equipo de moderación revisa las publicaciones reportadas. Puede editar una publicación para retirar datos
@@ -88,7 +88,7 @@ export function PoliciesView({ goHome }: PoliciesViewProps) {
         </p>
       </section>
 
-      <section className="mb-[38px]">
+      <section data-reveal className="mb-[38px]">
         <h2 className="text-[28px] leading-[1.15] mb-[10px]">5. Cómo reportar</h2>
         <p className="text-[18px] leading-[1.55] text-[#201e1d]">
           Escribe a <span className="text-[#006786]">moderacion@librocambio.com</span> con el título del libro, el nombre del

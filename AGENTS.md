@@ -82,6 +82,7 @@ App-level components worth knowing before you build a new one: `BookCover` (2:3 
 - `npx tsc --noEmit && npx eslint .` before considering any change done; `npm run build` before calling a feature complete. **Both need Node ≥ 20**; this machine's default `node` has been seen at v14, where even `next dev` fails to parse.
 - The lint here is stricter than most React setups: no `setState` inside an effect body, no reading refs during render. When a shipped shadcn component breaks it (the carousel did), fix the component — don't disable the rule.
 - Firebase/Google Maps/any paid API: never assume a key exists — guard with the `isXConfigured` pattern already established, degrade to a visible-but-non-crashing state.
+- **Aparición al hacer scroll**: marca un elemento con `data-reveal` y `use-scroll-reveal` lo revela al entrar en pantalla. El estado vive en el DOM (`data-revealed`), no en React, porque el catálogo se redibuja con cada instantánea de Firestore y con estado se volvería a esconder. El CSS solo esconde bajo `.js-reveal`, que pone el guion: si escondiera por defecto, quien no ejecute JavaScript vería la página en blanco. Con `prefers-reduced-motion` no se pone la clase.
 - This repo has no test suite — verification is tsc + eslint + build + manual browser check (`preview_start` / Claude Browser tools). Don't claim "tested" without actually driving the browser.
 
 ## Commits and releases

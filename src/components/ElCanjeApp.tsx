@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppState } from "@/hooks/use-app-state";
+import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
@@ -20,6 +21,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 export function ElCanjeApp() {
   const state = useAppState();
+  useScrollReveal();
 
   return (
     <div className="flex-1 flex flex-col">
