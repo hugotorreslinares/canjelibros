@@ -3,6 +3,19 @@
 Las entradas a partir de aquí las genera release-please leyendo los commits.
 No edites este archivo a mano: se regenera y tu cambio se pierde.
 
+## [0.4.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.3.0...v0.4.0) (2026-09-03)
+
+
+### Novedades
+
+* los elementos aparecen al entrar en pantalla ([86564ac](https://github.com/hugotorreslinares/canjelibros/commit/86564acbda9c598a399a1d5371918432ad354f1a))
+
+
+### Correcciones
+
+* el modal de canje explica que primero hay que publicar ([1510be7](https://github.com/hugotorreslinares/canjelibros/commit/1510be740b5b19950d0ea59e3c015424902561b4))
+* no se puede ofrecer dos veces el mismo libro ([1534629](https://github.com/hugotorreslinares/canjelibros/commit/153462940621c91decfdf6be0a44bfd6bc77b8de))
+
 ## [0.3.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.2.0...v0.3.0) (2026-09-01)
 
 
