@@ -940,6 +940,35 @@ export function useAppState() {
     [user, activeThreadId, showToast]
   );
 
+  // Rechazar o retirar una propuesta. Hasta ahora la única salida de un canje
+  // que no interesa era borrar el libro, que es desproporcionado: una oferta no
+  // es un compromiso mientras nadie la haya cerrado.
+  const declineTrade = useCallback(async () => {
+    if (!user || !activeThreadId) return;
+    const t = myThreads.find((x) => x.id === activeThreadId);
+    if (!t || t.closed) return;
+    const recibo = user.uid === t.toUid;
+    try {
+      // La reserva vive en el libro ofrecido (`fromBookId`). Puede soltarla su
+      // dueño —quien propuso— o la persona a cuyo nombre está —quien recibe—:
+      // las reglas admiten las dos formas, y por eso el mismo botón sirve para
+      // los dos lados.
+      await reserveBook(t.fromBookId, null);
+      await sendThreadMessage(
+        t.id,
+        user.uid,
+        recibo
+          ? "Gracias, pero paso por ahora. Tu libro vuelve a estar libre."
+          : "Retiro la propuesta. Mi libro vuelve a estar libre."
+      );
+      await closeThread(t.id);
+    } catch {
+      showToast("No se pudo cerrar la propuesta. Intenta de nuevo.");
+      return;
+    }
+    showToast(recibo ? "Propuesta rechazada." : "Propuesta retirada.");
+  }, [user, activeThreadId, myThreads, showToast]);
+
   const submitRating = useCallback(async () => {
     if (!starsPicked) {
       showToast("Elige cuántas estrellas.");
@@ -1182,6 +1211,12 @@ export function useAppState() {
         : { id: "", name: "", barrio: "", dist: null, deal: "", statusLine: "" },
       messages: vals.messages,
       canConfirm: vals.thread ? !vals.thread.closed && vals.thread.toUid === myUid : false,
+      // Los dos lados pueden salirse mientras el canje siga abierto; lo que
+      // cambia es cómo se llama, porque no es lo mismo rechazar que retirar.
+      canDecline: vals.thread ? !vals.thread.closed : false,
+      declineLabel:
+        vals.thread && vals.thread.toUid === myUid ? "Rechazar la propuesta" : "Retirar mi propuesta",
+      decline: declineTrade,
       threadClosed: vals.thread ? vals.thread.closed : false,
       confirmNote: "Al confirmarlo, tu libro y el suyo cambian de estante y podrás calificarlo.",
       sendMessage,

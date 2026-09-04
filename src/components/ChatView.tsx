@@ -35,6 +35,9 @@ interface ChatViewProps {
   thread: { id: string; name: string; barrio: string; dist: number | null; deal: string; statusLine: string };
   messages: Message[];
   canConfirm: boolean;
+  canDecline: boolean;
+  declineLabel: string;
+  decline: () => void;
   threadClosed: boolean;
   confirmNote: string;
   openRating: () => void;
@@ -47,6 +50,9 @@ export function ChatView({
   thread,
   messages,
   canConfirm,
+  canDecline,
+  declineLabel,
+  decline,
   threadClosed,
   confirmNote,
   openRating,
@@ -188,6 +194,16 @@ export function ChatView({
                 Marcar intercambio como realizado
               </Button>
               <span className="font-sans text-small text-muted-foreground">{confirmNote}</span>
+            </div>
+          )}
+          {canDecline && (
+            <div className="flex gap-3.5 items-center flex-wrap">
+              <Button variant="link" onClick={decline} className="px-0">
+                {declineLabel}
+              </Button>
+              <span className="font-sans text-small text-muted-foreground">
+                Se cierra la conversación y el libro reservado vuelve a estar libre.
+              </span>
             </div>
           )}
           {threadClosed && (
