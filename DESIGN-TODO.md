@@ -81,16 +81,16 @@ escribe según la escala —«en tu misma zona», «a menos de 1 km», «a 3,4 k
       aplicación es una «L» y la imagen para compartir sale en la sans de
       repuesto de Satori, no en la Source Serif de la marca. Falta incrustar la
       fuente en esas rutas y dibujar un signo, aunque sea mínimo.
-- [ ] **Las placas tipográficas son la mitad del catálogo.** Cuando no hay foto,
-      `BookCover` compone una placa de color con el título. Funcionan, pero son
-      lo que más se ve y admiten bastante más trabajo: textura de papel,
-      composición por longitud del título, familia según categoría.
+- [x] ~~**Las placas tipográficas son la mitad del catálogo.**~~ Hecho el 4 de
+      septiembre: cuerpo del título según su longitud, filete doble de la casa
+      como sello, y grano de papel en CSS. De paso se arregló que el color salía
+      de siete cálculos distintos y el mismo libro cambiaba de portada según la
+      vista.
 - [ ] **La fila del catálogo tiene poca jerarquía.** Portada, título, autor,
       descripción, etiquetas, dueño, distancia, estrellas y botón compiten casi
       al mismo peso.
-- [ ] **La aparición al hacer scroll no escalona.** Todo lo que entra en pantalla
-      aparece a la vez. Un desfase pequeño entre elementos de una misma fila da
-      sensación de materia.
+- [x] ~~**La aparición al hacer scroll no escalona.**~~ Hecho el 4 de septiembre:
+      60 ms de desfase, de arriba abajo, con tope de cuatro escalones.
 - [ ] **Faltan estados de primer uso.** Hay estados de carga, error y vacío
       genéricos, pero no un recorrido pensado para quien llega sin libros, que es
       exactamente quien decide si se queda.
