@@ -58,6 +58,9 @@ interface CatalogViewProps {
   count: string;
   /** El catálogo oculta los libros de quien mira: hay que decirlo, o parece que su publicación falló. */
   hidesMine: boolean;
+  query: string;
+  setQuery: (v: string) => void;
+  searching: boolean;
   sortLabel: string;
   hasLocation: boolean;
   recommended: { title: string; note: string | null; items: RecommendedItem[] };
@@ -91,6 +94,9 @@ export function CatalogView({
   empty,
   count,
   hidesMine,
+  query,
+  setQuery,
+  searching,
   sortLabel,
   hasLocation,
   recommended,
@@ -170,6 +176,22 @@ export function CatalogView({
       <div className="grid grid-cols-1 min-[768px]:[grid-template-columns:230px_minmax(0,1fr)] gap-11 items-start">
         <div className="flex flex-col gap-6 md:sticky md:top-20">
           <div>
+            <label
+              htmlFor="buscar-libro"
+              className="font-sans text-label uppercase text-muted-foreground mb-2 block"
+            >
+              Buscar
+            </label>
+            <input
+              id="buscar-libro"
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Título o autor"
+              className="w-full h-11 min-h-[44px] px-3 rounded-sm border border-input bg-background font-sans text-body text-foreground placeholder:text-placeholder focus-visible:outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            />
+          </div>
+          <div>
             <h2 className="font-sans text-label uppercase text-muted-foreground mb-2">Categoría</h2>
             <div className="flex flex-col">
               {usableCats.map((o) => (
@@ -219,7 +241,11 @@ export function CatalogView({
           isEmpty={empty}
           skeleton={<BookRowsSkeleton />}
           emptyTitle="Nada con esos filtros"
-          emptyDescription="Prueba con otra categoría, otro estado o un radio más amplio."
+          emptyDescription={
+            searching
+              ? `Ningún título ni autor coincide con «${query.trim()}». Prueba con menos palabras.`
+              : "Prueba con otra categoría, otro estado o un radio más amplio."
+          }
         >
           <div className="flex flex-col">
             {items.map((b, i) => (

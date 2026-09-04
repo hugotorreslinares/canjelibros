@@ -93,6 +93,14 @@ function diffBook(before: BookFields, after: BookFields): string[] {
   return changes;
 }
 
+function normalizarBusqueda(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function isOnline(lastSeenAt: number | null, now: number): boolean {
   return lastSeenAt !== null && now - lastSeenAt < PRESENCE_WINDOW_MS;
 }
@@ -184,6 +192,7 @@ export function useAppState() {
   );
   const [offer, setOffer] = useState<{ uid: string; bookId: string } | null>(null);
   const [offerMineId, setOfferMineId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const [cat, setCat] = useState("Todas");
   const [cond, setCond] = useState("Todos");
   const [maxDist, setMaxDist] = useState(5);
@@ -649,8 +658,15 @@ export function useAppState() {
           });
         });
     });
+    // Buscar por título y autor, sin acentos ni mayúsculas: quien escribe
+    // «rayuela» desde el teléfono no va a poner la tilde de «Cortázar».
+    const buscado = normalizarBusqueda(query);
     const catalog = catalogAll.filter(
-      (b) => (cat === "Todas" || b.cat === cat) && (cond === "Todos" || b.cond === cond) && (b.dist === null || b.dist <= maxDist)
+      (b) =>
+        (cat === "Todas" || b.cat === cat) &&
+        (cond === "Todos" || b.cond === cond) &&
+        (b.dist === null || b.dist <= maxDist) &&
+        (!buscado || normalizarBusqueda(`${b.t} ${b.a}`).includes(buscado))
     );
     // Sin ubicación no se puede ordenar por distancia: cae a lo más reciente.
     if (sort === "distancia") {
@@ -794,6 +810,7 @@ export function useAppState() {
   }, [
     route,
     sel,
+    query,
     cat,
     cond,
     maxDist,
@@ -1119,6 +1136,11 @@ export function useAppState() {
       // escondiendo algo: para un visitante sin libros, «de otros lectores» no
       // significa nada.
       hidesMine: myBooks.length > 0,
+      query,
+      setQuery: (v: string) => setQuery(v),
+      // El aviso de «nada encontrado» tiene que decir qué se buscó; si no, no se
+      // sabe si el filtro sobra o si el término estaba mal escrito.
+      searching: query.trim().length > 0,
       recommended: vals.recommended,
       // Sin ubicación no se ordena por distancia (ver readerDist): el rótulo
       // dice lo que de verdad está pasando.

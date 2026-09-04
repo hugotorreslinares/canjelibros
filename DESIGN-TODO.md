@@ -60,12 +60,11 @@ escribe según la escala —«en tu misma zona», «a menos de 1 km», «a 3,4 k
       varias ofertas ni rechazar ninguna. Analizado a fondo en la conversación:
       exige decidir si la oferta pasa a ser una colección propia o se parchea el
       hilo actual, y una regla nueva de Firestore.
-- [ ] **No se puede rechazar.** La única salida de una propuesta que no interesa
-      es borrar el libro. El permiso para soltar la reserva ya existe en las
-      reglas; falta el botón.
-- [ ] **No hay búsqueda.** Se filtra por categoría, estado y distancia, pero no
-      se puede buscar por título ni por autor. Con nueve libros no importa; con
-      doscientos es lo primero que se busca.
+- [x] ~~**No se puede rechazar.**~~ Hecho el 4 de septiembre: el mismo botón
+      sirve para rechazar y para retirar, cierra el hilo, avisa por él y libera
+      el libro reservado.
+- [x] ~~**No hay búsqueda.**~~ Hecha el 4 de septiembre, por título y autor,
+      indiferente a tildes y mayúsculas.
 - [ ] **La identidad del lector es delgada.** Sin foto ni marca personal, todos
       los perfiles se ven iguales, y hay que confiar en alguien para quedar con
       él en persona.
