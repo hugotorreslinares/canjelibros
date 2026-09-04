@@ -30,11 +30,21 @@ export function useScrollReveal(): void {
 
     const observador = new IntersectionObserver(
       (entradas) => {
-        for (const entrada of entradas) {
-          if (!entrada.isIntersecting) continue;
-          (entrada.target as HTMLElement).dataset.revealed = "";
-          observador.unobserve(entrada.target);
-        }
+        // Lo que entra junto aparece escalonado, de arriba abajo. Con todo a la
+        // vez la fila se enciende como un interruptor; con unas centésimas de
+        // desfase parece que llega, que es lo que se busca. El tope de cuatro
+        // escalones evita que el último elemento de una parrilla larga espere
+        // medio segundo por nada.
+        const visibles = entradas
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+        visibles.forEach((entrada, i) => {
+          const el = entrada.target as HTMLElement;
+          if (i > 0) el.style.transitionDelay = `${Math.min(i, 4) * 60}ms`;
+          el.dataset.revealed = "";
+          observador.unobserve(el);
+        });
       },
       { rootMargin: MARGEN, threshold: 0 }
     );
