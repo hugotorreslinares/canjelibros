@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import { Reputation } from "./Reputation";
 interface CatalogItem {
   cover: string | null;
   reserved: boolean;
+  href: string;
   t: string;
   a: string;
   cat: string;
@@ -235,7 +237,14 @@ export function CatalogView({
                 />
                 <div className="flex flex-col gap-1.5">
                   <div className="flex gap-2.5 flex-wrap items-baseline">
-                    <h3 className="font-serif text-title m-0">{b.t}</h3>
+                    {/* Enlace real, no un manejador: así se puede compartir, abrir
+                        en otra pestaña e indexar. Sale de la aplicación de una
+                        sola página, y el botón «atrás» devuelve aquí. */}
+                    <h3 className="font-serif text-title m-0">
+                      <Link href={b.href} className="text-foreground no-underline hover:underline underline-offset-4">
+                        {b.t}
+                      </Link>
+                    </h3>
                     <span className="font-sans text-small text-muted-foreground">{b.a}</span>
                   </div>
                   <p className="font-serif text-body text-foreground/85 max-w-[46em]">{b.desc}</p>

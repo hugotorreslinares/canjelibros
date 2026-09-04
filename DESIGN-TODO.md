@@ -9,8 +9,7 @@ aplicación desplegada, no sobre impresiones.
 
 1. ~~Terminar la migración al sistema de diseño.~~ **Hecho** el 3 de septiembre.
 2. ~~Dejar de inventar reputación y distancia.~~ **Hecho** el 3 de septiembre.
-3. **Dar URL propia a cada libro.** Desbloquea compartir, indexar y el resto del
-   producto. Es lo siguiente.
+3. ~~Dar URL propia a cada libro.~~ **Hecho** el 4 de septiembre.
 
 ---
 
@@ -73,10 +72,12 @@ escribe según la escala —«en tu misma zona», «a menos de 1 km», «a 3,4 k
 
 ## 5. Atractivo
 
-- [ ] **Cada libro necesita su página.** Hoy no hay forma de enlazar un libro.
-      Desbloquea compartir por WhatsApp, indexar en buscadores —el trabajo de SEO
-      hecho no llega al contenido— y dar sitio a descripción larga y a la ficha
-      del dueño.
+- [x] ~~**Cada libro necesita su página.**~~ Hecha el 4 de septiembre en
+      `/libro/[slug]`, con lectura desde el servidor y regeneración cada hora. El
+      contenido va ahora en el HTML servido, así que el trabajo de SEO por fin
+      alcanza a los libros. Se indexa solo lo que tiene descripción de verdad
+      (60 caracteres): de nueve fichas, seis. Queda pendiente que la ficha
+      permita proponer el canje sin volver al catálogo.
 - [ ] **La marca no está terminada.** El logotipo es solo texto; el ícono de la
       aplicación es una «L» y la imagen para compartir sale en la sans de
       repuesto de Satori, no en la Source Serif de la marca. Falta incrustar la

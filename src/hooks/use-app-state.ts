@@ -23,6 +23,7 @@ import {
 } from "@/lib/firestore-data";
 import { CoverError, fileToCoverDataUrl } from "@/lib/image";
 import { categories, conds, formCats, formConds, tagList } from "@/lib/mock-data";
+import { pathForBook } from "@/lib/book-slug";
 import { locationFromPath, pathForReader, pathForRoute } from "@/lib/routes";
 import {
   useBooks,
@@ -616,6 +617,7 @@ export function useAppState() {
       barrio: string;
       dist: number | null;
       rating: number | null;
+      href: string;
       plate: string;
       reserved: boolean;
       createdAt: number;
@@ -638,6 +640,7 @@ export function useAppState() {
             barrio: r.barrio,
             dist: readerDist(r),
             rating: avgRatingFor(r.id),
+            href: pathForBook(b),
             plate: plateFor(catalogAll.length),
             reserved: !!b.resUid,
             createdAt: b.createdAt,
