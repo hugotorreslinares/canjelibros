@@ -109,7 +109,7 @@ export default async function BookPage({ params }: PageProps) {
       <div className="grid gap-8 sm:grid-cols-[minmax(0,200px)_minmax(0,1fr)] sm:gap-10 items-start mt-4">
         <BookCover
           cover={book.cover}
-          plate={plateFor(book.t.length)}
+          plate={plateFor(book.id)}
           title={book.t}
           author={book.a}
           size="lg"

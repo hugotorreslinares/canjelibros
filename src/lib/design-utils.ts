@@ -12,6 +12,19 @@ const PLATE_COLORS = [
   "#5b4636",
 ];
 
-export function plateFor(i: number): string {
-  return PLATE_COLORS[((i % PLATE_COLORS.length) + PLATE_COLORS.length) % PLATE_COLORS.length];
+/**
+ * El color de la placa de un libro, derivado de su identificador.
+ *
+ * Antes cada sitio lo calculaba de una cosa distinta —la posición en la lista,
+ * el largo del título, el índice del estante—, así que el mismo libro salía azul
+ * en el catálogo y granate en su propia ficha. Una portada es parte de cómo se
+ * reconoce un libro: tiene que ser la misma en todas partes.
+ */
+export function plateFor(key: string): string {
+  let hash = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    hash ^= key.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return PLATE_COLORS[Math.abs(hash) % PLATE_COLORS.length];
 }

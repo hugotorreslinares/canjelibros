@@ -607,9 +607,9 @@ export function useAppState() {
     const selBooks = selUser
       ? books
           .filter((b) => b.ownerId === selUser.id)
-          .map((b, i) => ({
+          .map((b) => ({
             ...b,
-            plate: plateFor(i + 1),
+            plate: plateFor(b.id),
             propose: () => openOffer(selUser.id, b.id),
           }))
       : [];
@@ -650,7 +650,7 @@ export function useAppState() {
             dist: readerDist(r),
             rating: avgRatingFor(r.id),
             href: pathForBook(b),
-            plate: plateFor(catalogAll.length),
+            plate: plateFor(b.id),
             reserved: !!b.resUid,
             createdAt: b.createdAt,
             selectOwner: () => setSel(r.id),
@@ -721,7 +721,7 @@ export function useAppState() {
       const activelyReserved = !!b.resUid && !threadForUid(b.resUid)?.closed;
       return {
         ...b,
-        plate: plateFor(myBooks.indexOf(b)),
+        plate: plateFor(b.id),
         state: activelyReserved ? `Reservado con ${nameOf(b.resUid as string)}` : "Disponible",
         reserved: activelyReserved,
         canRemove: !activelyReserved,
@@ -843,7 +843,7 @@ export function useAppState() {
         if (!q) return true;
         return [b.t, b.a, b.desc, b.cat, nameOf(b.ownerId)].some((field) => field.toLowerCase().includes(q));
       })
-      .map((b, i) => ({
+      .map((b) => ({
         id: b.id,
         t: b.t,
         a: b.a,
@@ -856,7 +856,7 @@ export function useAppState() {
         isMine: b.ownerId === myUid,
         reserved: !!b.resUid,
         reservedWith: b.resUid ? nameOf(b.resUid) : "",
-        plate: plateFor(i),
+        plate: plateFor(b.id),
         editing: modEditingId === b.id,
         edit: () => modStartEdit(b.id),
         remove: () => modDelete(b.id),
@@ -1204,7 +1204,8 @@ export function useAppState() {
       clearCover,
       coverBusy,
       previewCover: form.cover,
-      previewPlate: plateFor(editingBookId ? Math.max(0, myBooks.findIndex((b) => b.id === editingBookId)) : vals.used + 2),
+      // Un borrador todavía no tiene identificador; al guardarlo toma el suyo.
+      previewPlate: plateFor(editingBookId ?? "borrador"),
       previewShort: form.t || "Portada tipográfica",
       previewTitle: form.t || "Título del libro",
       previewAuthor: form.a || "Autor",
@@ -1258,7 +1259,7 @@ export function useAppState() {
       bookCond: vals.offerBook?.cond || "",
       bookCat: vals.offerBook?.cat || "",
       bookCover: vals.offerBook?.cover ?? null,
-      bookPlate: plateFor(1),
+      bookPlate: plateFor(vals.offerBook?.id ?? ""),
       myOfferables: vals.myFreeBooks.map((b) => ({ ...b, active: offerMineId === b.id, choose: () => setOfferMineId(b.id) })),
       // Sin libros y con todos comprometidos son callejones distintos, y la salida
       // también: publicar en el primer caso, esperar o cancelar en el segundo.
