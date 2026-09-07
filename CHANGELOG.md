@@ -3,6 +3,30 @@
 Las entradas a partir de aquí las genera release-please leyendo los commits.
 No edites este archivo a mano: se regenera y tu cambio se pierde.
 
+## [0.5.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.4.0...v0.5.0) (2026-09-07)
+
+
+### Novedades
+
+* busca en el catálogo por título y autor ([1e232f8](https://github.com/hugotorreslinares/canjelibros/commit/1e232f8a3fdd8d2fd7ff43475c8038bcb0750dfe))
+* cada libro tiene su propia página ([51370c7](https://github.com/hugotorreslinares/canjelibros/commit/51370c7cb7c15f6daf52342931e98c3f89b2fd94))
+* la aparición al hacer scroll se escalona ([ad7aab7](https://github.com/hugotorreslinares/canjelibros/commit/ad7aab744f54542d08d609ea34f803d9cc78e398))
+* las portadas compuestas se parecen a portadas ([18c6f86](https://github.com/hugotorreslinares/canjelibros/commit/18c6f860e6c98ae5e32ab7190a487d62499915d2))
+* rediseño editorial de la portada — paleta y catálogo ([9810965](https://github.com/hugotorreslinares/canjelibros/commit/98109654fd514bb5c6aa8f8d5e53baa3ceabcc4d))
+* se puede rechazar o retirar una propuesta de canje ([98e867a](https://github.com/hugotorreslinares/canjelibros/commit/98e867a358e8d1d97251bc6d659839068c67be5f))
+
+
+### Correcciones
+
+* corrige lo que encontró la revisión adversarial del rediseño ([577c945](https://github.com/hugotorreslinares/canjelibros/commit/577c9452d0d34c9acfecebbf76e2da4162440c8d))
+* la reputación y la distancia dejan de inventarse ([9623de1](https://github.com/hugotorreslinares/canjelibros/commit/9623de1b7082bfeebb124ad8f9c3746be7cce649))
+* un libro conserva su portada en todas las vistas ([eabce49](https://github.com/hugotorreslinares/canjelibros/commit/eabce4984d9e7314af4f949305c8e4594117705f))
+
+
+### Cambios internos
+
+* migra el mapa, moderación y políticas al sistema de diseño ([e32dbaa](https://github.com/hugotorreslinares/canjelibros/commit/e32dbaa9d8a2d26b33aa44d0e80d1cb9ff784a30))
+
 ## [0.4.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.3.0...v0.4.0) (2026-09-03)
 
 
