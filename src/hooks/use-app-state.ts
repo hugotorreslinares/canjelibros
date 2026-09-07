@@ -695,6 +695,20 @@ export function useAppState() {
       items: ranked,
     };
 
+    // «Cerca de ti»: ordenados por distancia real, no por interés — es una
+    // señal distinta a `recommended` (gusto lector) y por eso no comparte
+    // orden. Sin ubicación no hay «cerca» que valga, así que cae a lo más
+    // reciente igual que el resto del catálogo cuando no hay desde dónde medir.
+    const nearby = catalogAll
+      .filter((b) => !b.reserved)
+      .sort((a, b) => {
+        if (a.dist === null && b.dist === null) return b.createdAt - a.createdAt;
+        if (a.dist === null) return 1;
+        if (b.dist === null) return -1;
+        return a.dist - b.dist;
+      })
+      .slice(0, 8);
+
     const counts: Record<string, number> = {};
     let totalBooks = 0;
     otherReaders.forEach((r) => {
@@ -793,10 +807,10 @@ export function useAppState() {
       selBooks,
       catalog,
       catalogEmpty: catalog.length === 0,
-      catCount: `${catalog.length} de ${totalBooks}`,
       counts,
       totalBooks,
       recommended,
+      nearby,
       offerUser,
       offerBook,
       myFreeBooks,
@@ -1120,6 +1134,41 @@ export function useAppState() {
         t: b.t,
         a: b.a,
       })),
+      totalBooks: vals.totalBooks,
+      goPublish,
+    },
+
+    // «Cerca de ti»: sección propia entre el hero y el catálogo. Reutiliza
+    // `vals.nearby` (ordenado por distancia real) — es la misma fuente de
+    // datos que el catálogo, solo que ordenada distinto y recortada a ocho.
+    nearbyBooks: {
+      show: route === "catalog" && vals.nearby.length > 0,
+      hasLocation: !!myReader,
+      items: vals.nearby.map((b) => ({
+        id: b.id,
+        t: b.t,
+        a: b.a,
+        cover: b.cover,
+        plate: b.plate,
+        dist: b.dist,
+        href: b.href,
+      })),
+      goCatalog: () => {
+        // El enlace "Ver todos" baja al catálogo en vez de navegar a otra
+        // ruta: ya está en la misma página, justo debajo.
+        if (typeof document !== "undefined") {
+          document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      },
+    },
+
+    // Teaser del mapa, en la cola de la página («Descubre libros cerca de
+    // ti»). No repite el mapa completo — eso es la vista `/mapa` — solo da un
+    // motivo para ir: cuántos libros hay y un botón.
+    mapDiscovery: {
+      show: route === "catalog",
+      hasLocation: !!myReader,
+      totalBooks: vals.totalBooks,
       goMap: () => go("map"),
     },
 
@@ -1129,7 +1178,12 @@ export function useAppState() {
       error: dataError,
       items: vals.catalog,
       empty: vals.catalogEmpty,
-      count: vals.catCount,
+      // Antes venía como "5 de 9" ya unido en una sola cadena. El componente
+      // necesita los dos números por separado para poder escribir "124 libros
+      // esperando un nuevo lector" cuando no hay filtros activos, en vez de
+      // forzar siempre el formato "X de Y".
+      count: vals.catalog.length,
+      totalBooks: vals.totalBooks,
       // El catálogo esconde los libros propios —no puedes canjear contigo
       // mismo—, y quien acaba de publicar busca el suyo aquí y concluye que la
       // publicación falló. Solo hace falta decirlo si de verdad se está

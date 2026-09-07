@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Sistema de Librocambio — dirección «Papel y tinta».
+/* Sistema de Librocambio — dirección «Papel y tinta», paleta editorial 2026.
    Seis pasos de escala tipográfica y una rejilla de 4 px (el --spacing por
    defecto de Tailwind). Cualquier tamaño fuera de esta tabla es un error:
    antes de esto convivían doce tamaños distintos en una sola pantalla. */
@@ -13,7 +13,11 @@
      en tiempo de ejecución; nombrarlas igual que el token las volvería
      circulares y la fuente no cargaría. */
   --font-serif: var(--font-source-serif), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-manrope), "Helvetica Neue", Arial, sans-serif;
+  /* Solo para titulares grandes (hero, secciones de portada): una serif con
+     más carácter editorial que la de lectura. Igual que --text-hero, es una
+     excepción deliberada al sistema, no una tercera familia suelta por ahí. */
+  --font-display: var(--font-playfair), var(--font-source-serif), Georgia, serif;
 
   --text-label: 0.75rem;
   --text-label--line-height: 1.4;
@@ -52,6 +56,11 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-warm: var(--accent-warm);
+  /* Verde apagado: un único acento de estado, reservado para «Como nuevo» en
+     el indicador de condición. No es un semáforo de cuatro colores — eso
+     obliga a memorizar una leyenda; aquí solo el mejor estado se destaca, y el
+     resto se distingue por relleno/forma, no por una paleta de colores nueva. */
+  --color-status-good: var(--status-good);
 
   /* El ancho de la caja de contenido, y la única fuente de ese número. A pantalla
      completa en un monitor ancho las filas del catálogo se estiraban hasta que el
@@ -75,70 +84,99 @@
   --radius-4xl: var(--radius);
 }
 
+/* Paleta editorial cálida (spec de rediseño, sept. 2026): marfil + terracota +
+   azul tinta + verde apagado sobre tinta casi negra. Reemplaza el gris frío
+   anterior — el fondo deja de sentirse administrativo y pasa a sentirse como
+   papel. Contrastes verificados (WCAG, texto normal ≥4.5:1 / UI ≥3:1):
+   terracota/marfil 4.70, terracota/blanco 5.17, azul-tinta/marfil 8.82,
+   gris-cálido(texto)/marfil 5.31, negro/marfil 16.32. */
 :root {
-  --background: #f3f2f2;
-  --foreground: #201e1d;
-  --card: #f8f4f4;
-  --card-foreground: #201e1d;
-  --popover: #f8f4f4;
-  --popover-foreground: #201e1d;
+  --background: #f7f4ed;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
 
-  /* 5,17:1 sobre blanco y 4,63:1 sobre el papel. El teal anterior (#0088b0)
-     daba 4,08:1 y por eso el botón principal no cumplía AA. */
-  --primary: #00769a;
-  --primary-foreground: #f8f4f4;
-  --primary-soft: #0088b0;
+  /* Terracota: el color de acción. 5,17:1 con texto blanco encima, 4,70:1
+     como color de enlace sobre el marfil — pasa AA en los dos usos. */
+  --primary: #b84a32;
+  --primary-foreground: #ffffff;
+  --primary-soft: #cf6b4f;
 
-  --secondary: #eae7e7;
-  --secondary-foreground: #201e1d;
-  --muted: #eae7e7;
-  --muted-foreground: #605d5d;
-  --accent: #cbeeff;
-  --accent-foreground: #004961;
-  /* El único cálido de la paleta, y solo para destacar una palabra del titular
-     de la portada. 5,37:1 sobre el papel. No es un color de estado: no
-     significa error ni éxito, y no debe usarse en la interfaz de la app. */
-  --accent-warm: #a8432a;
+  /* Gris suave de la paleta: superficies neutras (badges, fondos discretos),
+     no el acento de marca. El texto que va encima es la tinta casi negra, así
+     que el contraste sale altísimo sin cálculo especial. */
+  --secondary: #e5e1d8;
+  --secondary-foreground: #171717;
+  --muted: #e5e1d8;
+  --muted-foreground: #6b645c;
+
+  /* Azul tinta como segundo acento de marca: aquí vive el estado
+     «seleccionado» de chips y opciones (ver RatingModal, ShelfView,
+     PublishView, ModerationView, OfferModal) y el fondo tras la pila de
+     libros del hero. 8,82:1 en texto, así que además sirve como texto normal. */
+  --accent: #e8edef;
+  --accent-foreground: #174a5b;
+
+  /* El único cálido de la paleta aparte del terracota principal, y solo para
+     destacar una palabra del titular de la portada — se alinea al mismo tono
+     que --primary para que la página no tenga dos acentos casi iguales
+     compitiendo. No es un color de estado: no significa error ni éxito, y no
+     debe usarse en la interfaz de la app. */
+  --accent-warm: #b84a32;
+
+  /* Verde apagado: un único uso, la condición «Como nuevo». 4,55:1 en texto y
+     de sobra como relleno de un punto (solo necesita 3:1 frente a lo que lo
+     rodea). */
+  --status-good: #65745b;
 
   /* Magenta solo para lo destructivo: antes también significaba «canje
      cerrado con éxito», que es lo contrario. */
   --destructive: #aa0b56;
   --destructive-foreground: #f8f4f4;
 
-  --placeholder: #5f5b5b;
-  --border: rgba(32, 30, 29, 0.16);
-  --border-strong: rgba(32, 30, 29, 0.35);
-  --input: rgba(32, 30, 29, 0.35);
-  --ring: #00769a;
+  --placeholder: #6b645c;
+  --border: rgba(23, 23, 23, 0.14);
+  --border-strong: rgba(23, 23, 23, 0.32);
+  --input: rgba(23, 23, 23, 0.32);
+  --ring: #b84a32;
 
   --radius: 2px;
 }
 
 .dark {
-  --background: #17161a;
-  --foreground: #eceaea;
-  --card: #1f1e22;
-  --card-foreground: #eceaea;
-  --popover: #1f1e22;
-  --popover-foreground: #eceaea;
-  --primary: #4fb8d8;
-  --primary-foreground: #10161a;
-  --primary-soft: #6ccbe8;
-  --secondary: #2a292e;
-  --secondary-foreground: #eceaea;
-  --muted: #2a292e;
-  --muted-foreground: #a5a1a1;
-  --accent: #123240;
-  --accent-foreground: #bfe6f5;
-  /* El rústico del modo claro da 3:1 aquí; este da 5,41:1. */
-  --accent-warm: #d2734f;
+  --background: #1c1815;
+  --foreground: #f2ece4;
+  --card: #26211d;
+  --card-foreground: #f2ece4;
+  --popover: #26211d;
+  --popover-foreground: #f2ece4;
+
+  /* Terracota claro, para que el botón siga siendo terracota sobre un fondo
+     oscuro en vez de convertirse en otro color. 6,89:1 con su propio texto. */
+  --primary: #e08a63;
+  --primary-foreground: #241109;
+  --primary-soft: #ec9c78;
+
+  --secondary: #2e2822;
+  --secondary-foreground: #f2ece4;
+  --muted: #2e2822;
+  --muted-foreground: #b8afa4;
+
+  --accent: #182a32;
+  --accent-foreground: #8fb4c4;
+
+  --accent-warm: #e08a63;
+  --status-good: #9fae91;
+
   --destructive: #f0679f;
   --destructive-foreground: #17161a;
-  --placeholder: #8d8989;
-  --border: rgba(236, 234, 234, 0.16);
-  --border-strong: rgba(236, 234, 234, 0.38);
-  --input: rgba(236, 234, 234, 0.28);
-  --ring: #4fb8d8;
+  --placeholder: #a89f93;
+  --border: rgba(242, 236, 228, 0.14);
+  --border-strong: rgba(242, 236, 228, 0.3);
+  --input: rgba(242, 236, 228, 0.26);
+  --ring: #e08a63;
 }
 
 @layer base {

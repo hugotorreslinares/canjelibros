@@ -22,7 +22,7 @@ export function GET() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#00769a",
+          background: "#b84a32",
           color: "#f8f4f4",
           fontFamily: "Georgia, serif",
           fontSize: 280,

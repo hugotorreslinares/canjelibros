@@ -50,7 +50,7 @@ export function Header({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const items: NavItem[] = [
-    { label: "Catálogo", active: isCatalog, go: goCatalog },
+    { label: "Explorar", active: isCatalog, go: goCatalog },
     { label: "Mapa", active: isMap, go: goMap },
     { label: "Mensajes", active: isChat, go: goChat, badge: unread },
     { label: "Mi estante", active: isShelf, go: goShelf },
@@ -80,14 +80,14 @@ export function Header({
   return (
     <>
       <header className="sticky top-0 z-30 bg-background border-b border-border">
-        <div className="w-full mx-auto max-w-shell flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16">
+        <div className="w-full mx-auto max-w-shell flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16 sm:h-[4.25rem]">
           <div className="flex items-baseline min-w-0">
             {/* Un paso más pequeño por debajo de 360 px: «Librocambio» a 26 px se
                 monta encima de «Publicar» y del botón de menú, que ya están en el
                 mínimo de 44 px y no pueden ceder ancho. */}
             <button
               onClick={goCatalog}
-              className="flex items-center h-11 min-h-[44px] shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-serif text-[21px] min-[360px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
+              className="flex items-center h-11 min-h-[44px] shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-display text-[21px] min-[360px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
             >
               Librocambio
             </button>

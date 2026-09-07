@@ -10,11 +10,11 @@ export default function manifest(): MetadataRoute.Manifest {
     description: SITE_DESCRIPTION,
     start_url: "/",
     display: "standalone",
-    background_color: "#f3f2f2",
+    background_color: "#f7f4ed",
     // El mismo crema que el `themeColor` del layout: en el navegador manda el
     // meta y en la app instalada manda esto, así que si no coinciden la misma
     // app tiene una barra de un color en Chrome y de otro en el ícono.
-    theme_color: "#f3f2f2",
+    theme_color: "#f7f4ed",
     lang: "es-CO",
     icons: [
       { src: "/icon", sizes: "32x32", type: "image/png" },

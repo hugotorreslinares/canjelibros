@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, Source_Serif_4 } from "next/font/google";
+import { Manrope, Playfair_Display, Source_Serif_4 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AuthProvider } from "@/lib/auth-context";
@@ -15,10 +15,19 @@ const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
 });
 
-const archivo = Archivo({
+const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["500", "600"],
-  variable: "--font-archivo",
+  weight: ["500", "600", "700"],
+  variable: "--font-manrope",
+});
+
+// Solo para titulares grandes — ver --font-display en globals.css. Un único
+// peso: esta familia no se usa en cuerpo de texto ni en tamaños pequeños,
+// donde su personalidad se volvería ruido.
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-playfair",
 });
 
 export const metadata: Metadata = {
@@ -65,15 +74,15 @@ export const metadata: Metadata = {
 // si alguien la agrega a su pantalla de inicio.
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f3f2f2" },
-    { media: "(prefers-color-scheme: dark)", color: "#17161a" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f4ed" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c1815" },
   ],
   colorScheme: "light dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-CO" className={`${sourceSerif.variable} ${archivo.variable} h-full antialiased`}>
+    <html lang="es-CO" className={`${sourceSerif.variable} ${manrope.variable} ${playfairDisplay.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {/* Va dentro del HTML servido, así que un buscador o un modelo entiende
             qué es este sitio sin ejecutar JavaScript ni esperar a Firestore. */}

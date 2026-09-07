@@ -17,22 +17,22 @@ export default async function OpengraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#f3f2f2",
-          color: "#201e1d",
+          background: "#f7f4ed",
+          color: "#171717",
           padding: 72,
           fontFamily: "Georgia, serif",
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          <div style={{ fontSize: 30, letterSpacing: 8, color: "#605d5d" }}>BOGOTÁ</div>
+          <div style={{ fontSize: 30, letterSpacing: 8, color: "#6b645c" }}>BOGOTÁ</div>
           <div style={{ fontSize: 128, fontWeight: 600, letterSpacing: -3 }}>{SITE_NAME}</div>
-          <div style={{ fontSize: 44, lineHeight: 1.25, maxWidth: 900, color: "#444141" }}>
+          <div style={{ fontSize: 44, lineHeight: 1.25, maxWidth: 900, color: "#171717" }}>
             Intercambio vecinal de libros usados. Libro por libro, sin dinero.
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{ width: 220, height: 10, background: "#00769a" }} />
-          <div style={{ fontSize: 28, color: "#605d5d" }}>Publica los que ya leíste · Encuentra los que te faltan</div>
+          <div style={{ width: 220, height: 10, background: "#b84a32" }} />
+          <div style={{ fontSize: 28, color: "#6b645c" }}>Publica los que ya leíste · Encuentra los que te faltan</div>
         </div>
       </div>
     ),

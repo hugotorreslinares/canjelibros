@@ -105,3 +105,107 @@ encabezado; modales sobre Dialog con foco atrapado; estados de carga, error y
 vacío; URL propia por vista con 404 real; agrupación de pines; metadatos, sitemap
 y JSON-LD; aparición al hacer scroll; ancho máximo en pantallas grandes; y la
 maquetación ya no depende del tamaño de letra del navegador.
+
+---
+
+## 6. Rediseño editorial de la portada (6 de septiembre de 2026)
+
+A partir de un documento de especificación externo (`librocambio-redesign-spec.md`,
+aportado por el usuario) para transmitir "una comunidad local de lectores donde los
+libros encuentran un nuevo lector" — editorial, cálido, con la proximidad como
+argumento visual. Implementado y verificado en build + navegador contra datos reales
+de Firestore; **queda pendiente el resultado de una revisión adversarial en curso**
+(workflow en segundo plano) al momento de escribir esto.
+
+### Hecho
+
+- Paleta editorial cálida completa (marfil, terracota, azul tinta, verde apagado,
+  gris suave), en luz y oscuro, con contraste WCAG calculado y verificado (no
+  supuesto): terracota/marfil 4,70:1, terracota/blanco 5,17:1, azul-tinta/marfil
+  8,82:1, negro/marfil 16,32:1. `--accent-warm` se alinea al nuevo `--primary` para
+  no tener dos acentos cálidos casi iguales compitiendo.
+- Tipografía: Playfair Display como `--font-display` (nuevo, séptima excepción a los
+  seis pasos — reservada a titulares grandes, igual que `--text-hero`), Manrope
+  reemplaza a Archivo como `--font-sans`, Source Serif 4 sigue siendo la serif de
+  lectura.
+- Header: CTA "Publicar libro" ya sale en terracota por los tokens; rótulo
+  "Catálogo"→"Explorar"; algo más de aire vertical (68px).
+- Hero: copy nuevo ("Cambia libros. Descubre historias."), CTAs reasignados
+  (primario = explorar catálogo, secundario = publicar — el mapa se mudó a su propia
+  invitación más abajo), caption "Bogotá · N libros en circulación" bajo la pila de
+  portadas.
+- Nueva sección **"Cerca de ti"** (`NearbyBooks.tsx`) entre el hero y el catálogo,
+  con un derivado propio en el hook (`nearby`, ordenado por distancia real, no por
+  interés) — distinto del carrusel existente de recomendados, que se conserva sin
+  tocar. Sin ubicación, el título cae a "Recién publicados" en vez de fingir
+  cercanía que no se puede medir — mismo principio que ya regía `DistanceLabel`.
+- Catálogo: buscador grande con ícono, filtros como barra horizontal con `Popover`
+  (categoría/estado/distancia/orden) en vez de la columna fija de 230px, un botón
+  "Filtros · N" con drawer (`Sheet` de abajo) en móvil, copia del contador sin jerga
+  ("9 libros esperando un nuevo lector" / "5 de 9 libros con estos filtros" / "1 de 9
+  coinciden con «X»" según el caso), condición como punto+etiqueta
+  (`BookCondition.tsx`, nunca solo color), portada más grande y dominante en móvil
+  (128×192), superficie de tarjeta (`bg-card`, sin filete ni `border-t` entre filas —
+  la "acumulación de líneas" que el pedido señaló), CTA "Proponer canje" en terracota,
+  elevación sutil de la portada al pasar el cursor.
+- Nueva sección **"Descubre libros cerca de ti"** (`MapDiscovery.tsx`) antes del pie,
+  con un teaser decorativo en SVG (no un segundo Leaflet cargado en la misma página)
+  y un número real de libros, enlazando a `/mapa`.
+- `MapView.tsx` y los generadores de ícono/OG (Satori no puede leer CSS, así que
+  llevan hex a mano) se actualizaron a la paleta nueva — si no, el mapa y la tarjeta
+  para compartir habrían quedado con el teal/magenta viejo justo al lado del resto ya
+  rediseñado.
+- Nuevo componente base `src/components/ui/popover.tsx`, siguiendo el mismo patrón
+  de `sheet.tsx` (Radix vía el paquete unificado `radix-ui`, ya era una dependencia).
+
+### Verificado, no solo escrito
+
+`tsc`/`eslint`/`build` en verde. En el navegador, contra Firestore real: paleta y
+tipografías resueltas por `getComputedStyle` (marfil, terracota, Playfair, Manrope);
+filtro por categoría de punta a punta (abre popover, cuenta baja de 9 a 5, el rótulo
+del botón cambia a "Categoría: Novela"); búsqueda de punta a punta ("brujeria" sin
+tilde encuentra "brujería", "1 de 9 coinciden"); drawer de filtros en móvil con sus
+tres grupos y sin el de distancia cuando no hay ubicación; portada de 128×192 en
+375px sin desborde horizontal; encabezado sin colisión a 1024px (93px de aire) ni a
+320px (18px); alt text de portadas y aria-label del buscador presentes; la ficha de
+un libro (`/libro/[slug]`) hereda la paleta.
+
+### Adaptado a propósito frente al documento (y por qué)
+
+- **Las cards no duplican el markup vertical/horizontal del spec literal.** En vez de
+  dos composiciones separadas (póster vs. fila), una sola estructura con la portada
+  respondiendo por tamaño de forma responsiva (128×192 bajo 640px, 74×111 desde ahí)
+  y el resto del layout compartido. Menos riesgo de mantenimiento y reutiliza el
+  breakpoint en píxeles (`min-[640px]:`) que ya existe en este archivo por el bug de
+  `rem` que se corrigió antes en este mismo proyecto — un breakpoint nuevo en `sm:`/
+  `md:` habría reintroducido exactamente ese problema.
+- **Los popovers de filtro no se cierran solos al elegir una opción.** Comportamiento
+  no controlado de Radix por defecto: cerrar automáticamente exige estado controlado
+  por cada popover. Se dejó así a propósito — permite comparar el conteo entre
+  opciones sin reabrir — pero es una simplificación real frente a lo que un usuario
+  podría esperar.
+- **El teaser del mapa es un SVG decorativo fijo, no un mapa en miniatura real.**
+  Cargar una segunda instancia de Leaflet en la portada solo para decorar es peso
+  real sin beneficio; el mapa de verdad sigue siendo `/mapa`.
+- **El header conserva su estructura de tres grupos (logo · nav con todo · acciones
+  móviles), no la rejilla de tres columnas del spec.** Reestructurarla arriesgaba
+  reabrir la colisión a 1024px que ya costó varias iteraciones corregir en este mismo
+  proyecto (ver commits anteriores sobre el menú montándose sobre el logotipo). Se
+  optó por más aire vertical en su lugar; el spec permite "centrada O próxima al
+  centro", así que esto sigue dentro de lo pedido.
+- **Solo se tocó la página de catálogo**, tal como titula el propio documento
+  ("Rediseño integral de la página de catálogo"): Header, Hero, Cerca de ti,
+  Catálogo, Descubre el mapa, pie. `Mi estante`, `Publicar`, `Mensajes`,
+  `Moderación` y `Políticas` heredan la paleta por los tokens compartidos (ya no se
+  ven con los colores viejos), pero no se revisaron uno por uno contra el spec —
+  quedan visualmente coherentes por herencia, no rediseñados a propósito.
+- **La paleta oscura se actualizó con los mismos huecos de contraste verificados**,
+  pero sigue sin poder activarse — es el mismo hallazgo ya anotado en la sección 2 de
+  este documento, sin resolver en esta tanda.
+
+### Sin verificar
+
+Todo lo que exige sesión iniciada (proponer un canje real, publicar, ver "Mi
+estante"), porque nadie ha podido probar esos flujos de punta a punta en ninguna
+sesión anterior tampoco. El resultado de la revisión adversarial en segundo plano —
+se documentará en un commit de seguimiento si encuentra algo real.
