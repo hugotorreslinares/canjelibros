@@ -186,24 +186,30 @@ export function CatalogView({
     </div>
   );
 
-  const distanceGroup = hasLocation && (
-    <div>
-      <h3 className="font-sans text-label uppercase text-muted-foreground mb-2">Distancia máxima</h3>
-      <label className="font-serif text-body mb-1.5 block" htmlFor="catalogo-distancia">
-        {maxDistLabel}
-      </label>
-      <input
-        id="catalogo-distancia"
-        type="range"
-        min={0.5}
-        max={8}
-        step={0.5}
-        value={maxDist}
-        onChange={(e) => setDist(parseFloat(e.target.value))}
-        className="w-full h-11 accent-primary"
-      />
-    </div>
-  );
+  // Función, no una constante JSX: el mismo grupo vive a la vez en el Popover de
+  // escritorio y en el Sheet móvil, y si el drawer queda abierto al cruzar el punto
+  // de quiebre, los dos llegan a montarse juntos. Un id compartido entre ambos
+  // rompe la unicidad de id y la asociación label/for; con un sufijo por contexto,
+  // cada uno tiene el suyo.
+  const distanceGroup = (idSuffix: string) =>
+    hasLocation && (
+      <div>
+        <h3 className="font-sans text-label uppercase text-muted-foreground mb-2">Distancia máxima</h3>
+        <label className="font-serif text-body mb-1.5 block" htmlFor={`catalogo-distancia-${idSuffix}`}>
+          {maxDistLabel}
+        </label>
+        <input
+          id={`catalogo-distancia-${idSuffix}`}
+          type="range"
+          min={0.5}
+          max={8}
+          step={0.5}
+          value={maxDist}
+          onChange={(e) => setDist(parseFloat(e.target.value))}
+          className="w-full h-11 accent-primary"
+        />
+      </div>
+    );
 
   const sortGroup = (
     <div>
@@ -247,7 +253,10 @@ export function CatalogView({
                     />
                     <div className="font-serif text-body leading-tight truncate">{b.t}</div>
                     <div className="font-sans text-small text-muted-foreground truncate">{b.a}</div>
-                    <BookCondition cond={b.cond} />
+                    <div className="flex gap-1.5 flex-wrap items-center">
+                      <Badge variant="secondary">{b.cat}</Badge>
+                      <BookCondition cond={b.cond} />
+                    </div>
                     <Button onClick={b.propose} className="w-full">
                       Proponer canje
                     </Button>
@@ -287,7 +296,7 @@ export function CatalogView({
             <button
               className={`flex h-11 min-h-[44px] items-center gap-1.5 px-3.5 rounded-sm border font-sans text-small ${
                 activeCat && activeCat.label !== "Todas"
-                  ? "border-primary text-primary bg-accent"
+                  ? "border-primary text-accent-foreground bg-accent"
                   : "border-input text-foreground bg-card"
               }`}
             >
@@ -303,7 +312,7 @@ export function CatalogView({
             <button
               className={`flex h-11 min-h-[44px] items-center gap-1.5 px-3.5 rounded-sm border font-sans text-small ${
                 activeCond && activeCond.label !== "Todos"
-                  ? "border-primary text-primary bg-accent"
+                  ? "border-primary text-accent-foreground bg-accent"
                   : "border-input text-foreground bg-card"
               }`}
             >
@@ -319,14 +328,14 @@ export function CatalogView({
             <PopoverTrigger asChild>
               <button
                 className={`flex h-11 min-h-[44px] items-center gap-1.5 px-3.5 rounded-sm border font-sans text-small ${
-                  !distanceIsDefault ? "border-primary text-primary bg-accent" : "border-input text-foreground bg-card"
+                  !distanceIsDefault ? "border-primary text-accent-foreground bg-accent" : "border-input text-foreground bg-card"
                 }`}
               >
                 {!distanceIsDefault ? `Distancia: ${maxDistLabel}` : "Distancia"}
                 <ChevronIcon />
               </button>
             </PopoverTrigger>
-            <PopoverContent>{distanceGroup}</PopoverContent>
+            <PopoverContent>{distanceGroup("escritorio")}</PopoverContent>
           </Popover>
         )}
 
@@ -358,7 +367,7 @@ export function CatalogView({
             <div className="flex flex-col gap-6 px-4 pb-4">
               {categoryGroup}
               {conditionGroup}
-              {distanceGroup}
+              {distanceGroup("movil")}
               {sortGroup}
               <Button onClick={() => setFiltersOpen(false)} className="w-full">
                 Ver resultados

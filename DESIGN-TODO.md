@@ -203,9 +203,48 @@ un libro (`/libro/[slug]`) hereda la paleta.
   pero sigue sin poder activarse — es el mismo hallazgo ya anotado en la sección 2 de
   este documento, sin resolver en esta tanda.
 
+### Revisión adversarial (6 de septiembre, commit de seguimiento)
+
+Cuatro agentes independientes revisaron el diff del commit anterior contra AGENTS.md
+y contra el propio spec, cada uno buscando fallar de una forma distinta; sus
+hallazgos pasaron después por un intento de refutación cada uno (sesgo por defecto:
+descartar, no confirmar). De 16 hallazgos crudos, 9 sobrevivieron. Corregidos todos:
+
+- **El chip de filtro activo (Categoría/Estado/Distancia) daba 4,38:1**, por debajo
+  de AA — usaba `text-primary` en vez de `text-accent-foreground`, que es el patrón
+  que ya seguían los otros cinco lugares con "seleccionado" en la app (8,21:1). Era
+  justo la única combinación que el commit anterior nunca calculó porque en el resto
+  del código no existía.
+- **`MapSkeleton` seguía con hex sueltos**, ya actualizados al color correcto pero
+  sin tokenizar — mismo commit que ya probaba la alternativa correcta en
+  `MapDiscovery.tsx`, a metros de distancia. Ahora usa `var(--color-*)`.
+- **Los pines reales de `/mapa` seguían en el teal viejo.** El commit anterior solo
+  tocó el esqueleto de carga (`MapSkeleton`, lo que se ve antes de que Leaflet
+  cargue); `ink`/`haloInk` en el hook y el halo del clúster en `LeafletMap.tsx`
+  nunca se tocaron. Es justo lo que el mensaje de ese commit decía haber evitado.
+- **El esqueleto de carga del catálogo no se había tocado**: seguía con la línea
+  divisoria y la portada pequeña de siempre, contradiciendo "menos líneas" y
+  "portada dominante" durante el primer instante de cada visita a `/`. Ahora
+  comparte superficie y proporciones con la tarjeta real.
+- **La categoría del libro desapareció del carrusel de recomendados** al meter
+  `BookCondition` — nadie lo pidió, era un efecto colateral. Restaurada junto al
+  punto de condición.
+- Altura arbitraria del encabezado (`h-[4.25rem]`) donde la utilidad nombrada
+  `h-17` ya cubre el mismo valor exacto en la rejilla de 4px — cambiado.
+- `id="catalogo-distancia"` se repetía si el drawer de filtros móvil quedaba abierto
+  al cruzar el punto de quiebre y se abría también el desplegable de escritorio —
+  cada contexto tiene ahora su propio id.
+
+Verificado tras corregir: `tsc`/`eslint`/build en verde; el chip "Categoría: Novela"
+resuelve a azul tinta sobre fondo azul claro (8,2:1, confirmado con
+`getComputedStyle`); la categoría vuelve a aparecer junto al punto de condición en
+el carrusel; el halo del clúster en `/mapa` sale en terracota, no en teal.
+
 ### Sin verificar
 
 Todo lo que exige sesión iniciada (proponer un canje real, publicar, ver "Mi
 estante"), porque nadie ha podido probar esos flujos de punta a punta en ninguna
-sesión anterior tampoco. El resultado de la revisión adversarial en segundo plano —
-se documentará en un commit de seguimiento si encuentra algo real.
+sesión anterior tampoco. Y el caso exacto del `id` duplicado (drawer móvil abierto +
+cambio de ancho + popover de escritorio) no se pudo reproducir en vivo en esta
+verificación porque exige tener ubicación — el arreglo se confirmó leyendo el
+código, no viéndolo fallar y luego dejar de fallar.

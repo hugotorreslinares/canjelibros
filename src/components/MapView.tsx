@@ -72,33 +72,33 @@ interface MapViewProps {
 function MapSkeleton() {
   return (
     <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 w-full h-full">
-      <g stroke="#171717" strokeOpacity=".13" fill="none">
+      <g stroke="var(--color-foreground)" strokeOpacity=".13" fill="none">
         <path d="M0 120 H1000 M0 250 H1000 M0 380 H1000 M0 510 H1000 M0 630 H1000" strokeWidth="1" />
         <path d="M120 0 V700 M260 0 V700 M400 0 V700 M540 0 V700 M680 0 V700 M820 0 V700" strokeWidth="1" />
       </g>
-      <g stroke="#171717" strokeOpacity=".38" fill="none">
+      <g stroke="var(--color-foreground)" strokeOpacity=".38" fill="none">
         <path d="M300 0 V700" strokeWidth="5" />
         <path d="M0 300 H1000" strokeWidth="5" />
         <path d="M640 0 L900 700" strokeWidth="3" />
       </g>
-      <g fill="#171717" fillOpacity=".06">
+      <g fill="var(--color-foreground)" fillOpacity=".06">
         <rect x="700" y="60" width="220" height="150" />
         <rect x="130" y="470" width="150" height="120" />
       </g>
-      <g stroke="#171717" strokeOpacity=".2" strokeWidth="1">
+      <g stroke="var(--color-foreground)" strokeOpacity=".2" strokeWidth="1">
         <path d="M700 60 L920 210 M700 110 L920 260 M700 160 L870 210" />
       </g>
-      <g fill="#6b645c" fontFamily="Source Serif 4, serif" fontSize="13" letterSpacing="1.5">
+      <g fill="var(--color-muted-foreground)" fontFamily="Source Serif 4, serif" fontSize="13" letterSpacing="1.5">
         <text x="310" y="30">CRA 7</text>
         <text x="14" y="292">CALLE 26</text>
         <text x="712" y="52">PARQUE NACIONAL</text>
         <text x="140" y="462">CEMENTERIO CENTRAL</text>
         <text x="820" y="660">AV. CIRCUNVALAR</text>
       </g>
-      <g stroke="#174a5b" strokeWidth="1" fill="none">
+      <g stroke="var(--color-accent-foreground)" strokeWidth="1" fill="none">
         <path d="M20 20 h18 M20 20 v18 M980 680 h-18 M980 680 v-18" />
       </g>
-      <g stroke="#b84a32" strokeWidth="1" fill="none">
+      <g stroke="var(--color-primary)" strokeWidth="1" fill="none">
         <path d="M980 20 h-18 M980 20 v18 M20 680 h18 M20 680 v-18" />
       </g>
     </svg>

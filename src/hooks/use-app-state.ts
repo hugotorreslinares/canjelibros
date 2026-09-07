@@ -595,8 +595,11 @@ export function useAppState() {
         dist: readerDist(r),
         rating,
         count: readerBooks.length,
-        ink: isOnline(r.lastSeenAt, now) ? "#00769a" : "#7d7979",
-        haloInk: isOnline(r.lastSeenAt, now) ? "rgba(0,118,154,.30)" : "rgba(32,30,29,.16)",
+        // El terracota de la paleta nueva, no el teal viejo: la revisión adversarial
+        // de la portada encontró que esta línea seguía sin tocar, así que los pines
+        // reales de /mapa quedaban teal justo al lado de una interfaz ya en terracota.
+        ink: isOnline(r.lastSeenAt, now) ? "#b84a32" : "#7d7979",
+        haloInk: isOnline(r.lastSeenAt, now) ? "rgba(184,74,50,.30)" : "rgba(32,30,29,.16)",
         pulse: isOnline(r.lastSeenAt, now) && ANIMATE_PINS ? 3.4 + i * 0.6 : 0,
         statusLine: presenceLine(r.lastSeenAt, now),
         teaser: readerBooks.slice(0, 2).map((b) => b.t).join(" · "),

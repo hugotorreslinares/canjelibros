@@ -43,7 +43,7 @@ function readerIcon(u: MapPinUser, selected: boolean) {
       <div className="relative w-[132px] h-[132px] grid place-items-center">
         <div
           style={{
-            background: `radial-gradient(circle, ${u.haloInk} 0%, rgba(0,136,176,0) 68%)`,
+            background: `radial-gradient(circle, ${u.haloInk} 0%, rgba(184,74,50,0) 68%)`,
             animation: u.pulse ? `breathe ${u.pulse}s ease-in-out infinite` : undefined,
           }}
           className="absolute inset-0 rounded-full blur-[7px]"
@@ -79,7 +79,7 @@ function clusterIcon(c: Cluster) {
     <div className="grid justify-items-center gap-[6px] cursor-pointer">
       <div className="relative w-[132px] h-[132px] grid place-items-center">
         <div
-          style={{ background: "radial-gradient(circle, rgba(0,118,154,.28) 0%, rgba(0,136,176,0) 68%)" }}
+          style={{ background: "radial-gradient(circle, rgba(184,74,50,.28) 0%, rgba(184,74,50,0) 68%)" }}
           className="absolute inset-0 rounded-full blur-[7px]"
         />
         <div className="relative w-[54px] h-[54px] grid place-items-center">
