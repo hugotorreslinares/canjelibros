@@ -12,6 +12,7 @@ export const dynamic = "force-static";
 
 // Chrome en Android pide un ícono de 512×512 para el prompt de "instalar
 // app" y para el splash screen; sin este, el manifest queda incompleto.
+// Mismo glifo que `apple-icon.tsx` — dos lomos de libro, no una inicial.
 export function GET() {
   return new ImageResponse(
     (
@@ -23,13 +24,12 @@ export function GET() {
           alignItems: "center",
           justifyContent: "center",
           background: "#b84a32",
-          color: "#f8f4f4",
-          fontFamily: "Georgia, serif",
-          fontSize: 280,
-          fontWeight: 700,
         }}
       >
-        L
+        <svg width="327" height="327" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="10" width="5.4" height="16" rx="1.4" fill="#f8f4f4" />
+          <rect x="17.6" y="6.5" width="6" height="19.5" rx="1.4" fill="#f8f4f4" />
+        </svg>
       </div>
     ),
     size
