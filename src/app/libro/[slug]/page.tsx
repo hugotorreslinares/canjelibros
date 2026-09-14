@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { BookCover } from "@/components/BookCover";
+import { BookPageHeader } from "@/components/BookPageHeader";
+import { Footer } from "@/components/Footer";
 import { bookIdFromSlug, pathForBook, slugForBook } from "@/lib/book-slug";
 import { fetchAllBooks, fetchBook } from "@/lib/books-server";
 import { plateFor } from "@/lib/design-utils";
@@ -85,83 +87,82 @@ export default async function BookPage({ params }: PageProps) {
   };
 
   return (
-    <div className="w-full mx-auto max-w-[820px] px-6 sm:px-10 pt-8 pb-16">
+    <div className="flex-1 flex flex-col">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Esta ruta vive fuera de la aplicación —es una página de verdad, no una
-          vista del catch-all—, así que no hereda el encabezado. Con solo el
-          enlace de volver, quien llega desde un buscador no sabe dónde está. */}
-      <div className="flex items-baseline justify-between gap-4 flex-wrap border-b border-border pb-4">
-        <Link
-          href="/"
-          className="font-serif text-subtitle font-semibold tracking-[-.02em] text-foreground no-underline"
-        >
-          {SITE_NAME}
-        </Link>
-        <Button variant="link" asChild className="px-0">
+      {/* Esta ruta vive fuera del catch-all de la SPA (ver AGENTS.md), así que
+          no hereda el `<Header>` de `ElCanjeApp.tsx` automáticamente —
+          `BookPageHeader` es el mismo componente, con navegación real de Next
+          en vez de las funciones `go*` internas de la aplicación. */}
+      <BookPageHeader />
+
+      <main className="flex-1 w-full mx-auto max-w-[820px] px-6 sm:px-10 pt-8 pb-16">
+        <Button variant="link" asChild className="px-0 mb-4">
           <Link href="/">← Volver al catálogo</Link>
         </Button>
-      </div>
 
-      <div className="grid gap-8 sm:grid-cols-[minmax(0,200px)_minmax(0,1fr)] sm:gap-10 items-start mt-4">
-        <BookCover
-          cover={book.cover}
-          plate={plateFor(book.id)}
-          title={book.t}
-          author={book.a}
-          size="lg"
-          className="w-full max-w-[200px] aspect-2/3"
-        />
+        <div className="grid gap-8 sm:grid-cols-[minmax(0,200px)_minmax(0,1fr)] sm:gap-10 items-start">
+          <BookCover
+            cover={book.cover}
+            plate={plateFor(book.id)}
+            title={book.t}
+            author={book.a}
+            size="lg"
+            className="w-full max-w-[200px] aspect-2/3"
+          />
 
-        <div>
-          <p className="font-sans text-label uppercase text-muted-foreground m-0">
-            {book.cat}
-            {book.cond && <> · {book.cond}</>}
-          </p>
-          <h1 className="font-serif text-display mt-2 mb-0">{book.t}</h1>
-          {book.a && <p className="font-serif text-subtitle text-muted-foreground mt-2 mb-0">{book.a}</p>}
+          <div>
+            <p className="font-sans text-label uppercase text-muted-foreground m-0">
+              {book.cat}
+              {book.cond && <> · {book.cond}</>}
+            </p>
+            <h1 className="font-serif text-display mt-2 mb-0">{book.t}</h1>
+            {book.a && <p className="font-serif text-subtitle text-muted-foreground mt-2 mb-0">{book.a}</p>}
 
-          <div className="h-[5px] bg-foreground mt-5 mb-0.5" />
-          <div className="h-px bg-foreground mb-6" />
+            <div className="h-[5px] bg-foreground mt-5 mb-0.5" />
+            <div className="h-px bg-foreground mb-6" />
 
-          {book.desc && <p className="font-serif text-body text-foreground m-0">{book.desc}</p>}
+            {book.desc && <p className="font-serif text-body text-foreground m-0">{book.desc}</p>}
 
-          <p className="font-sans text-small text-muted-foreground mt-6 mb-0">
-            {owner ? (
-              <>
-                Lo tiene {owner.name}, en Bogotá
-                {owner.trades > 0 && <> · {owner.trades} intercambios cerrados</>}
-              </>
-            ) : (
-              <>Publicado por un lector de Bogotá</>
-            )}
-          </p>
+            <p className="font-sans text-small text-muted-foreground mt-6 mb-0">
+              {owner ? (
+                <>
+                  Lo tiene {owner.name}, en Bogotá
+                  {owner.trades > 0 && <> · {owner.trades} intercambios cerrados</>}
+                </>
+              ) : (
+                <>Publicado por un lector de Bogotá</>
+              )}
+            </p>
 
-          <div className="mt-8">
-            {reservado ? (
-              <>
-                <Button disabled>Reservado</Button>
-                <p className="font-sans text-small text-muted-foreground max-w-[40ch] mt-2 mb-0">
-                  Alguien ya propuso un canje por este libro. Vuelve a estar libre si la propuesta no
-                  cierra.
-                </p>
-              </>
-            ) : (
-              <>
-                <Button asChild>
-                  <Link href="/">Proponer un canje</Link>
-                </Button>
-                <p className="font-sans text-small text-muted-foreground max-w-[40ch] mt-2 mb-0">
-                  El canje es libro por libro: necesitas uno publicado para ofrecer a cambio.
-                </p>
-              </>
-            )}
+            <div className="mt-8">
+              {reservado ? (
+                <>
+                  <Button disabled>Reservado</Button>
+                  <p className="font-sans text-small text-muted-foreground max-w-[40ch] mt-2 mb-0">
+                    Alguien ya propuso un canje por este libro. Vuelve a estar libre si la propuesta no
+                    cierra.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Button asChild>
+                    <Link href="/">Proponer un canje</Link>
+                  </Button>
+                  <p className="font-sans text-small text-muted-foreground max-w-[40ch] mt-2 mb-0">
+                    El canje es libro por libro: necesitas uno publicado para ofrecer a cambio.
+                  </p>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
