@@ -23,10 +23,12 @@ interface ThreadSummary {
 }
 
 interface Message {
+  id: string;
   text: string;
   time: string;
   side: "start" | "end";
   mine: boolean;
+  report?: () => void;
 }
 
 interface ChatViewProps {
@@ -138,7 +140,7 @@ export function ChatView({
             <MessageScrollerViewport aria-label={`Conversación con ${thread.name}`}>
               <MessageScrollerContent className="gap-3 py-6">
                 {messages.map((m, i) => (
-                  <MessageScrollerItem key={i} messageId={`msg-${i}`} scrollAnchor={m.mine} className="flex flex-col">
+                  <MessageScrollerItem key={m.id || i} messageId={`msg-${i}`} scrollAnchor={m.mine} className="flex flex-col">
                     <Bubble
                       align={m.side}
                       variant={m.mine ? "default" : "outline"}
@@ -159,6 +161,16 @@ export function ChatView({
                         </div>
                       </BubbleContent>
                     </Bubble>
+                    {m.report && (
+                      <button
+                        onClick={m.report}
+                        className={`bg-transparent border-none p-0 mt-1 font-sans text-label text-muted-foreground underline-offset-4 hover:underline ${
+                          m.side === "end" ? "self-end" : "self-start"
+                        }`}
+                      >
+                        Reportar mensaje
+                      </button>
+                    )}
                   </MessageScrollerItem>
                 ))}
               </MessageScrollerContent>

@@ -2,8 +2,6 @@
 
 import { useAppState } from "@/hooks/use-app-state";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
 import { CatalogView } from "./CatalogView";
 import { HomeHero } from "./HomeHero";
@@ -11,6 +9,7 @@ import { NearbyBooks } from "./NearbyBooks";
 import { MapDiscovery } from "./MapDiscovery";
 import { DeleteDialog } from "./DeleteDialog";
 import { ChatView } from "./ChatView";
+import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { MapView } from "./MapView";
 import { ModerationView } from "./ModerationView";
@@ -18,6 +17,7 @@ import { OfferModal } from "./OfferModal";
 import { PoliciesView } from "./PoliciesView";
 import { PublishView } from "./PublishView";
 import { RatingModal } from "./RatingModal";
+import { ReportDialog } from "./ReportDialog";
 import { ShelfView } from "./ShelfView";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -41,19 +41,13 @@ export function ElCanjeApp() {
         {state.policiesView.isPolicies && <PoliciesView {...state.policiesView} />}
       </main>
 
-      <footer className="mt-auto border-t border-border">
-        <div className="w-full mx-auto max-w-shell px-4 sm:px-10 py-3 flex items-center gap-4 flex-wrap font-sans text-small text-muted-foreground">
-          <span>Librocambio · Bogotá</span>
-          <Button variant="link" asChild className="px-0">
-            <Link href="/politicas">Políticas del sitio</Link>
-          </Button>
-        </div>
-      </footer>
+      <Footer />
 
       <Toaster position="bottom-center" />
       <OfferModal {...state.offerModal} />
       <DeleteDialog {...state.deleteDialog} />
       <RatingModal {...state.ratingModal} />
+      <ReportDialog {...state.reportDialog} />
       <AuthModal
         open={state.authModal.open}
         reason={state.authModal.reason}

@@ -34,6 +34,7 @@ interface CatalogItem {
   plate: string;
   selectOwner: () => void;
   propose: () => void;
+  report: () => void;
 }
 
 interface RecommendedItem {
@@ -454,6 +455,9 @@ export function CatalogView({
                 ) : (
                   <Button onClick={b.propose}>Proponer canje</Button>
                 )}
+                <Button variant="link" onClick={b.report} className="px-0 text-muted-foreground">
+                  Reportar
+                </Button>
               </div>
             </article>
           ))}

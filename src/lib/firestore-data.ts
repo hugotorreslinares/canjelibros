@@ -5,7 +5,6 @@ import {
   deleteDoc,
   doc,
   getDoc,
-  increment,
   onSnapshot,
   orderBy,
   query,
@@ -24,11 +23,15 @@ import type {
   Book,
   ChatMessage,
   ChatThread,
+  CompletedTrade,
   ModerationAction,
   ModerationLogEntry,
   NewBook,
   Rating,
   Reader,
+  Report,
+  ReportKind,
+  ReportStatus,
 } from "./types";
 
 const READERS = "readers";
@@ -39,6 +42,9 @@ const RATINGS = "ratings";
 const MODERATORS = "moderators";
 const MODERATION_LOG = "moderationLog";
 const MODERATION_LOG_PAGE = 50;
+const COMPLETED_TRADES = "completedTrades";
+const REPORTS = "reports";
+const REPORTS_PAGE = 100;
 
 export function threadIdFor(uidA: string, uidB: string): string {
   return [uidA, uidB].sort().join("_");
@@ -117,13 +123,21 @@ export async function ensureReaderProfile(user: User, coords?: { lat: number; ln
     barrio: "Bogotá",
     lat: coords?.lat ?? BOGOTA_CENTER.lat,
     lng: coords?.lng ?? BOGOTA_CENTER.lng,
-    trades: 0,
     bio: "",
     spot: "",
     interests: [],
+    suspended: false,
     lastSeenAt: serverTimestamp(),
     createdAt: serverTimestamp(),
   });
+}
+
+// Suspender o reactivar una cuenta es la única escritura que un moderador
+// hace en el documento de otro lector — las reglas solo dejan tocar este
+// campo, nunca el resto del perfil.
+export async function setReaderSuspended(uid: string, suspended: boolean): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, READERS, uid), { suspended });
 }
 
 // Un latido por sesión y cada pocos minutos mientras la pestaña esté visible.
@@ -161,10 +175,10 @@ export function subscribeReaders(cb: (readers: Reader[]) => void, onError?: (err
             lat: data.lat ?? BOGOTA_CENTER.lat,
             lng: data.lng ?? BOGOTA_CENTER.lng,
             lastSeenAt: data.lastSeenAt?.toMillis?.() ?? null,
-            trades: data.trades ?? 0,
             bio: data.bio ?? "",
             spot: data.spot ?? "",
             interests: data.interests ?? [],
+            suspended: data.suspended === true,
           };
         })
       );
@@ -235,9 +249,40 @@ export async function deleteBook(bookId: string): Promise<void> {
   await deleteDoc(doc(db, BOOKS, bookId));
 }
 
-export async function bumpReaderTrades(uid: string): Promise<void> {
+// Un documento por canje cerrado, con los dos participantes: lo crea quien
+// confirma (la única de las dos partes con permiso de escritura en ese
+// momento), pero al listar los dos uids cualquiera puede derivar el conteo de
+// ambos lados — ver `tradesFor` en `use-app-state.ts`.
+export async function recordCompletedTrade(threadId: string, participants: [string, string]): Promise<void> {
   if (!db) throw new FirebaseNotConfiguredError();
-  await updateDoc(doc(db, READERS, uid), { trades: increment(1) });
+  await addDoc(collection(db, COMPLETED_TRADES), { threadId, participants, createdAt: serverTimestamp() });
+}
+
+export function subscribeCompletedTrades(
+  cb: (trades: CompletedTrade[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  return onSnapshot(
+    collection(db, COMPLETED_TRADES),
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            participants: data.participants,
+            threadId: data.threadId ?? "",
+            createdAt: data.createdAt?.toMillis?.() ?? 0,
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("completed trades subscription failed", err);
+      onError?.(err);
+    }
+  );
 }
 
 export function subscribeMyThreads(
@@ -332,6 +377,13 @@ export async function closeThread(threadId: string): Promise<void> {
   await setDoc(doc(db, THREADS, threadId), { closed: true }, { merge: true });
 }
 
+// El único borrado que un mensaje admite: moderación quitando uno reportado.
+// No hace falta leer el hilo primero — el reporte ya trae una copia del texto.
+export async function deleteThreadMessage(threadId: string, messageId: string): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await deleteDoc(doc(db, THREADS, threadId, MESSAGES, messageId));
+}
+
 export async function addRating(
   raterUid: string,
   ratedUid: string,
@@ -366,4 +418,61 @@ export function subscribeRatings(cb: (ratings: Rating[]) => void, onError?: (err
       onError?.(err);
     }
   );
+}
+
+export async function createReport(report: {
+  kind: ReportKind;
+  targetOwnerId: string;
+  targetOwnerName: string;
+  bookId: string | null;
+  bookTitle: string;
+  threadId: string | null;
+  messageId: string | null;
+  messageText: string;
+  reporterUid: string;
+  reason: string;
+}): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await addDoc(collection(db, REPORTS), { ...report, status: "open", createdAt: serverTimestamp() });
+}
+
+// Solo moderación se suscribe (ver `useReports`): abrir esta consulta para
+// cualquier visitante chocaría con las reglas en cada carga de página.
+export function subscribeReports(cb: (reports: Report[]) => void, onError?: (err: unknown) => void): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const q = query(collection(db, REPORTS), orderBy("createdAt", "desc"), limit(REPORTS_PAGE));
+  return onSnapshot(
+    q,
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            kind: data.kind === "message" ? ("message" as const) : ("book" as const),
+            targetOwnerId: data.targetOwnerId ?? "",
+            targetOwnerName: data.targetOwnerName ?? "",
+            bookId: data.bookId ?? null,
+            bookTitle: data.bookTitle ?? "",
+            threadId: data.threadId ?? null,
+            messageId: data.messageId ?? null,
+            messageText: data.messageText ?? "",
+            reporterUid: data.reporterUid ?? "",
+            reason: data.reason ?? "",
+            status: data.status === "resolved" ? ("resolved" as const) : ("open" as const),
+            createdAt: data.createdAt?.toMillis?.() ?? 0,
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("reports subscription failed", err);
+      onError?.(err);
+    }
+  );
+}
+
+export async function setReportStatus(reportId: string, status: ReportStatus): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, REPORTS, reportId), { status });
 }

@@ -8,13 +8,24 @@ import {
   fetchIsModerator,
   touchPresence,
   subscribeBooks,
+  subscribeCompletedTrades,
   subscribeModerationLog,
   subscribeMyThreads,
   subscribeRatings,
   subscribeReaders,
+  subscribeReports,
   subscribeThreadMessages,
 } from "@/lib/firestore-data";
-import type { Book, ChatMessage, ChatThread, ModerationLogEntry, Rating, Reader } from "@/lib/types";
+import type {
+  Book,
+  ChatMessage,
+  ChatThread,
+  CompletedTrade,
+  ModerationLogEntry,
+  Rating,
+  Reader,
+  Report,
+} from "@/lib/types";
 
 function getCurrentPosition(): Promise<{ lat: number; lng: number } | undefined> {
   return new Promise((resolve) => {
@@ -168,6 +179,35 @@ export function useRatings(): Rating[] {
   }, []);
 
   return ratings;
+}
+
+// Público, como `ratings`: cualquier visitante puede derivar el conteo de
+// canjes de cualquier lector sin depender de un campo que solo una de las
+// dos partes de cada canje podría escribir.
+export function useCompletedTrades(): CompletedTrade[] {
+  const [trades, setTrades] = useState<CompletedTrade[]>([]);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+    const unsub = subscribeCompletedTrades(setTrades);
+    return unsub;
+  }, []);
+
+  return trades;
+}
+
+// Solo moderadores: igual que `useModerationLog`, la suscripción se abre
+// nada más para ellos, no para cada visitante que carga la página.
+export function useReports(enabled: boolean): Report[] {
+  const [reports, setReports] = useState<Report[]>([]);
+
+  useEffect(() => {
+    if (!enabled || !isFirebaseConfigured) return;
+    const unsub = subscribeReports(setReports);
+    return unsub;
+  }, [enabled]);
+
+  return enabled ? reports : [];
 }
 
 export function useThreadMessages(threadId: string | null): ChatMessage[] {

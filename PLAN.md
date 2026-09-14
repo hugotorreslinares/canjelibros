@@ -2,7 +2,7 @@
 
 Estado del proyecto y trabajo pendiente. Complementa a [AGENTS.md](AGENTS.md), que describe **cómo está hecho**; aquí va **qué falta y en qué orden**.
 
-Última revisión: 25 de agosto de 2026 · rama `feat/interests-recommendations`.
+Última revisión: 11 de septiembre de 2026 · rama `main`.
 
 ## 1. Estado actual
 
@@ -20,18 +20,19 @@ Autenticación con Firebase (Google y correo). Solo publicar/editar/eliminar y p
 ## 2. Pendiente inmediato
 
 1. **Recorrer la aplicación con sesión iniciada.** Todo el rediseño (fases 0 a 9 de [UI-PLAN.md](UI-PLAN.md)) se verificó vista por vista en el navegador, pero **sin cuenta**: estante, publicar, mensajes y moderación se comprobaron por código, por piezas sueltas o con datos de prueba. El recorrido que falta es publicar → proponer → chatear → confirmar canje → calificar, y moderar un libro.
-2. **Reemplazar `moderacion@librocambio.com`** por una dirección real antes de exponer el sitio: hoy la página de políticas promete un canal de reporte que no existe.
+2. **Reemplazar `moderacion@librocambio.com`** por una dirección real antes de exponer el sitio: hoy la página de políticas promete un canal de correo que ya no es el único — ver #6 más abajo — pero sigue siendo la vía para quien no tiene cuenta.
 3. **Ver la presencia en verde.** `lastSeenAt` solo existe para quien haya entrado después del latido; los perfiles antiguos no dicen nada hasta que su dueño vuelva a entrar. Es lo correcto, pero conviene confirmarlo con dos sesiones.
+4. **Publicar las reglas de Firestore de esta revisión.** `firestore.rules` ganó `completedTrades`, `reports`, la suspensión de cuentas (`readers.suspended`) y el borrado de mensajes por moderación — ninguna de las cuatro funciona en producción hasta correr `npx firebase-tools deploy --only firestore:rules` desde una terminal con sesión iniciada (no lo puede hacer un agente). Sin publicar, el conteo de intercambios cae a cero para todos, reportar da error de permisos y el build de `/libro/[slug]` falla al intentar contar canjes cerrados.
 
 ## 3. Backlog priorizado
 
 ### P0 — la interfaz afirma cosas que no son ciertas
 
-Al 25 de agosto de 2026 queda **solo el punto 1**: los demás se cerraron junto con el trabajo de interfaz.
+Al 11 de septiembre de 2026, **cerrado por completo** — sujeto a publicar las reglas nuevas (ver #4 arriba).
 
 | # | Qué | Por qué importa | Nota de implementación |
 |---|-----|-----------------|------------------------|
-| 1 | `readers/{uid}.trades` solo sube para quien confirma el canje | La otra parte cierra un intercambio y su contador no se mueve; además de eso dependen los cupos del estante | Nadie puede escribir el documento de otro lector sin backend. Salidas: Cloud Function con Admin SDK (exige plan Blaze), o derivar el conteo en cliente contando hilos cerrados, como ya se hace con `rating` |
+| ~~1~~ | ~~`readers/{uid}.trades` solo sube para quien confirma el canje~~ | **Hecho.** `completedTrades/{id}` guarda los dos participantes de cada canje cerrado (pública, de solo creación, igual que `ratings`); `tradesFor` en `use-app-state.ts` cuenta sobre esa colección en vez de leer el campo. El campo `readers.trades` ya no se escribe ni se lee — mismo tratamiento que tuvo `rating` (#5) | |
 | ~~2~~ | ~~`online` se escribe `true` al crear el perfil y nunca cambia~~ | **Hecho.** `lastSeenAt` con latido cada 2 min con la pestaña visible; la presencia se deriva contra una ventana de 5 min y, si nunca hubo latido, no se dice nada | |
 | ~~3~~ | ~~"Racha: 4" escrito a mano~~ | **Hecho.** La tarjeta se quitó | |
 | ~~4~~ | ~~Las etiquetas de calificación se recogen y se descartan~~ | **Hecho.** Se guardan en `ratings.tags` y se muestran las tres más repetidas en el panel del lector | |
@@ -41,9 +42,9 @@ Al 25 de agosto de 2026 queda **solo el punto 1**: los demás se cerraron junto 
 
 | # | Qué | Nota |
 |---|-----|------|
-| 6 | No hay botón de reportar | Las políticas mandan a un correo. Falta `reports/{id}`: creable por cualquier autenticado, legible solo por moderadores, y una pestaña de cola en el panel |
-| 7 | Moderación solo alcanza libros | Los mensajes de chat son el otro lugar donde puede aparecer contenido prohibido, y las reglas los hacen inmutables. Tampoco hay forma de suspender una cuenta reincidente, que es justo lo que las políticas prometen |
-| 8 | La bitácora muestra las últimas 50 entradas, sin paginación ni filtro | Suficiente hoy; se queda corta apenas haya volumen |
+| ~~6~~ | ~~No hay botón de reportar~~ | **Hecho.** `reports/{id}`, creable por cualquier autenticado y legible solo por moderadores. Botón «Reportar» en cada fila del catálogo y en cada mensaje ajeno del chat; una copia del texto del mensaje viaja dentro del reporte, para no tener que abrirle el hilo completo a moderación. Pestaña «Reportes» en el panel, con conteo de abiertos junto a «Publicaciones» |
+| ~~7~~ | ~~Moderación solo alcanza libros~~ | **Hecho.** Un moderador puede borrar un mensaje reportado (`allow delete: if isModerator()` en `threads/*/messages`, sin necesitar leer el resto del hilo) y suspender o reactivar una cuenta (`readers.suspended`, el único campo que un moderador puede tocar en el documento de otro lector). Suspendida, una cuenta no puede publicar libros nuevos, proponer canjes ni enviar mensajes — bloqueado en cliente y también en las reglas (`isSuspended()`), para que no dependa solo de la interfaz |
+| 8 | La bitácora muestra las últimas 50 entradas, sin paginación real | Se sumó un filtro de texto en cliente sobre esas 50 (11 sept 2026), que cubre el uso de hoy. Paginación real con cursor sigue pendiente para cuando haya volumen |
 | 9 | El rol de moderador se otorga creando `moderators/{uid}` a mano en la consola | Aceptable para un equipo de una persona; documentar el procedimiento si entra alguien más |
 
 ### P2 — escala y deuda

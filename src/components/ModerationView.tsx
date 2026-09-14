@@ -11,6 +11,7 @@ interface ModerationBook {
   cond: string;
   desc: string;
   ownerName: string;
+  ownerSuspended: boolean;
   isMine: boolean;
   reserved: boolean;
   reservedWith: string;
@@ -18,15 +19,30 @@ interface ModerationBook {
   editing: boolean;
   edit: () => void;
   remove: () => void;
+  toggleSuspend: () => void;
+}
+
+interface ReportItem {
+  id: string;
+  kind: "book" | "message";
+  title: string;
+  messageText: string;
+  targetOwnerName: string;
+  reason: string;
+  status: "open" | "resolved";
+  when: string;
+  resolved: boolean;
+  jumpToBook?: () => void;
+  removeMessage?: () => void;
+  resolve: () => void;
+  suspendOwner: () => void;
 }
 
 interface LogEntry {
   id: string;
   when: string;
-  action: string;
+  line: string;
   isDelete: boolean;
-  bookTitle: string;
-  ownerName: string;
   moderatorName: string;
   reason: string;
   changes: string[];
@@ -41,6 +57,9 @@ interface Chip {
 interface ModerationViewProps {
   allowed: boolean;
   signedIn: boolean;
+  tab: "books" | "reports";
+  setTab: (t: "books" | "reports") => void;
+  openReportCount: number;
   items: ModerationBook[];
   count: number;
   query: string;
@@ -55,6 +74,9 @@ interface ModerationViewProps {
   removeCover: () => void;
   reason: string;
   setReason: (v: string) => void;
+  reportItems: ReportItem[];
+  logQuery: string;
+  setLogQuery: (v: string) => void;
   log: LogEntry[];
   logEmpty: boolean;
   save: () => void;
@@ -65,6 +87,9 @@ interface ModerationViewProps {
 export function ModerationView({
   allowed,
   signedIn,
+  tab,
+  setTab,
+  openReportCount,
   items,
   count,
   query,
@@ -79,6 +104,9 @@ export function ModerationView({
   removeCover,
   reason,
   setReason,
+  reportItems,
+  logQuery,
+  setLogQuery,
   log,
   logEmpty,
   save,
@@ -117,6 +145,79 @@ export function ModerationView({
       <div className="h-[5px] bg-foreground mt-5 mb-0.5" />
       <div className="h-px bg-foreground mb-6" />
 
+      <div className="flex gap-2 mb-8 border-b border-border">
+        <button
+          onClick={() => setTab("books")}
+          aria-current={tab === "books" ? "page" : undefined}
+          className={`h-11 min-h-[44px] px-1 -mb-px border-b-2 font-sans text-small ${
+            tab === "books" ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
+          }`}
+        >
+          Publicaciones
+        </button>
+        <button
+          onClick={() => setTab("reports")}
+          aria-current={tab === "reports" ? "page" : undefined}
+          className={`h-11 min-h-[44px] px-4 -mb-px border-b-2 font-sans text-small ${
+            tab === "reports" ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
+          }`}
+        >
+          Reportes{openReportCount > 0 && <span className="ml-1.5 text-destructive">· {openReportCount}</span>}
+        </button>
+      </div>
+
+      {tab === "reports" && (
+        <section className="mb-14">
+          {reportItems.length === 0 ? (
+            <p className="font-serif text-body text-foreground/85">Todavía no hay reportes.</p>
+          ) : (
+            <div className="grid gap-5">
+              {reportItems.map((r) => (
+                <div key={r.id} className="border-t border-border pt-4 grid gap-1.5">
+                  <div className="flex justify-between gap-3 flex-wrap">
+                    <div className="font-sans text-label uppercase text-muted-foreground">
+                      {r.kind === "book" ? "Publicación" : "Mensaje"} de {r.targetOwnerName} · {r.when}
+                    </div>
+                    <Badge variant={r.resolved ? "outline" : "secondary"}>
+                      {r.resolved ? "Resuelto" : "Abierto"}
+                    </Badge>
+                  </div>
+                  <div className="font-serif text-subtitle">{r.title}</div>
+                  {r.kind === "message" && (
+                    <p className="font-serif text-body text-foreground/85 italic border-l-2 border-border pl-3">
+                      «{r.messageText}»
+                    </p>
+                  )}
+                  <div className="font-serif text-body text-foreground/85">Motivo del reporte: {r.reason}</div>
+                  {!r.resolved && (
+                    <div className="flex gap-4 items-center flex-wrap mt-1">
+                      {r.jumpToBook && (
+                        <Button variant="link" onClick={r.jumpToBook} className="px-0">
+                          Buscar esta publicación
+                        </Button>
+                      )}
+                      {r.removeMessage && (
+                        <Button variant="ghost" onClick={r.removeMessage} className="text-destructive hover:text-destructive">
+                          Eliminar mensaje
+                        </Button>
+                      )}
+                      <Button variant="ghost" onClick={r.suspendOwner} className="text-destructive hover:text-destructive">
+                        Suspender cuenta
+                      </Button>
+                      <Button variant="link" onClick={r.resolve} className="px-0">
+                        Marcar como resuelto
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {tab === "books" && (
+      <>
       <div className="flex items-end gap-4 flex-wrap mb-8">
         <label className="grid gap-1.5 flex-1 min-w-[260px]">
           <span className="font-sans text-label uppercase text-muted-foreground">Buscar</span>
@@ -151,6 +252,7 @@ export function ModerationView({
                 {b.ownerName}
                 {b.isMine && " · tu cuenta"}
                 {b.reserved && ` · reservado con ${b.reservedWith}`}
+                {b.ownerSuspended && <span className="text-destructive"> · cuenta suspendida</span>}
               </div>
 
               {b.editing ? (
@@ -246,12 +348,19 @@ export function ModerationView({
                     <Badge variant="outline">{b.cond}</Badge>
                   </div>
                   {b.desc && <p className="font-serif text-body text-foreground/85 max-w-[46em]">{b.desc}</p>}
-                  <div className="flex gap-4 items-center mt-1">
+                  <div className="flex gap-4 items-center mt-1 flex-wrap">
                     <Button variant="link" onClick={b.edit} className="px-0">
                       Editar publicación
                     </Button>
                     <Button variant="ghost" onClick={b.remove} className="text-destructive hover:text-destructive">
                       Eliminar por incumplir políticas
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={b.toggleSuspend}
+                      className={b.ownerSuspended ? undefined : "text-destructive hover:text-destructive"}
+                    >
+                      {b.ownerSuspended ? `Reactivar cuenta de ${b.ownerName}` : `Suspender cuenta de ${b.ownerName}`}
                     </Button>
                   </div>
                 </>
@@ -260,6 +369,8 @@ export function ModerationView({
           </div>
         ))}
       </div>
+      </>
+      )}
 
       <section className="mt-14">
         <div className="font-sans text-label uppercase text-muted-foreground">Bitácora de moderación</div>
@@ -269,9 +380,22 @@ export function ModerationView({
           borrar, ni siquiera por quien los creó.
         </p>
 
+        {!logEmpty && (
+          <input
+            value={logQuery}
+            onChange={(e) => setLogQuery(e.target.value)}
+            placeholder="Buscar en la bitácora"
+            className="border border-input rounded-sm bg-card px-3.5 py-3 mb-5 font-serif text-body text-foreground w-full max-w-[420px] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 placeholder:text-placeholder"
+          />
+        )}
+
         {logEmpty ? (
           <p className="border-t border-border pt-3.5 font-serif text-body text-muted-foreground">
             Todavía no hay acciones de moderación registradas.
+          </p>
+        ) : log.length === 0 ? (
+          <p className="border-t border-border pt-3.5 font-serif text-body text-muted-foreground">
+            Ninguna entrada coincide con la búsqueda.
           </p>
         ) : (
           <div className="grid gap-4">
@@ -279,8 +403,8 @@ export function ModerationView({
               <div key={e.id} className="border-t border-border pt-3.5 grid gap-1.5">
                 <div className="font-sans text-label uppercase text-muted-foreground">{e.when}</div>
                 <div className="font-serif text-body">
-                  <span style={{ color: e.isDelete ? "#aa0b56" : "#006786" }}>{e.action}</span> «{e.bookTitle}» de{" "}
-                  {e.ownerName} · {e.moderatorName}
+                  <span className={e.isDelete ? "text-destructive" : "text-primary"}>{e.line}</span> ·{" "}
+                  {e.moderatorName}
                 </div>
                 <div className="font-serif text-body text-foreground/85">Motivo: {e.reason}</div>
                 {e.changes.length > 0 && (

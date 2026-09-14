@@ -1,3 +1,4 @@
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookCover } from "./BookCover";
@@ -30,6 +31,7 @@ interface ShelfViewProps {
   myBooks: ShelfBook[];
   myRating: number | null;
   myTrades: number;
+  suspended: boolean;
   usedSlots: number;
   totalSlots: number;
   slotPips: { filled: boolean }[];
@@ -53,6 +55,7 @@ export function ShelfView({
   myBooks,
   myRating,
   myTrades,
+  suspended,
   usedSlots,
   totalSlots,
   slotPips,
@@ -88,6 +91,16 @@ export function ShelfView({
       </p>
       <div className="h-[5px] bg-foreground mt-5 mb-0.5" />
       <div className="h-px bg-foreground mb-8" />
+
+      {suspended && (
+        <Alert variant="destructive" className="mb-8">
+          <AlertTitle>Tu cuenta está suspendida</AlertTitle>
+          <AlertDescription>
+            Un moderador suspendió tu cuenta por incumplir las políticas del sitio. No puedes publicar libros nuevos,
+            proponer intercambios ni enviar mensajes. Lo ya publicado sigue visible.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))] gap-8 mb-11">
         <div>

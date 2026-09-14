@@ -9,15 +9,19 @@ import { distanceKm } from "@/lib/geo";
 import {
   addRating,
   addReaderInterest,
-  bumpReaderTrades,
   closeThread,
   createBook,
+  createReport,
   deleteBook as deleteBookDoc,
+  deleteThreadMessage,
   logModerationAction,
   openThread,
+  recordCompletedTrade,
   removeReaderInterest,
   reserveBook,
   sendThreadMessage,
+  setReaderSuspended,
+  setReportStatus,
   transferBook,
   updateBook,
 } from "@/lib/firestore-data";
@@ -27,16 +31,18 @@ import { pathForBook } from "@/lib/book-slug";
 import { locationFromPath, pathForReader, pathForRoute } from "@/lib/routes";
 import {
   useBooks,
+  useCompletedTrades,
   useIsModerator,
   useModerationLog,
   useMyThreads,
   useRatings,
+  useReports,
   usePresenceHeartbeat,
   useReaderProfileSync,
   useReaders,
   useThreadMessages,
 } from "./use-firestore-data";
-import type { Route, SortOption } from "@/lib/types";
+import type { ModerationAction, Report, Route, SortOption } from "@/lib/types";
 
 const BASE_SLOTS = 5;
 const RECOMMENDED_COUNT = 10;
@@ -44,6 +50,7 @@ const RECOMMENDED_COUNT = 10;
 const PRESENCE_WINDOW_MS = 5 * 60_000;
 const TRADES_PER_SLOT = 3;
 const ANIMATE_PINS = true;
+const SUSPENDED_MESSAGE = "Tu cuenta está suspendida por incumplir las políticas del sitio.";
 
 interface FormState {
   t: string;
@@ -57,6 +64,10 @@ interface FormState {
 const EMPTY_FORM: FormState = { t: "", a: "", desc: "", cond: "Bueno", cat: "Novela", cover: null };
 
 type PendingAction = { kind: "goPublish" } | { kind: "openOffer"; uid: string; bookId: string };
+
+type ReportTarget =
+  | { kind: "book"; bookId: string; bookTitle: string; ownerId: string; ownerName: string }
+  | { kind: "message"; threadId: string; messageId: string; messageText: string; ownerId: string; ownerName: string };
 
 // Un borrado no se confirma con window.confirm: ese diálogo no se puede
 // estilar, no es accesible y en moderación además tenía que pedir el motivo
@@ -91,6 +102,24 @@ function diffBook(before: BookFields, after: BookFields): string[] {
   // The cover is a data URL — log that it changed, never its contents.
   if (before.cover !== after.cover) changes.push(after.cover ? "portada: reemplazada" : "portada: retirada");
   return changes;
+}
+
+// Cada tipo de acción de moderación arma su propia línea: forzarlas todas al
+// mismo molde «Acción «título» de dueño» no funciona para suspender una
+// cuenta o borrar un mensaje, que no tienen libro de por medio.
+function moderationLine(action: ModerationAction, bookTitle: string, ownerName: string): string {
+  switch (action) {
+    case "edit":
+      return `Editó «${bookTitle}» de ${ownerName}`;
+    case "delete":
+      return `Eliminó «${bookTitle}» de ${ownerName}`;
+    case "delete-message":
+      return `Eliminó un mensaje de chat de ${ownerName}`;
+    case "suspend":
+      return `Suspendió la cuenta de ${ownerName}`;
+    case "unsuspend":
+      return `Reactivó la cuenta de ${ownerName}`;
+  }
 }
 
 function normalizarBusqueda(texto: string): string {
@@ -135,6 +164,7 @@ export function useAppState() {
   const myUid = user?.uid ?? null;
   const isModerator = useIsModerator(myUid);
   const moderationLog = useModerationLog(isModerator);
+  const reports = useReports(isModerator);
   const myReader = readers.find((r) => r.id === myUid) ?? null;
   const myBooks = books.filter((b) => b.ownerId === myUid);
   const otherReaders = readers.filter((r) => r.id !== myUid);
@@ -176,6 +206,18 @@ export function useAppState() {
     };
   }, [ratings]);
 
+  // Mismo patrón que `avgRatingFor`: contado sobre una colección pública en vez
+  // de leído de un campo que solo la parte que confirma el canje podía escribir
+  // (`readers/{uid}.trades`, que dejaba al otro lado siempre en cero).
+  const completedTrades = useCompletedTrades();
+  const tradesFor = useMemo(() => {
+    const byUid = new Map<string, number>();
+    completedTrades.forEach((t) => {
+      t.participants.forEach((uid) => byUid.set(uid, (byUid.get(uid) ?? 0) + 1));
+    });
+    return (uid: string): number => byUid.get(uid) ?? 0;
+  }, [completedTrades]);
+
   // `pushState` se integra con el router de Next, así que usePathname refleja
   // el cambio sin recargar ni desmontar la vista (docs: Native History API).
   const pathname = usePathname();
@@ -210,6 +252,10 @@ export function useAppState() {
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [coverBusy, setCoverBusy] = useState(false);
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [modTab, setModTab] = useState<"books" | "reports">("books");
+  const [logQuery, setLogQuery] = useState("");
 
   // La presencia caduca sola: sin este tic, «en línea ahora» se quedaría
   // congelado hasta que llegara otro cambio de Firestore.
@@ -242,6 +288,10 @@ export function useAppState() {
     setModReason("");
     setPendingDelete(null);
     setDeleteReason("");
+    setReportTarget(null);
+    setReportReason("");
+    setModTab("books");
+    setLogQuery("");
   }
 
   const [authOpen, setAuthOpen] = useState(false);
@@ -387,7 +437,123 @@ export function useAppState() {
     [user, promptAuth, myReader, showToast]
   );
 
+  const openReportBook = useCallback(
+    (bookId: string, bookTitle: string, ownerId: string, ownerName: string) => {
+      if (!user) {
+        promptAuth("Inicia sesión para reportar una publicación.");
+        return;
+      }
+      setReportTarget({ kind: "book", bookId, bookTitle, ownerId, ownerName });
+      setReportReason("");
+    },
+    [user, promptAuth]
+  );
+
+  const openReportMessage = useCallback(
+    (threadId: string, messageId: string, messageText: string, ownerId: string, ownerName: string) => {
+      if (!user) {
+        promptAuth("Inicia sesión para reportar un mensaje.");
+        return;
+      }
+      setReportTarget({ kind: "message", threadId, messageId, messageText, ownerId, ownerName });
+      setReportReason("");
+    },
+    [user, promptAuth]
+  );
+
+  const closeReport = useCallback(() => {
+    setReportTarget(null);
+    setReportReason("");
+  }, []);
+
+  const submitReport = useCallback(async () => {
+    if (!user || !reportTarget) return;
+    const reason = reportReason.trim();
+    if (!reason) {
+      showToast("Escribe el motivo del reporte.");
+      return;
+    }
+    try {
+      await createReport({
+        kind: reportTarget.kind,
+        targetOwnerId: reportTarget.ownerId,
+        targetOwnerName: reportTarget.ownerName,
+        bookId: reportTarget.kind === "book" ? reportTarget.bookId : null,
+        bookTitle: reportTarget.kind === "book" ? reportTarget.bookTitle : "",
+        threadId: reportTarget.kind === "message" ? reportTarget.threadId : null,
+        messageId: reportTarget.kind === "message" ? reportTarget.messageId : null,
+        messageText: reportTarget.kind === "message" ? reportTarget.messageText : "",
+        reporterUid: user.uid,
+        reason,
+      });
+      showToast("Reporte enviado. Un moderador lo revisará.");
+      closeReport();
+    } catch {
+      showToast("No se pudo enviar el reporte. Intenta de nuevo.");
+    }
+  }, [user, reportTarget, reportReason, showToast, closeReport]);
+
   const moderatorName = myReader?.name ?? user?.displayName ?? user?.email ?? "Moderación";
+
+  const resolveReport = useCallback(
+    async (id: string) => {
+      try {
+        await setReportStatus(id, "resolved");
+      } catch {
+        showToast("No se pudo actualizar el reporte.");
+      }
+    },
+    [showToast]
+  );
+
+  const toggleSuspend = useCallback(
+    async (uid: string, name: string, suspend: boolean) => {
+      if (!user) return;
+      try {
+        await setReaderSuspended(uid, suspend);
+        await logModerationAction({
+          action: suspend ? "suspend" : "unsuspend",
+          bookId: "",
+          bookTitle: "",
+          ownerId: uid,
+          ownerName: name,
+          moderatorUid: user.uid,
+          moderatorName,
+          reason: suspend ? "Cuenta suspendida por moderación." : "Cuenta reactivada por moderación.",
+          changes: [],
+        });
+        showToast(suspend ? `Cuenta de ${name} suspendida.` : `Cuenta de ${name} reactivada.`);
+      } catch {
+        showToast("No se pudo actualizar la cuenta.");
+      }
+    },
+    [user, moderatorName, showToast]
+  );
+
+  const removeReportedMessage = useCallback(
+    async (report: Report) => {
+      if (!user || report.kind !== "message" || !report.threadId || !report.messageId) return;
+      try {
+        await deleteThreadMessage(report.threadId, report.messageId);
+        await setReportStatus(report.id, "resolved");
+        await logModerationAction({
+          action: "delete-message",
+          bookId: "",
+          bookTitle: "",
+          ownerId: report.targetOwnerId,
+          ownerName: report.targetOwnerName,
+          moderatorUid: user.uid,
+          moderatorName,
+          reason: "Reporte de mensaje",
+          changes: [`mensaje: «${report.messageText}»`],
+        });
+        showToast("Mensaje eliminado.");
+      } catch {
+        showToast("No se pudo eliminar el mensaje.");
+      }
+    },
+    [user, moderatorName, showToast]
+  );
 
   const modStartEdit = useCallback(
     (bookId: string) => {
@@ -572,7 +738,8 @@ export function useAppState() {
   }, [pendingDelete, deleteReason, user, books, readers, myThreads, editingBookId, modEditingId, moderatorName, showToast]);
 
   const vals = useMemo(() => {
-    const totalSlots = BASE_SLOTS + Math.floor((myReader?.trades ?? 0) / TRADES_PER_SLOT);
+    const myTrades = myUid ? tradesFor(myUid) : 0;
+    const totalSlots = BASE_SLOTS + Math.floor(myTrades / TRADES_PER_SLOT);
     const used = myBooks.length;
     const navColor = (r: Route) => (route === r ? "#201e1d" : "#605d5d");
     const navLine = (r: Route) => (route === r ? "#0088b0" : "transparent");
@@ -594,6 +761,7 @@ export function useAppState() {
         ...r,
         dist: readerDist(r),
         rating,
+        trades: tradesFor(r.id),
         count: readerBooks.length,
         // El terracota de la paleta nueva, no el teal viejo: la revisión adversarial
         // de la portada encontró que esta línea seguía sin tocar, así que los pines
@@ -635,6 +803,7 @@ export function useAppState() {
       createdAt: number;
       selectOwner: () => void;
       propose: () => void;
+      report: () => void;
     }> = [];
     otherReaders.forEach((r) => {
       books
@@ -658,6 +827,7 @@ export function useAppState() {
             createdAt: b.createdAt,
             selectOwner: () => setSel(r.id),
             propose: () => openOffer(r.id, b.id),
+            report: () => openReportBook(b.id, b.t, r.id, r.name),
           });
         });
     });
@@ -751,7 +921,7 @@ export function useAppState() {
     const slotNote =
       used < totalSlots
         ? `${slotsLeft === 1 ? "Te queda 1 cupo libre." : `Te quedan ${slotsLeft} cupos libres.`} Al cerrar ${
-            TRADES_PER_SLOT - ((myReader?.trades ?? 0) % TRADES_PER_SLOT)
+            TRADES_PER_SLOT - (myTrades % TRADES_PER_SLOT)
           } canjes más se abre otro.`
         : `Estante lleno. Cierra un intercambio para abrir el cupo ${totalSlots + 1}.`;
 
@@ -792,12 +962,22 @@ export function useAppState() {
         };
       });
 
-    const messages = threadMessages.map((m) => ({
-      text: m.text,
-      time: formatTime(m.createdAt),
-      side: m.senderId === myUid ? ("end" as const) : ("start" as const),
-      mine: m.senderId === myUid,
-    }));
+    const messages = threadMessages.map((m) => {
+      const mine = m.senderId === myUid;
+      return {
+        id: m.id,
+        text: m.text,
+        time: formatTime(m.createdAt),
+        side: mine ? ("end" as const) : ("start" as const),
+        mine,
+        // Solo se reporta el mensaje del otro lado, y solo si el hilo activo
+        // sigue siendo el suyo — `activeThreadId` puede cambiar entre snapshots.
+        report:
+          !mine && activeThreadId && threadReader
+            ? () => openReportMessage(activeThreadId, m.id, m.text, threadReader.id, threadReader.name)
+            : undefined,
+      };
+    });
 
     return {
       totalSlots,
@@ -843,6 +1023,9 @@ export function useAppState() {
     readers,
     myThreads,
     myUid,
+    tradesFor,
+    openReportBook,
+    openReportMessage,
     activeThreadId,
     threadMessages,
     avgRatingFor,
@@ -860,25 +1043,56 @@ export function useAppState() {
         if (!q) return true;
         return [b.t, b.a, b.desc, b.cat, nameOf(b.ownerId)].some((field) => field.toLowerCase().includes(q));
       })
-      .map((b) => ({
-        id: b.id,
-        t: b.t,
-        a: b.a,
-        cat: b.cat,
-        cond: b.cond,
-        desc: b.desc,
-        cover: b.cover,
-        ownerName: nameOf(b.ownerId),
-        ownerId: b.ownerId,
-        isMine: b.ownerId === myUid,
-        reserved: !!b.resUid,
-        reservedWith: b.resUid ? nameOf(b.resUid) : "",
-        plate: plateFor(b.id),
-        editing: modEditingId === b.id,
-        edit: () => modStartEdit(b.id),
-        remove: () => modDelete(b.id),
-      }));
-  }, [books, readers, modQuery, modEditingId, myUid, modStartEdit, modDelete]);
+      .map((b) => {
+        const owner = readers.find((r) => r.id === b.ownerId) ?? null;
+        return {
+          id: b.id,
+          t: b.t,
+          a: b.a,
+          cat: b.cat,
+          cond: b.cond,
+          desc: b.desc,
+          cover: b.cover,
+          ownerName: nameOf(b.ownerId),
+          ownerId: b.ownerId,
+          ownerSuspended: owner?.suspended ?? false,
+          isMine: b.ownerId === myUid,
+          reserved: !!b.resUid,
+          reservedWith: b.resUid ? nameOf(b.resUid) : "",
+          plate: plateFor(b.id),
+          editing: modEditingId === b.id,
+          edit: () => modStartEdit(b.id),
+          remove: () => modDelete(b.id),
+          toggleSuspend: () => toggleSuspend(b.ownerId, nameOf(b.ownerId), !(owner?.suspended ?? false)),
+        };
+      });
+  }, [books, readers, modQuery, modEditingId, myUid, modStartEdit, modDelete, toggleSuspend]);
+
+  const reportItems = useMemo(
+    () =>
+      reports.map((r) => ({
+        id: r.id,
+        kind: r.kind,
+        title: r.kind === "book" ? r.bookTitle : "Mensaje de chat",
+        messageText: r.messageText,
+        targetOwnerName: r.targetOwnerName,
+        reason: r.reason,
+        status: r.status,
+        when: formatDateTime(r.createdAt),
+        resolved: r.status === "resolved",
+        jumpToBook:
+          r.kind === "book"
+            ? () => {
+                setModTab("books");
+                setModQuery(r.bookTitle);
+              }
+            : undefined,
+        removeMessage: r.kind === "message" ? () => removeReportedMessage(r) : undefined,
+        resolve: () => resolveReport(r.id),
+        suspendOwner: () => toggleSuspend(r.targetOwnerId, r.targetOwnerName, true),
+      })),
+    [reports, removeReportedMessage, resolveReport, toggleSuspend]
+  );
 
   const submitBook = useCallback(async () => {
     if (!user) {
@@ -905,6 +1119,10 @@ export function useAppState() {
         showToast("Cambios guardados.");
         return;
       }
+      if (myReader?.suspended) {
+        showToast(SUSPENDED_MESSAGE);
+        return;
+      }
       if (vals.used >= vals.totalSlots) {
         showToast("Sin cupos: cierra un intercambio primero.");
         return;
@@ -923,11 +1141,15 @@ export function useAppState() {
     } catch {
       showToast("No se pudo guardar. Intenta de nuevo.");
     }
-  }, [user, promptAuth, form, editingBookId, vals.used, vals.totalSlots, showToast, go]);
+  }, [user, promptAuth, form, editingBookId, myReader, vals.used, vals.totalSlots, showToast, go]);
 
   const sendOffer = useCallback(async () => {
     if (!user) {
       promptAuth("Inicia sesión para proponer un intercambio.");
+      return;
+    }
+    if (myReader?.suspended) {
+      showToast(SUSPENDED_MESSAGE);
       return;
     }
     if (!offerMineId) {
@@ -960,18 +1182,22 @@ export function useAppState() {
     } catch {
       showToast("No se pudo enviar la propuesta. Intenta de nuevo.");
     }
-  }, [user, promptAuth, offerMineId, offer, vals.offerUser, vals.offerBook, myBooks, showToast, go]);
+  }, [user, promptAuth, myReader, offerMineId, offer, vals.offerUser, vals.offerBook, myBooks, showToast, go]);
 
   const sendMessage = useCallback(
     async (text: string) => {
       if (!user || !activeThreadId) return;
+      if (myReader?.suspended) {
+        showToast(SUSPENDED_MESSAGE);
+        return;
+      }
       try {
         await sendThreadMessage(activeThreadId, user.uid, text);
       } catch {
         showToast("No se pudo enviar el mensaje. Intenta de nuevo.");
       }
     },
-    [user, activeThreadId, showToast]
+    [user, activeThreadId, myReader, showToast]
   );
 
   // Rechazar o retirar una propuesta. Hasta ahora la única salida de un canje
@@ -1023,7 +1249,7 @@ export function useAppState() {
       await transferBook(fromBookId, toUid);
       await transferBook(toBookId, fromUid);
       await addRating(user.uid, fromUid, starsPicked, tags);
-      await bumpReaderTrades(user.uid);
+      await recordCompletedTrade(activeThreadId, [fromUid, toUid]);
       await closeThread(activeThreadId);
     } catch {
       showToast("No se pudo cerrar el intercambio. Intenta de nuevo.");
@@ -1060,6 +1286,9 @@ export function useAppState() {
       isModeration: route === "moderation",
       allowed: isModerator,
       signedIn: !!user,
+      tab: modTab,
+      setTab: (t: "books" | "reports") => setModTab(t),
+      openReportCount: reportItems.filter((r) => !r.resolved).length,
       items: moderationItems,
       count: moderationItems.length,
       query: modQuery,
@@ -1074,17 +1303,26 @@ export function useAppState() {
       removeCover: modRemoveCover,
       reason: modReason,
       setReason: (v: string) => setModReason(v),
-      log: moderationLog.map((e) => ({
-        id: e.id,
-        when: formatDateTime(e.createdAt),
-        action: e.action === "delete" ? "Eliminó" : "Editó",
-        isDelete: e.action === "delete",
-        bookTitle: e.bookTitle,
-        ownerName: e.ownerName,
-        moderatorName: e.moderatorName,
-        reason: e.reason,
-        changes: e.changes,
-      })),
+      reportItems,
+      logQuery,
+      setLogQuery: (v: string) => setLogQuery(v),
+      log: moderationLog
+        .filter((e) => {
+          const q = logQuery.trim().toLowerCase();
+          if (!q) return true;
+          return [e.action, e.bookTitle, e.ownerName, e.moderatorName, e.reason].some((f) =>
+            f.toLowerCase().includes(q)
+          );
+        })
+        .map((e) => ({
+          id: e.id,
+          when: formatDateTime(e.createdAt),
+          line: moderationLine(e.action, e.bookTitle, e.ownerName),
+          isDelete: e.action === "delete" || e.action === "delete-message" || e.action === "suspend",
+          moderatorName: e.moderatorName,
+          reason: e.reason,
+          changes: e.changes,
+        })),
       logEmpty: moderationLog.length === 0,
       save: modSaveEdit,
       cancelEdit: modCancelEdit,
@@ -1227,7 +1465,8 @@ export function useAppState() {
       isShelf: route === "shelf",
       myBooks: vals.mappedMyBooks,
       myRating: avgRatingFor(myUid ?? ""),
-      myTrades: myReader?.trades ?? 0,
+      myTrades: myUid ? tradesFor(myUid) : 0,
+      suspended: myReader?.suspended ?? false,
       usedSlots: vals.used,
       totalSlots: vals.totalSlots,
       slotPips: Array.from({ length: vals.totalSlots }, (_, i) => ({ filled: i < vals.used })),
@@ -1367,6 +1606,18 @@ export function useAppState() {
     },
 
     authModal: { open: authOpen, reason: authReason, close: closeAuth, onSuccess: onAuthSuccess },
+
+    reportDialog: {
+      open: !!reportTarget,
+      kind: reportTarget?.kind ?? "book",
+      title: reportTarget?.kind === "book" ? reportTarget.bookTitle : "un mensaje",
+      ownerName: reportTarget?.ownerName ?? "",
+      messageText: reportTarget?.kind === "message" ? reportTarget.messageText : "",
+      reason: reportReason,
+      setReason: (v: string) => setReportReason(v),
+      close: closeReport,
+      submit: submitReport,
+    },
   };
 }
 

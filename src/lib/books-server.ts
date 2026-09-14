@@ -1,5 +1,5 @@
 import { getApps, initializeApp, type FirebaseOptions } from "firebase/app";
-import { collection, doc, getDoc, getDocs, getFirestore, type Firestore } from "firebase/firestore";
+import { collection, doc, getCountFromServer, getDoc, getDocs, getFirestore, query, where, type Firestore } from "firebase/firestore";
 import type { Book } from "./types";
 
 /**
@@ -61,12 +61,19 @@ export async function fetchBook(id: string): Promise<BookPage | null> {
     const r = await getDoc(doc(db, "readers", book.ownerId));
     if (r.exists()) {
       const d = r.data();
+      // Contado sobre `completedTrades` (público, un documento por canje
+      // cerrado con los dos participantes), no leído de `readers.trades`:
+      // ese campo solo lo incrementaba quien confirmaba el canje, así que la
+      // otra parte se quedaba siempre en cero.
+      const tradesSnap = await getCountFromServer(
+        query(collection(db, "completedTrades"), where("participants", "array-contains", book.ownerId))
+      );
       owner = {
         id: r.id,
         // Solo el nombre de pila. La ficha es pública e indexable, y el barrio
         // de una persona no tiene por qué acabar en un buscador.
         name: String(d.name ?? "").split(" ")[0] || "Un lector",
-        trades: Number(d.trades ?? 0),
+        trades: tradesSnap.data().count,
       };
     }
   }
