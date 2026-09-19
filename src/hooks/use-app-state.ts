@@ -46,6 +46,9 @@ import type { NearbyItem } from "@/components/NearbyBooks";
 import type { ModerationAction, Report, Route, SortOption } from "@/lib/types";
 
 const BASE_SLOTS = 5;
+// Un Punto Librocambio reparte libros por la ciudad: no le sirve el tope de un
+// lector. Es un techo práctico, no un ilimitado, para no pintar cupos sin fin.
+const OFFICIAL_SLOTS = 40;
 const RECOMMENDED_COUNT = 10;
 // Un lector cuenta como presente si su último latido cabe en esta ventana.
 const PRESENCE_WINDOW_MS = 5 * 60_000;
@@ -742,7 +745,7 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
 
   const vals = useMemo(() => {
     const myTrades = myUid ? tradesFor(myUid) : 0;
-    const totalSlots = BASE_SLOTS + Math.floor(myTrades / TRADES_PER_SLOT);
+    const totalSlots = myReader?.official ? OFFICIAL_SLOTS : BASE_SLOTS + Math.floor(myTrades / TRADES_PER_SLOT);
     const used = myBooks.length;
     const navColor = (r: Route) => (route === r ? "#201e1d" : "#605d5d");
     const navLine = (r: Route) => (route === r ? "#0088b0" : "transparent");
@@ -804,6 +807,7 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
       plate: string;
       reserved: boolean;
       createdAt: number;
+      official: boolean;
       selectOwner: () => void;
       propose: () => void;
       report: () => void;
@@ -828,6 +832,7 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
             plate: plateFor(b.id),
             reserved: !!b.resUid,
             createdAt: b.createdAt,
+            official: r.official,
             selectOwner: () => setSel(r.id),
             propose: () => openOffer(r.id, b.id),
             report: () => openReportBook(b.id, b.t, r.id, r.name),
@@ -921,8 +926,9 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
     });
 
     const slotsLeft = totalSlots - used;
-    const slotNote =
-      used < totalSlots
+    const slotNote = myReader?.official
+      ? `Punto Librocambio: hasta ${OFFICIAL_SLOTS} libros.`
+      : used < totalSlots
         ? `${slotsLeft === 1 ? "Te queda 1 cupo libre." : `Te quedan ${slotsLeft} cupos libres.`} Al cerrar ${
             TRADES_PER_SLOT - (myTrades % TRADES_PER_SLOT)
           } canjes más se abre otro.`

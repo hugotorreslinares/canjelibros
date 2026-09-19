@@ -29,6 +29,21 @@ export interface Reader {
   // Cuenta suspendida por moderación: no puede publicar, proponer canjes ni
   // escribir mensajes nuevos. No cierra sesión ni oculta lo ya publicado.
   suspended: boolean;
+  // «Punto Librocambio»: cuenta del equipo, con libros y encuentro reales. Sale
+  // de `officials/{uid}`, no del perfil, así que nadie se la pone editando el suyo.
+  official: boolean;
+}
+
+// Lo que el equipo escribe a mano en `officials/{uid}` y manda sobre el perfil
+// de esa cuenta: quién es, dónde está y cuándo se le encuentra.
+export interface OfficialPoint {
+  id: string;
+  name: string;
+  barrio: string;
+  lat: number | null;
+  lng: number | null;
+  spot: string;
+  bio: string;
 }
 
 // Un canje cerrado, con ambos participantes. Público y de solo creación, como

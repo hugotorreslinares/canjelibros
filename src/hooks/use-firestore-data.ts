@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { User } from "firebase/auth";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import {
@@ -11,6 +11,7 @@ import {
   subscribeCompletedTrades,
   subscribeModerationLog,
   subscribeMyThreads,
+  subscribeOfficials,
   subscribeRatings,
   subscribeReaders,
   subscribeReports,
@@ -22,6 +23,7 @@ import type {
   ChatThread,
   CompletedTrade,
   ModerationLogEntry,
+  OfficialPoint,
   Rating,
   Reader,
   Report,
@@ -109,10 +111,39 @@ export function useModerationLog(enabled: boolean): ModerationLogEntry[] {
   return enabled ? entries : [];
 }
 
+// Los lectores llegan ya mezclados con `officials/{uid}`: el nombre, el barrio,
+// las coordenadas y el punto de encuentro de un Punto Librocambio mandan sobre
+// los de su perfil, y `official` sale en true. Así mapa, catálogo y chat no
+// tienen que saber que existen los puntos.
 export function useReaders(): { readers: Reader[]; loading: boolean; error: boolean } {
-  const [readers, setReaders] = useState<Reader[]>([]);
+  const [rawReaders, setReaders] = useState<Reader[]>([]);
+  const [officials, setOfficials] = useState<OfficialPoint[]>([]);
   const [loading, setLoading] = useState(isFirebaseConfigured);
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+    return subscribeOfficials(setOfficials);
+  }, []);
+
+  const readers = useMemo(
+    () =>
+      rawReaders.map((r) => {
+        const o = officials.find((x) => x.id === r.id);
+        if (!o) return r;
+        return {
+          ...r,
+          name: o.name || r.name,
+          barrio: o.barrio || r.barrio,
+          lat: o.lat ?? r.lat,
+          lng: o.lng ?? r.lng,
+          spot: o.spot || r.spot,
+          bio: o.bio || r.bio,
+          official: true,
+        };
+      }),
+    [rawReaders, officials]
+  );
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;

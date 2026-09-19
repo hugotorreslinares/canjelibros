@@ -32,6 +32,7 @@ interface CatalogItem {
   dist: number | null;
   rating: number | null;
   plate: string;
+  official: boolean;
   selectOwner: () => void;
   propose: () => void;
   report: () => void;
@@ -431,6 +432,7 @@ export function CatalogView({
               {/* El dueño baja a metadato: antes era un enlace del mismo peso
                   que el llamado a la acción, justo encima de él. */}
               <div className="flex flex-col gap-2 items-start">
+                {b.official && <Badge variant="secondary">Atendido por el equipo de Librocambio</Badge>}
                 <p className="font-sans text-small text-muted-foreground">
                   <button onClick={b.selectOwner} className="bg-transparent border-none p-0 text-primary-text underline-offset-4 hover:underline">
                     {b.owner}

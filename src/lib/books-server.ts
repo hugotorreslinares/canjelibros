@@ -42,7 +42,7 @@ function baseDeDatos(): Firestore | null {
 
 export interface BookPage {
   book: Book;
-  owner: { id: string; name: string; trades: number } | null;
+  owner: { id: string; name: string; trades: number; official: boolean; spot: string } | null;
 }
 
 function mapBook(id: string, data: Record<string, unknown>): Book {
@@ -77,16 +77,37 @@ export async function fetchBook(id: string): Promise<BookPage | null> {
       // cerrado con los dos participantes), no leído de `readers.trades`:
       // ese campo solo lo incrementaba quien confirmaba el canje, así que la
       // otra parte se quedaba siempre en cero.
-      const tradesSnap = await getCountFromServer(
-        query(collection(db, "completedTrades"), where("participants", "array-contains", book.ownerId))
-      );
-      owner = {
-        id: r.id,
-        // Solo el nombre de pila. La ficha es pública e indexable, y el barrio
-        // de una persona no tiene por qué acabar en un buscador.
-        name: String(d.name ?? "").split(" ")[0] || "Un lector",
-        trades: tradesSnap.data().count,
-      };
+      const [tradesSnap, punto] = await Promise.all([
+        getCountFromServer(
+          query(collection(db, "completedTrades"), where("participants", "array-contains", book.ownerId))
+        ),
+        // Si las reglas aún no publican `officials`, la ficha sigue saliendo
+        // como la de un lector cualquiera en vez de romper la página.
+        getDoc(doc(db, "officials", book.ownerId)).catch((err) => {
+          console.error("no se pudo leer officials", err);
+          return null;
+        }),
+      ]);
+      const oficial = punto?.exists() ? punto.data() : null;
+      owner = oficial
+        ? {
+            id: r.id,
+            // Un Punto Librocambio es del equipo, no una persona privada: se
+            // muestra completo, con dónde y cuándo se entrega el libro.
+            name: String(oficial.name ?? "") || "Punto Librocambio",
+            trades: tradesSnap.data().count,
+            official: true,
+            spot: String(oficial.spot ?? ""),
+          }
+        : {
+            id: r.id,
+            // Solo el nombre de pila. La ficha es pública e indexable, y el barrio
+            // de una persona no tiene por qué acabar en un buscador.
+            name: String(d.name ?? "").split(" ")[0] || "Un lector",
+            trades: tradesSnap.data().count,
+            official: false,
+            spot: "",
+          };
     }
   }
 

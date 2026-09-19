@@ -22,6 +22,7 @@ interface MapUser {
   count: number;
   rating: number | null;
   trades: number;
+  official: boolean;
   ink: string;
   haloInk: string;
   pulse: number;
@@ -54,6 +55,7 @@ interface MapViewProps {
     lng: number;
     rating: number | null;
     trades: number;
+    official: boolean;
     bio: string;
     spot: string;
     count: number;
@@ -171,6 +173,11 @@ export function MapView({
                     {u.barrio} · <Reputation rating={u.rating} /> · {u.trades} intercambios
                     {u.statusLine && <> · {u.statusLine}</>}
                   </div>
+                  {u.official && (
+                    <div>
+                      <Badge variant="secondary">Atendido por el equipo de Librocambio</Badge>
+                    </div>
+                  )}
                   <div className="font-serif text-body text-foreground">{u.teaser}</div>
                 </button>
               ))}
@@ -193,6 +200,11 @@ export function MapView({
               )}
             </div>
             <h2 className="font-serif text-title mt-2 mb-1.5">{sel.name}</h2>
+            {sel.official && (
+              <Badge variant="secondary" className="mb-2">
+                Atendido por el equipo de Librocambio
+              </Badge>
+            )}
             <div className="font-sans text-small text-muted-foreground mb-1.5">
               <Reputation rating={sel.rating} /> · {sel.trades} intercambios
               {sel.statusLine && <> · {sel.statusLine}</>}

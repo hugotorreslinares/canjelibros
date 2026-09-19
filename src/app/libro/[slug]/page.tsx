@@ -131,13 +131,20 @@ export default async function BookPage({ params }: PageProps) {
             <p className="font-sans text-small text-muted-foreground mt-6 mb-0">
               {owner ? (
                 <>
-                  Lo tiene {owner.name}, en Bogotá
+                  Lo tiene {owner.name}
+                  {!owner.official && ", en Bogotá"}
                   {owner.trades > 0 && <> · {owner.trades} intercambios cerrados</>}
                 </>
               ) : (
                 <>Publicado por un lector de Bogotá</>
               )}
             </p>
+            {owner?.official && (
+              <p className="font-sans text-small text-muted-foreground mt-1 mb-0">
+                Atendido por el equipo de Librocambio.
+                {owner.spot && <> Entrega: {owner.spot}</>}
+              </p>
+            )}
 
             <div className="mt-8">
               {reservado ? (

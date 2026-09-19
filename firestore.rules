@@ -55,6 +55,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Puntos Librocambio: cuentas del equipo, con libros y encuentro reales. El
+    // documento —nombre, barrio, coordenadas, punto de encuentro— lo crea a mano
+    // el equipo en la consola, como `moderators`; nadie puede escribirlo desde
+    // la app, así que nadie se pone la etiqueta editando su propio perfil. Es
+    // público porque el mapa y las fichas la muestran a cualquier visitante.
+    match /officials/{uid} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     match /readers/{uid} {
       allow read: if true;
       allow create: if request.auth != null && request.auth.uid == uid;

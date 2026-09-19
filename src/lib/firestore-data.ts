@@ -27,6 +27,7 @@ import type {
   ModerationAction,
   ModerationLogEntry,
   NewBook,
+  OfficialPoint,
   Rating,
   Reader,
   Report,
@@ -42,8 +43,10 @@ const RATINGS = "ratings";
 const MODERATORS = "moderators";
 const MODERATION_LOG = "moderationLog";
 const MODERATION_LOG_PAGE = 50;
+const MODERATION_ACTIONS: readonly string[] = ["edit", "delete", "delete-message", "suspend", "unsuspend"];
 const COMPLETED_TRADES = "completedTrades";
 const REPORTS = "reports";
+const OFFICIALS = "officials";
 const REPORTS_PAGE = 100;
 
 export function threadIdFor(uidA: string, uidB: string): string {
@@ -91,7 +94,7 @@ export function subscribeModerationLog(
           const data = d.data();
           return {
             id: d.id,
-            action: data.action === "delete" ? ("delete" as const) : ("edit" as const),
+            action: MODERATION_ACTIONS.includes(data.action) ? (data.action as ModerationAction) : ("edit" as const),
             bookId: data.bookId ?? "",
             bookTitle: data.bookTitle ?? "",
             ownerId: data.ownerId ?? "",
@@ -179,12 +182,45 @@ export function subscribeReaders(cb: (readers: Reader[]) => void, onError?: (err
             spot: data.spot ?? "",
             interests: data.interests ?? [],
             suspended: data.suspended === true,
+            official: false,
           };
         })
       );
     },
     (err) => {
       console.error("readers subscription failed", err);
+      onError?.(err);
+    }
+  );
+}
+
+// Los puntos son pocos y cambian a mano, así que se leen enteros. Si la lectura
+// falla, los lectores siguen viéndose: solo pierden la etiqueta de punto.
+export function subscribeOfficials(
+  cb: (points: OfficialPoint[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  if (!db) throw new FirebaseNotConfiguredError();
+  return onSnapshot(
+    collection(db, OFFICIALS),
+    (snap) => {
+      cb(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            name: data.name ?? "",
+            barrio: data.barrio ?? "",
+            lat: typeof data.lat === "number" ? data.lat : null,
+            lng: typeof data.lng === "number" ? data.lng : null,
+            spot: data.spot ?? "",
+            bio: data.bio ?? "",
+          };
+        })
+      );
+    },
+    (err) => {
+      console.error("officials subscription failed", err);
       onError?.(err);
     }
   );
