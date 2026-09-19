@@ -49,6 +49,7 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-text: var(--primary-text);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -103,6 +104,10 @@
   --primary: #b84a32;
   --primary-foreground: #ffffff;
   --primary-soft: #cf6b4f;
+  /* Para texto de menos de 18 px: 4,70:1 de --primary sobre el marfil pasa AA
+     por un pelo, y un enlace pequeño es justo donde más se nota. Terracota
+     más oscura, 6,69:1. --primary queda para fondos y para texto grande. */
+  --primary-text: #933b28;
 
   /* Gris suave de la paleta: superficies neutras (badges, fondos discretos),
      no el acento de marca. El texto que va encima es la tinta casi negra, así
@@ -158,6 +163,7 @@
   --primary: #e08a63;
   --primary-foreground: #241109;
   --primary-soft: #ec9c78;
+  --primary-text: #e08a63;
 
   --secondary: #2e2822;
   --secondary-foreground: #f2ece4;
@@ -196,7 +202,7 @@
   }
 
   a {
-    @apply text-primary;
+    @apply text-primary-text;
     text-decoration: none;
   }
 

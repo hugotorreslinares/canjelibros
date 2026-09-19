@@ -91,7 +91,7 @@ export function PoliciesView({ goHome }: PoliciesViewProps) {
       <section data-reveal className="mb-10">
         <h2 className="font-serif text-title mb-3">5. Cómo reportar</h2>
         <p className="font-serif text-body text-foreground">
-          Escribe a <span className="text-primary">moderacion@librocambio.com</span> con el título del libro, el nombre del
+          Escribe a <span className="text-primary-text">moderacion@librocambio.com</span> con el título del libro, el nombre del
           lector que lo publicó y el motivo. Revisamos los reportes en orden de llegada y damos prioridad a los que
           involucran menores de edad o datos personales expuestos.
         </p>

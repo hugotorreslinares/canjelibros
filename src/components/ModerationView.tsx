@@ -403,7 +403,7 @@ export function ModerationView({
               <div key={e.id} className="border-t border-border pt-3.5 grid gap-1.5">
                 <div className="font-sans text-label uppercase text-muted-foreground">{e.when}</div>
                 <div className="font-serif text-body">
-                  <span className={e.isDelete ? "text-destructive" : "text-primary"}>{e.line}</span> ·{" "}
+                  <span className={e.isDelete ? "text-destructive" : "text-primary-text"}>{e.line}</span> ·{" "}
                   {e.moderatorName}
                 </div>
                 <div className="font-serif text-body text-foreground/85">Motivo: {e.reason}</div>

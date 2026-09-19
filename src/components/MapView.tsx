@@ -180,7 +180,7 @@ export function MapView({
         )}
         {hasSelection && sel && (
           <div>
-            <button onClick={clearSelection} className="bg-transparent border-none p-0 pb-4 font-sans text-small text-primary underline-offset-4 hover:underline">
+            <button onClick={clearSelection} className="bg-transparent border-none p-0 pb-4 font-sans text-small text-primary-text underline-offset-4 hover:underline">
               ← Volver a la lista
             </button>
             <div className="font-sans text-label uppercase text-muted-foreground">

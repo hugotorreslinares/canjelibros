@@ -42,7 +42,7 @@ export function NearbyBooks({ show, hasLocation, items, goCatalog }: NearbyBooks
           </h2>
           <button
             onClick={goCatalog}
-            className="font-sans text-small text-primary bg-transparent border-none p-0 underline-offset-4 hover:underline shrink-0"
+            className="font-sans text-small text-primary-text bg-transparent border-none p-0 underline-offset-4 hover:underline shrink-0"
           >
             Ver todos →
           </button>

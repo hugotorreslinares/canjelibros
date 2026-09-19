@@ -28,7 +28,7 @@ export function ElCanjeApp() {
   return (
     <div className="flex-1 flex flex-col">
       <Header {...state.header} />
-      <main className="flex-1 flex flex-col">
+      <main id="contenido" className="flex-1 flex flex-col scroll-mt-16">
         {state.mapView.isMap && <MapView {...state.mapView} />}
         {state.homeHero.show && <HomeHero {...state.homeHero} />}
         {state.nearbyBooks.show && <NearbyBooks {...state.nearbyBooks} />}

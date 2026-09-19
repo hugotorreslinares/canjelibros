@@ -86,7 +86,7 @@ function FilterButton({ option, count }: { option: Option; count?: number }) {
       onClick={option.pick}
       aria-pressed={option.active}
       className={`flex h-11 min-h-[44px] items-center gap-2 bg-transparent border-none text-left font-serif text-body ${
-        option.active ? "text-primary" : "text-foreground"
+        option.active ? "text-primary-text" : "text-foreground"
       }`}
     >
       {option.label}
@@ -357,7 +357,7 @@ export function CatalogView({
             <button className="flex h-11 min-h-[44px] items-center gap-2 px-4 rounded-sm border border-input bg-card font-sans text-small text-foreground">
               Filtros
               {activeFilterCount > 0 && (
-                <span className="font-sans text-small text-primary">· {activeFilterCount}</span>
+                <span className="font-sans text-small text-primary-text">· {activeFilterCount}</span>
               )}
             </button>
           </SheetTrigger>
@@ -432,7 +432,7 @@ export function CatalogView({
                   que el llamado a la acción, justo encima de él. */}
               <div className="flex flex-col gap-2 items-start">
                 <p className="font-sans text-small text-muted-foreground">
-                  <button onClick={b.selectOwner} className="bg-transparent border-none p-0 text-primary underline-offset-4 hover:underline">
+                  <button onClick={b.selectOwner} className="bg-transparent border-none p-0 text-primary-text underline-offset-4 hover:underline">
                     {b.owner}
                   </button>
                   <br />

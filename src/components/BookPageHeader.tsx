@@ -35,6 +35,7 @@ export function BookPageHeader() {
       goChat={() => go(pathForRoute("chat"))}
       goShelf={() => go(pathForRoute("shelf"))}
       goPublish={() => go(pathForRoute("publish"))}
+      skipTo="#contenido"
     />
   );
 }

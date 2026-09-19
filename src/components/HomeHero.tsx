@@ -50,11 +50,11 @@ export function HomeHero({ covers, totalBooks, goPublish }: HomeHeroProps) {
           <div className="h-0.5 w-24 bg-accent-warm mt-5 mb-5 sm:mt-6 sm:mb-6" />
 
           <p className="font-sans text-body text-muted-foreground m-0 max-w-[46ch]">
-            Encuentra lectores cerca de ti, intercambia libros y descubre nuevas historias.
+            Intercambio vecinal de libros en Bogotá. Sin dinero, sin publicidad.
           </p>
 
           <div className="flex flex-wrap gap-3 mt-6 sm:mt-8">
-            <Button onClick={scrollToCatalog}>
+            <Button variant="outline" onClick={scrollToCatalog}>
               <svg
                 viewBox="0 0 20 20"
                 fill="none"
@@ -67,7 +67,7 @@ export function HomeHero({ covers, totalBooks, goPublish }: HomeHeroProps) {
               </svg>
               Explorar libros
             </Button>
-            <Button variant="outline" onClick={goPublish}>
+            <Button onClick={goPublish}>
               <svg
                 viewBox="0 0 20 20"
                 fill="none"
@@ -78,7 +78,7 @@ export function HomeHero({ covers, totalBooks, goPublish }: HomeHeroProps) {
               >
                 <path d="M10 4v12M4 10h12" strokeLinecap="round" />
               </svg>
-              Publicar un libro
+              Publicar libro
             </Button>
           </div>
         </div>

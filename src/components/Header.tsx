@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { pathForRoute } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -21,13 +22,33 @@ interface HeaderProps {
   goChat: () => void;
   goShelf: () => void;
   goPublish: () => void;
+  /** Destino del enlace «Saltar al contenido»: un ancla de la página actual. */
+  skipTo: string;
 }
 
 interface NavItem {
   label: string;
+  href: string;
   active: boolean;
   go: () => void;
   badge?: number;
+}
+
+// Enlace real —se abre en otra pestaña y lo rastrea un buscador— que en un clic
+// normal sigue navegando por `go`: un `<Link>` de Next remontaría el árbol y
+// perdería filtros y borradores (ver AGENTS.md, «Routing»).
+function NavLink({ href, go, ...props }: { href: string; go: () => void } & ComponentProps<"a">) {
+  return (
+    <a
+      href={href}
+      onClick={(e) => {
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        go();
+      }}
+      {...props}
+    />
+  );
 }
 
 export function Header({
@@ -44,16 +65,17 @@ export function Header({
   goChat,
   goShelf,
   goPublish,
+  skipTo,
 }: HeaderProps) {
   const { user, logOut } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const items: NavItem[] = [
-    { label: "Explorar", active: isCatalog, go: goCatalog },
-    { label: "Mapa", active: isMap, go: goMap },
-    { label: "Mensajes", active: isChat, go: goChat, badge: unread },
-    { label: "Mi estante", active: isShelf, go: goShelf },
+    { label: "Explorar", href: pathForRoute("catalog"), active: isCatalog, go: goCatalog },
+    { label: "Mapa", href: pathForRoute("map"), active: isMap, go: goMap },
+    { label: "Mensajes", href: pathForRoute("chat"), active: isChat, go: goChat, badge: unread },
+    { label: "Mi estante", href: pathForRoute("shelf"), active: isShelf, go: goShelf },
   ];
 
   // Moderación vive solo en el menú lateral. Es un destino administrativo que
@@ -62,13 +84,13 @@ export function Header({
   // moderador conserva el botón de menú también en escritorio: es su única
   // puerta al panel.
   const menuItems: NavItem[] = isModerator
-    ? [...items, { label: "Moderación", active: isModeration, go: goModeration }]
+    ? [...items, { label: "Moderación", href: pathForRoute("moderation"), active: isModeration, go: goModeration }]
     : items;
 
   // El estado activo se marca con aria-current además del subrayado: antes solo
   // lo comunicaba el color, que no llega a un lector de pantalla.
   const desktopLink = (item: NavItem) =>
-    `bg-transparent border-none px-0 py-1 font-sans text-body whitespace-nowrap border-b-2 transition-colors ${
+    `px-0 py-1 font-sans text-body whitespace-nowrap border-b-2 transition-colors ${
       item.active ? "text-foreground border-primary" : "text-muted-foreground border-transparent hover:text-foreground"
     }`;
 
@@ -79,18 +101,27 @@ export function Header({
 
   return (
     <>
+      {/* Fuera de pantalla hasta que recibe el foco: el primer tabulador del sitio. */}
+      <a
+        href={skipTo}
+        className="fixed left-4 top-3 z-50 -translate-y-[200%] rounded-sm border border-border bg-background px-4 py-3 font-sans text-small text-foreground focus:translate-y-0"
+      >
+        Saltar al contenido
+      </a>
       <header className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="w-full mx-auto max-w-shell flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16 sm:h-17">
           <div className="flex items-baseline min-w-0">
-            {/* Un paso más pequeño por debajo de 360 px: «Librocambio» a 26 px se
-                monta encima de «Publicar» y del botón de menú, que ya están en el
+            {/* Dos pasos más pequeños por debajo de 375 px (hasta los 320 px de la
+                pauta de reflujo): «Librocambio» a 26 px se
+                monta encima de «Publicar libro» y del botón de menú, que ya están en el
                 mínimo de 44 px y no pueden ceder ancho. */}
-            <button
-              onClick={goCatalog}
-              className="flex items-center h-11 min-h-[44px] shrink-0 whitespace-nowrap bg-transparent border-none p-0 font-display text-[21px] min-[360px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
+            <NavLink
+              href={pathForRoute("catalog")}
+              go={goCatalog}
+              className="flex items-center h-11 min-h-[44px] shrink-0 whitespace-nowrap font-display text-[18px] min-[340px]:text-[21px] min-[375px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
             >
               Librocambio
-            </button>
+            </NavLink>
           </div>
 
           {/* Un moderador suma el botón de menú a la derecha, y con separaciones
@@ -98,17 +129,18 @@ export function Header({
               en xl, donde sí sobra ancho. */}
           <nav aria-label="Principal" className="hidden lg:flex items-center gap-4 xl:gap-6">
             {items.map((item) => (
-              <button
+              <NavLink
                 key={item.label}
-                onClick={item.go}
+                href={item.href}
+                go={item.go}
                 aria-current={item.active ? "page" : undefined}
                 className={desktopLink(item)}
               >
                 {item.label}
-                {item.badge !== undefined && <span className="text-destructive"> ·{item.badge}</span>}
-              </button>
+                {!!item.badge && <span className="text-primary-text"> ·{item.badge}</span>}
+              </NavLink>
             ))}
-            <Button onClick={goPublish}>Publicar libro</Button>
+            <Button variant="outline" onClick={goPublish}>Publicar libro</Button>
             <Separator orientation="vertical" className="h-6" />
             {user ? (
               <div className="flex items-center gap-3">
@@ -127,8 +159,8 @@ export function Header({
           </nav>
 
           <div className={`flex items-center gap-2 ${isModerator ? "" : "lg:hidden"}`}>
-            <Button onClick={goPublish} className="px-4 lg:hidden">
-              Publicar
+            <Button variant="outline" onClick={goPublish} className="px-3 lg:hidden">
+              Publicar libro
             </Button>
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
@@ -144,19 +176,18 @@ export function Header({
                 </SheetHeader>
                 <nav aria-label="Principal" className="flex flex-col px-4 pb-4">
                   {menuItems.map((item) => (
-                    <button
+                    <NavLink
                       key={item.label}
-                      onClick={() => runFromMenu(item.go)}
+                      href={item.href}
+                      go={() => runFromMenu(item.go)}
                       aria-current={item.active ? "page" : undefined}
                       className={`h-12 flex items-center justify-between gap-3 border-b border-border font-sans text-body text-left ${
-                        item.active ? "text-primary" : "text-foreground"
+                        item.active ? "text-primary-text" : "text-foreground"
                       }`}
                     >
                       <span>{item.label}</span>
-                      {item.badge !== undefined && item.badge > 0 && (
-                        <span className="text-destructive">·{item.badge}</span>
-                      )}
-                    </button>
+                      {!!item.badge && <span className="text-primary-text">·{item.badge}</span>}
+                    </NavLink>
                   ))}
                   <div className="pt-6">
                     {user ? (
