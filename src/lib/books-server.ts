@@ -1,5 +1,17 @@
 import { getApps, initializeApp, type FirebaseOptions } from "firebase/app";
-import { collection, doc, getCountFromServer, getDoc, getDocs, getFirestore, query, where, type Firestore } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getCountFromServer,
+  getDoc,
+  getDocs,
+  getFirestore,
+  limit,
+  orderBy,
+  query,
+  where,
+  type Firestore,
+} from "firebase/firestore";
 import type { Book } from "./types";
 
 /**
@@ -44,7 +56,7 @@ function mapBook(id: string, data: Record<string, unknown>): Book {
     desc: String(data.desc ?? ""),
     cover: typeof data.cover === "string" ? data.cover : null,
     resUid: typeof data.resUid === "string" ? data.resUid : null,
-    createdAt: 0,
+    createdAt: (data.createdAt as { toMillis?: () => number } | undefined)?.toMillis?.() ?? 0,
   };
 }
 
@@ -87,4 +99,27 @@ export async function fetchAllBooks(): Promise<Book[]> {
   if (!db) return [];
   const snap = await getDocs(collection(db, "books"));
   return snap.docs.map((d) => mapBook(d.id, d.data()));
+}
+
+/** Los últimos libros publicados, para pintar las primeras portadas en el HTML de la portada. */
+export async function fetchRecentBooks(n: number): Promise<Book[]> {
+  const db = baseDeDatos();
+  if (!db) return [];
+  const snap = await getDocs(query(collection(db, "books"), orderBy("createdAt", "desc"), limit(n)));
+  return snap.docs.map((d) => mapBook(d.id, d.data()));
+}
+
+/**
+ * La foto de un libro como bytes, para `/portada/[id]`. Las portadas viven como
+ * data URL dentro del documento; servirlas como imagen deja el HTML de la
+ * portada en unos cientos de bytes por libro en vez de ~40 KB, y permite que
+ * el CDN las guarde.
+ */
+export async function fetchCover(id: string): Promise<{ type: string; bytes: Buffer } | null> {
+  const db = baseDeDatos();
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "books", id));
+  const cover = snap.exists() ? snap.data().cover : null;
+  const partes = typeof cover === "string" ? /^data:(image\/[a-z+.-]+);base64,(.+)$/.exec(cover) : null;
+  return partes ? { type: partes[1], bytes: Buffer.from(partes[2], "base64") } : null;
 }

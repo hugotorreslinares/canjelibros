@@ -5,7 +5,7 @@ import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { AuthModal } from "./AuthModal";
 import { CatalogView } from "./CatalogView";
 import { HomeHero } from "./HomeHero";
-import { NearbyBooks } from "./NearbyBooks";
+import { NearbyBooks, type NearbyItem } from "./NearbyBooks";
 import { MapDiscovery } from "./MapDiscovery";
 import { DeleteDialog } from "./DeleteDialog";
 import { ChatView } from "./ChatView";
@@ -21,8 +21,8 @@ import { ReportDialog } from "./ReportDialog";
 import { ShelfView } from "./ShelfView";
 import { Toaster } from "@/components/ui/sonner";
 
-export function ElCanjeApp() {
-  const state = useAppState();
+export function ElCanjeApp({ initialNearby }: { initialNearby: NearbyItem[] }) {
+  const state = useAppState(initialNearby);
   useScrollReveal();
 
   return (

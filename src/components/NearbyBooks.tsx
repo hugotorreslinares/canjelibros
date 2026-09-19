@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BookCover } from "./BookCover";
 import { DistanceLabel } from "./DistanceLabel";
 
-interface NearbyItem {
+export interface NearbyItem {
   id: string;
   t: string;
   a: string;

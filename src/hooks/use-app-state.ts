@@ -42,6 +42,7 @@ import {
   useReaders,
   useThreadMessages,
 } from "./use-firestore-data";
+import type { NearbyItem } from "@/components/NearbyBooks";
 import type { ModerationAction, Report, Route, SortOption } from "@/lib/types";
 
 const BASE_SLOTS = 5;
@@ -152,7 +153,9 @@ function formatTime(ms: number): string {
   return new Date(ms).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function useAppState() {
+// `initialNearby` son las primeras portadas que ya vienen en el HTML: se muestran
+// mientras Firestore carga, para que la fila no aparezca de golpe.
+export function useAppState(initialNearby: NearbyItem[] = []) {
   const { user } = useAuth();
   useReaderProfileSync(user);
   usePresenceHeartbeat(user);
@@ -1260,6 +1263,18 @@ export function useAppState() {
     showToast("Intercambio completado. Los libros ya cambiaron de estante.");
   }, [starsPicked, tags, vals.thread, user, myThreads, activeThreadId, showToast, go]);
 
+  const nearbyItems = dataLoading
+    ? initialNearby
+    : vals.nearby.map((b) => ({
+        id: b.id,
+        t: b.t,
+        a: b.a,
+        cover: b.cover,
+        plate: b.plate,
+        dist: b.dist,
+        href: b.href,
+      }));
+
   return {
     route,
     user,
@@ -1386,17 +1401,9 @@ export function useAppState() {
     // `vals.nearby` (ordenado por distancia real) — es la misma fuente de
     // datos que el catálogo, solo que ordenada distinto y recortada a ocho.
     nearbyBooks: {
-      show: route === "catalog" && vals.nearby.length > 0,
+      show: route === "catalog" && nearbyItems.length > 0,
       hasLocation: !!myReader,
-      items: vals.nearby.map((b) => ({
-        id: b.id,
-        t: b.t,
-        a: b.a,
-        cover: b.cover,
-        plate: b.plate,
-        dist: b.dist,
-        href: b.href,
-      })),
+      items: nearbyItems,
       goCatalog: () => {
         // El enlace "Ver todos" baja al catálogo en vez de navegar a otra
         // ruta: ya está en la misma página, justo debajo.
