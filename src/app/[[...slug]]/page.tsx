@@ -42,6 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: pathname,
       type: "website",
     },
+    twitter: { title: `${seo.title} · ${SITE_NAME}`, description: seo.description },
   };
 }
 

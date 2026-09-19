@@ -54,6 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: ruta,
       type: "article",
     },
+    twitter: { title: `${titulo} · ${SITE_NAME}`, description: descripcion.slice(0, 300) },
   };
 }
 
@@ -99,7 +100,7 @@ export default async function BookPage({ params }: PageProps) {
           en vez de las funciones `go*` internas de la aplicación. */}
       <BookPageHeader />
 
-      <main className="flex-1 w-full mx-auto max-w-[820px] px-6 sm:px-10 pt-8 pb-16">
+      <main id="contenido" className="flex-1 w-full mx-auto max-w-[820px] px-6 sm:px-10 pt-8 pb-16 scroll-mt-16">
         <Button variant="link" asChild className="px-0 mb-4">
           <Link href="/">← Volver al catálogo</Link>
         </Button>

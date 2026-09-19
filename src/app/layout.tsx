@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   // metadataBase resuelve las rutas relativas de canonical y openGraph.
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} · Intercambio de libros usados en Bogotá`,
+    default: `Intercambio de libros usados en Bogotá · ${SITE_NAME}`,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -54,12 +54,12 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: "es_CO",
     url: SITE_URL,
-    title: `${SITE_NAME} · Intercambio de libros usados en Bogotá`,
+    title: `Intercambio de libros usados en Bogotá · ${SITE_NAME}`,
     description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} · Intercambio de libros usados en Bogotá`,
+    title: `Intercambio de libros usados en Bogotá · ${SITE_NAME}`,
     description: SITE_DESCRIPTION,
   },
   robots: {
