@@ -194,6 +194,14 @@ export function subscribeReaders(cb: (readers: Reader[]) => void, onError?: (err
   );
 }
 
+// Dónde está el dueño de un libro, para el mapa de la ficha. Un Punto
+// Librocambio manda con `officials`, no con su perfil (ver `useReaders`).
+export async function fetchPlace(uid: string, official: boolean): Promise<{ lat: number; lng: number } | null> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const data = (await getDoc(doc(db, official ? OFFICIALS : READERS, uid))).data();
+  return typeof data?.lat === "number" && typeof data?.lng === "number" ? { lat: data.lat, lng: data.lng } : null;
+}
+
 // Los puntos son pocos y cambian a mano, así que se leen enteros. Si la lectura
 // falla, los lectores siguen viéndose: solo pierden la etiqueta de punto.
 export function subscribeOfficials(

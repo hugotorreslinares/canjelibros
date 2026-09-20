@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { BookCover } from "@/components/BookCover";
+import { BookLocation } from "@/components/BookLocation";
 import { BookPageHeader } from "@/components/BookPageHeader";
 import { Footer } from "@/components/Footer";
 import { bookIdFromSlug, pathForBook, slugForBook } from "@/lib/book-slug";
@@ -168,6 +169,8 @@ export default async function BookPage({ params }: PageProps) {
             </div>
           </div>
         </div>
+
+        {owner && <BookLocation ownerId={owner.id} official={owner.official} />}
       </main>
 
       <Footer />

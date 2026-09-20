@@ -231,6 +231,26 @@
   }
 }
 
+/* Marcas del mapa de la ficha de un libro. Leaflet pinta con atributos SVG y un
+   atributo no acepta var(), así que el color va por clase. */
+.loc-pin {
+  stroke: var(--primary);
+  fill: var(--primary);
+  fill-opacity: 1;
+}
+
+.loc-zone {
+  stroke: var(--primary);
+  fill: var(--primary);
+  fill-opacity: 0.15;
+}
+
+.loc-me {
+  stroke: var(--accent-foreground);
+  fill: var(--accent-foreground);
+  fill-opacity: 1;
+}
+
 .leaflet-div-icon.cambialibros-marker {
   background: transparent;
   border: none;
