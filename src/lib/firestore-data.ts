@@ -211,6 +211,12 @@ export async function fetchPlace(uid: string, official: boolean): Promise<{ lat:
   return typeof data?.lat === "number" && typeof data?.lng === "number" ? { lat: data.lat, lng: data.lng } : null;
 }
 
+export async function fetchOfficialName(uid: string): Promise<string | null> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  const name = (await getDoc(doc(db, OFFICIALS, uid))).data()?.name;
+  return typeof name === "string" && name ? name : null;
+}
+
 // Los puntos son pocos y cambian a mano, así que se leen enteros. Si la lectura
 // falla, los lectores siguen viéndose: solo pierden la etiqueta de punto.
 export function subscribeOfficials(

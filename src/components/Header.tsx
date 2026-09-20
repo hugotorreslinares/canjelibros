@@ -24,6 +24,8 @@ interface HeaderProps {
   goPublish: () => void;
   /** Destino del enlace «Saltar al contenido»: un ancla de la página actual. */
   skipTo: string;
+  /** Nombre del Punto Librocambio con el que se entró, o null en una cuenta normal. */
+  accountName: string | null;
 }
 
 interface NavItem {
@@ -66,10 +68,17 @@ export function Header({
   goShelf,
   goPublish,
   skipTo,
+  accountName,
 }: HeaderProps) {
   const { user, logOut } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Quien atiende varios puntos alterna entre cuentas, y un correo con alias no
+  // dice en cuál está. En la barra, «Punto Librocambio · Milenta» se abrevia a
+  // «Punto Milenta»: cortado a 16 caracteres perdería justo el barrio.
+  const accountLabel = accountName?.replace(/^Punto Librocambio\s*·\s*/, "Punto ") ?? user?.displayName ?? user?.email;
+  const accountFull = accountName ?? user?.displayName ?? user?.email;
 
   const items: NavItem[] = [
     { label: "Explorar", href: pathForRoute("catalog"), active: isCatalog, go: goCatalog },
@@ -144,8 +153,8 @@ export function Header({
             <Separator orientation="vertical" className="h-6" />
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="font-sans text-small text-muted-foreground max-w-[16ch] truncate">
-                  {user.displayName || user.email}
+                <span className="font-sans text-small text-muted-foreground max-w-[16ch] truncate" title={accountFull ?? undefined}>
+                  {accountLabel}
                 </span>
                 <Button variant="link" onClick={() => logOut()}>
                   Salir
@@ -192,9 +201,7 @@ export function Header({
                   <div className="pt-6">
                     {user ? (
                       <div className="flex flex-col gap-3">
-                        <span className="font-sans text-small text-muted-foreground truncate">
-                          {user.displayName || user.email}
-                        </span>
+                        <span className="font-sans text-small text-muted-foreground truncate">{accountFull}</span>
                         <Button
                           variant="outline"
                           onClick={() => {

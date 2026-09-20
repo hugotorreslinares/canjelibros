@@ -6,6 +6,7 @@ import { isFirebaseConfigured } from "@/lib/firebase";
 import {
   ensureReaderProfile,
   fetchIsModerator,
+  fetchOfficialName,
   touchPresence,
   subscribeBooks,
   subscribeCompletedTrades,
@@ -95,6 +96,27 @@ export function useIsModerator(uid: string | null): boolean {
   }, [uid]);
 
   return !!uid && moderatorUid === uid;
+}
+
+// La ficha de un libro no carga la lista de lectores, así que pregunta solo por
+// la cuenta con la que se entró. Guarda de quién es el nombre, como `useIsModerator`.
+export function useOfficialName(uid: string | null): string | null {
+  const [found, setFound] = useState<{ uid: string; name: string } | null>(null);
+
+  useEffect(() => {
+    if (!uid || !isFirebaseConfigured) return;
+    let cancelled = false;
+    fetchOfficialName(uid)
+      .then((name) => {
+        if (!cancelled && name) setFound({ uid, name });
+      })
+      .catch((err) => console.error("no se pudo leer officials", err));
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
+
+  return found && found.uid === uid ? found.name : null;
 }
 
 // Only moderators may read the log, so the subscription is opened only for them —

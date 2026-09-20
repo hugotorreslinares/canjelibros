@@ -1313,6 +1313,7 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
       // En la portada salta el hero y aterriza en el catálogo; en el resto de
       // vistas, al principio del contenido.
       skipTo: route === "catalog" ? "#catalogo" : "#contenido",
+      accountName: myReader?.official ? myReader.name : null,
     },
 
     moderationView: {

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { pathForRoute } from "@/lib/routes";
-import { useIsModerator, useMyThreads } from "@/hooks/use-firestore-data";
+import { useIsModerator, useMyThreads, useOfficialName } from "@/hooks/use-firestore-data";
 import { Header } from "./Header";
 
 // La ficha de un libro (`/libro/[slug]`) es una ruta real fuera del catch-all
@@ -16,6 +16,7 @@ export function BookPageHeader() {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const isModerator = useIsModerator(uid);
+  const accountName = useOfficialName(uid);
   const { threads } = useMyThreads(uid);
 
   const go = (path: string) => router.push(path);
@@ -36,6 +37,7 @@ export function BookPageHeader() {
       goShelf={() => go(pathForRoute("shelf"))}
       goPublish={() => go(pathForRoute("publish"))}
       skipTo="#contenido"
+      accountName={accountName}
     />
   );
 }
