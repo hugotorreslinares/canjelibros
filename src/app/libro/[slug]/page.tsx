@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { BookCover } from "@/components/BookCover";
+import { BookActions } from "@/components/BookActions";
 import { BookLocation } from "@/components/BookLocation";
 import { BookPageHeader } from "@/components/BookPageHeader";
 import { Footer } from "@/components/Footer";
+import { Toaster } from "@/components/ui/sonner";
 import { bookIdFromSlug, pathForBook, slugForBook } from "@/lib/book-slug";
 import { fetchAllBooks, fetchBook } from "@/lib/books-server";
 import { plateFor } from "@/lib/design-utils";
@@ -147,26 +149,13 @@ export default async function BookPage({ params }: PageProps) {
               </p>
             )}
 
-            <div className="mt-8">
-              {reservado ? (
-                <>
-                  <Button disabled>Reservado</Button>
-                  <p className="font-sans text-small text-muted-foreground max-w-[40ch] mt-2 mb-0">
-                    Alguien ya propuso un canje por este libro. Vuelve a estar libre si la propuesta no
-                    cierra.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <Button asChild>
-                    <Link href="/">Proponer un canje</Link>
-                  </Button>
-                  <p className="font-sans text-small text-muted-foreground max-w-[40ch] mt-2 mb-0">
-                    El canje es libro por libro: necesitas uno publicado para ofrecer a cambio.
-                  </p>
-                </>
-              )}
-            </div>
+            <BookActions
+              bookId={book.id}
+              bookTitle={book.t}
+              ownerId={book.ownerId}
+              ownerName={owner?.name ?? "un lector"}
+              reserved={reservado}
+            />
           </div>
         </div>
 
@@ -174,6 +163,7 @@ export default async function BookPage({ params }: PageProps) {
       </main>
 
       <Footer />
+      <Toaster position="bottom-center" />
     </div>
   );
 }

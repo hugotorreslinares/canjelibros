@@ -26,7 +26,6 @@ interface CatalogItem {
   a: string;
   cat: string;
   cond: string;
-  desc: string;
   owner: string;
   barrio: string;
   dist: number | null;
@@ -34,8 +33,6 @@ interface CatalogItem {
   plate: string;
   official: boolean;
   selectOwner: () => void;
-  propose: () => void;
-  report: () => void;
 }
 
 interface RecommendedItem {
@@ -45,9 +42,7 @@ interface RecommendedItem {
   cat: string;
   cond: string;
   plate: string;
-  owner: string;
-  selectOwner: () => void;
-  propose: () => void;
+  href: string;
 }
 
 interface Option {
@@ -246,7 +241,9 @@ export function CatalogView({
             <CarouselContent className="-ml-4">
               {recommended.items.map((b, i) => (
                 <CarouselItem key={i} className="pl-4 basis-[150px]">
-                  <div className="flex flex-col gap-2 group">
+                  {/* Solo enlaza a la ficha: la descripción, el mapa y proponer
+                      el canje viven allí, no en la portada. */}
+                  <Link href={b.href} className="flex flex-col gap-2 group no-underline">
                     <BookCover
                       cover={b.cover}
                       plate={b.plate}
@@ -255,16 +252,13 @@ export function CatalogView({
                       size="md"
                       className="h-[225px] w-[150px] rounded-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-lg"
                     />
-                    <div className="font-serif text-body leading-tight truncate">{b.t}</div>
+                    <div className="font-serif text-body leading-tight truncate text-foreground">{b.t}</div>
                     <div className="font-sans text-small text-muted-foreground truncate">{b.a}</div>
                     <div className="flex gap-1.5 flex-wrap items-center">
                       <Badge variant="secondary">{b.cat}</Badge>
                       <BookCondition cond={b.cond} />
                     </div>
-                    <Button onClick={b.propose} className="w-full">
-                      Proponer canje
-                    </Button>
-                  </div>
+                  </Link>
                 </CarouselItem>
               ))}
             </CarouselContent>
@@ -403,13 +397,15 @@ export function CatalogView({
               {/* La portada es lo primero que se lee: grande en móvil, donde
                   cada resultado ocupa toda su propia tarjeta, y compacta desde
                   640px, donde vuelve a leerse como una fila. */}
-              <BookCover
-                cover={b.cover}
-                plate={b.plate}
-                title={b.t}
-                size="sm"
-                className="w-32 h-[192px] min-[640px]:w-[74px] min-[640px]:h-[111px] rounded-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-lg"
-              />
+              <Link href={b.href} tabIndex={-1} aria-hidden="true" className="justify-self-start">
+                <BookCover
+                  cover={b.cover}
+                  plate={b.plate}
+                  title={b.t}
+                  size="sm"
+                  className="w-32 h-[192px] min-[640px]:w-[74px] min-[640px]:h-[111px] rounded-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-lg"
+                />
+              </Link>
               <div className="flex flex-col gap-1.5">
                 <div className="flex gap-2.5 flex-wrap items-baseline">
                   {/* Enlace real, no un manejador: así se puede compartir, abrir
@@ -422,7 +418,6 @@ export function CatalogView({
                   </h3>
                   <span className="font-sans text-small text-muted-foreground">{b.a}</span>
                 </div>
-                <p className="font-serif text-body text-foreground/85 max-w-[46em]">{b.desc}</p>
                 <div className="flex gap-3 flex-wrap items-center mt-0.5">
                   <Badge variant="secondary">{b.cat}</Badge>
                   <BookCondition cond={b.cond} />
@@ -434,7 +429,7 @@ export function CatalogView({
               {/* El dueño baja a metadato: antes era un enlace del mismo peso
                   que el llamado a la acción, justo encima de él. */}
               <div className="flex flex-col gap-2 items-start">
-                {b.official && <Badge variant="secondary">Atendido por el equipo de Librocambio</Badge>}
+                {b.official && <Badge variant="secondary">Atendido por Librocambio</Badge>}
                 <p className="font-sans text-small text-muted-foreground">
                   <button onClick={b.selectOwner} className="bg-transparent border-none p-0 text-primary-text underline-offset-4 hover:underline">
                     {b.owner}
@@ -449,18 +444,10 @@ export function CatalogView({
                   )}{" · "}
                   <Reputation rating={b.rating} />
                 </p>
-                {b.reserved ? (
-                  <div className="flex flex-col gap-1 items-start">
-                    <Button disabled>Reservado</Button>
-                    <span className="font-sans text-small text-muted-foreground max-w-[20em]">
-                      Vuelve a estar libre si la propuesta no cierra.
-                    </span>
-                  </div>
-                ) : (
-                  <Button onClick={b.propose}>Proponer canje</Button>
-                )}
-                <Button variant="link" onClick={b.report} className="px-0 text-muted-foreground">
-                  Reportar
+                {/* La descripción, el mapa, proponer el canje y reportar viven en la
+                    ficha: la portada solo ayuda a elegir. */}
+                <Button variant="outline" asChild>
+                  <Link href={b.href}>Ver libro</Link>
                 </Button>
               </div>
             </article>

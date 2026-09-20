@@ -73,9 +73,8 @@ const EMPTY_FORM: FormState = { t: "", a: "", desc: "", cond: "Bueno", cat: "Nov
 
 type PendingAction = { kind: "goPublish" } | { kind: "openOffer"; uid: string; bookId: string };
 
-type ReportTarget =
-  | { kind: "book"; bookId: string; bookTitle: string; ownerId: string; ownerName: string }
-  | { kind: "message"; threadId: string; messageId: string; messageText: string; ownerId: string; ownerName: string };
+// Solo mensajes de chat: reportar un libro se hace desde su ficha (`BookActions`).
+type ReportTarget = { threadId: string; messageId: string; messageText: string; ownerId: string; ownerName: string };
 
 // Un borrado no se confirma con window.confirm: ese diálogo no se puede
 // estilar, no es accesible y en moderación además tenía que pedir el motivo
@@ -163,7 +162,7 @@ function formatTime(ms: number): string {
 // `initialNearby` son las primeras portadas que ya vienen en el HTML: se muestran
 // mientras Firestore carga, para que la fila no aparezca de golpe.
 export function useAppState(initialNearby: NearbyItem[] = []) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   useReaderProfileSync(user);
   usePresenceHeartbeat(user);
   const { readers, loading: readersLoading, error: readersError } = useReaders();
@@ -385,6 +384,26 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
     [requireAuth]
   );
 
+  // La ficha de un libro es una ruta fuera de la SPA y no puede abrir el modal
+  // de propuesta: manda aquí con `/#proponer=<idDelLibro>`. Espera a tener la
+  // sesión resuelta y los datos, abre el modal (o el de inicio de sesión) y
+  // borra la marca para no reabrirlo al volver. Va en un `setTimeout` porque la
+  // regla del proyecto no admite abrir el modal (un setState) en el cuerpo del efecto.
+  useEffect(() => {
+    if (authLoading || dataLoading) return;
+    const timer = setTimeout(() => {
+      const id = /^#proponer=([A-Za-z0-9]+)$/.exec(window.location.hash)?.[1];
+      if (!id) return;
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      const b = books.find((x) => x.id === id);
+      if (!b) showToast("Ese libro ya no está disponible.");
+      else if (b.ownerId === myUid) showToast("Ese libro es tuyo.");
+      else if (b.resUid) showToast("Ese libro ya está reservado en otro canje.");
+      else openOffer(b.ownerId, b.id);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [authLoading, dataLoading, books, myUid, showToast, openOffer]);
+
   const editBook = useCallback(
     (bookId: string) => {
       if (!user) {
@@ -452,25 +471,13 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
     [user, promptAuth, myReader, showToast]
   );
 
-  const openReportBook = useCallback(
-    (bookId: string, bookTitle: string, ownerId: string, ownerName: string) => {
-      if (!user) {
-        promptAuth("Inicia sesión para reportar una publicación.");
-        return;
-      }
-      setReportTarget({ kind: "book", bookId, bookTitle, ownerId, ownerName });
-      setReportReason("");
-    },
-    [user, promptAuth]
-  );
-
   const openReportMessage = useCallback(
     (threadId: string, messageId: string, messageText: string, ownerId: string, ownerName: string) => {
       if (!user) {
         promptAuth("Inicia sesión para reportar un mensaje.");
         return;
       }
-      setReportTarget({ kind: "message", threadId, messageId, messageText, ownerId, ownerName });
+      setReportTarget({ threadId, messageId, messageText, ownerId, ownerName });
       setReportReason("");
     },
     [user, promptAuth]
@@ -490,14 +497,14 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
     }
     try {
       await createReport({
-        kind: reportTarget.kind,
+        kind: "message",
         targetOwnerId: reportTarget.ownerId,
         targetOwnerName: reportTarget.ownerName,
-        bookId: reportTarget.kind === "book" ? reportTarget.bookId : null,
-        bookTitle: reportTarget.kind === "book" ? reportTarget.bookTitle : "",
-        threadId: reportTarget.kind === "message" ? reportTarget.threadId : null,
-        messageId: reportTarget.kind === "message" ? reportTarget.messageId : null,
-        messageText: reportTarget.kind === "message" ? reportTarget.messageText : "",
+        bookId: null,
+        bookTitle: "",
+        threadId: reportTarget.threadId,
+        messageId: reportTarget.messageId,
+        messageText: reportTarget.messageText,
         reporterUid: user.uid,
         reason,
       });
@@ -806,7 +813,6 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
       a: string;
       cat: string;
       cond: string;
-      desc: string;
       cover: string | null;
       owner: string;
       barrio: string;
@@ -818,8 +824,6 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
       createdAt: number;
       official: boolean;
       selectOwner: () => void;
-      propose: () => void;
-      report: () => void;
     }> = [];
     otherReaders.forEach((r) => {
       books
@@ -831,7 +835,6 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
             a: b.a,
             cat: b.cat,
             cond: b.cond,
-            desc: b.desc,
             cover: b.cover,
             owner: r.name,
             barrio: r.barrio,
@@ -843,8 +846,6 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
             createdAt: b.createdAt,
             official: r.official,
             selectOwner: () => setSel(r.id),
-            propose: () => openOffer(r.id, b.id),
-            report: () => openReportBook(b.id, b.t, r.id, r.name),
           });
         });
     });
@@ -1042,7 +1043,6 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
     myThreads,
     myUid,
     tradesFor,
-    openReportBook,
     openReportMessage,
     activeThreadId,
     threadMessages,
@@ -1636,10 +1636,10 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
 
     reportDialog: {
       open: !!reportTarget,
-      kind: reportTarget?.kind ?? "book",
-      title: reportTarget?.kind === "book" ? reportTarget.bookTitle : "un mensaje",
+      kind: "message" as const,
+      title: "un mensaje",
       ownerName: reportTarget?.ownerName ?? "",
-      messageText: reportTarget?.kind === "message" ? reportTarget.messageText : "",
+      messageText: reportTarget?.messageText ?? "",
       reason: reportReason,
       setReason: (v: string) => setReportReason(v),
       close: closeReport,
