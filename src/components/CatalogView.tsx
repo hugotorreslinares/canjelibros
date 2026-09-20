@@ -77,6 +77,8 @@ interface CatalogViewProps {
   condOptions: Option[];
   sortOptions: Option[];
   maxDist: number;
+  /** Tope del control: ahí el filtro no filtra. */
+  distMax: number;
   maxDistLabel: string;
   setDist: (v: number) => void;
 }
@@ -131,6 +133,7 @@ export function CatalogView({
   condOptions,
   sortOptions,
   maxDist,
+  distMax,
   maxDistLabel,
   setDist,
 }: CatalogViewProps) {
@@ -145,9 +148,8 @@ export function CatalogView({
   // badge de «Filtros · N».
   const activeCat = catOptions.find((o) => o.active);
   const activeCond = condOptions.find((o) => o.active);
-  // El valor inicial del control es 5 km, no el máximo del rango (8):
-  // "sin filtrar" se compara contra el arranque real, no contra el tope del slider.
-  const distanceIsDefault = maxDist === 5;
+  // En el tope del control el filtro no filtra: ese es su valor por defecto.
+  const distanceIsDefault = maxDist === distMax;
   const activeFilterCount =
     (activeCat && activeCat.label !== "Todas" ? 1 : 0) +
     (activeCond && activeCond.label !== "Todos" ? 1 : 0) +
@@ -203,9 +205,9 @@ export function CatalogView({
         <input
           id={`catalogo-distancia-${idSuffix}`}
           type="range"
-          min={0.5}
-          max={8}
-          step={0.5}
+          min={1}
+          max={distMax}
+          step={1}
           value={maxDist}
           onChange={(e) => setDist(parseFloat(e.target.value))}
           className="w-full h-11 accent-primary"

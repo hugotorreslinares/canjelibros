@@ -49,6 +49,10 @@ const BASE_SLOTS = 5;
 // Un Punto Librocambio reparte libros por la ciudad: no le sirve el tope de un
 // lector. Es un techo práctico, no un ilimitado, para no pintar cupos sin fin.
 const OFFICIAL_SLOTS = 40;
+// Bogotá mide unos 30 km de punta a punta. En el tope el filtro de distancia no
+// filtra: con 5 km por defecto, un lector con ubicación no veía los libros de un
+// Punto Librocambio a 11 km, y quien no tiene ubicación sí los veía todos.
+const DIST_MAX_KM = 30;
 const RECOMMENDED_COUNT = 10;
 // Un lector cuenta como presente si su último latido cabe en esta ventana.
 const PRESENCE_WINDOW_MS = 5 * 60_000;
@@ -248,7 +252,7 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState("Todas");
   const [cond, setCond] = useState("Todos");
-  const [maxDist, setMaxDist] = useState(5);
+  const [maxDist, setMaxDist] = useState(DIST_MAX_KM);
   const [sort, setSort] = useState<SortOption>("distancia");
   const [threadId, setThreadId] = useState<string | null>(null);
   const [rating, setRating] = useState<string | null>(null);
@@ -851,7 +855,7 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
       (b) =>
         (cat === "Todas" || b.cat === cat) &&
         (cond === "Todos" || b.cond === cond) &&
-        (b.dist === null || b.dist <= maxDist) &&
+        (b.dist === null || maxDist >= DIST_MAX_KM || b.dist <= maxDist) &&
         (!buscado || normalizarBusqueda(`${b.t} ${b.a}`).includes(buscado))
     );
     // Sin ubicación no se puede ordenar por distancia: cae a lo más reciente.
@@ -1475,7 +1479,8 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
         pick: () => setSort(o),
       })),
       maxDist,
-      maxDistLabel: `${maxDist} km a la redonda`,
+      distMax: DIST_MAX_KM,
+      maxDistLabel: maxDist >= DIST_MAX_KM ? "Toda la ciudad" : `${maxDist} km a la redonda`,
       setDist: (v: number) => setMaxDist(v),
     },
 
