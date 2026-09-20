@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { plateFor } from "@/lib/design-utils";
-import { distanceKm } from "@/lib/geo";
+import { distanceKm, snapCoord } from "@/lib/geo";
 import {
   addRating,
   addReaderInterest,
@@ -173,7 +173,12 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
   const reports = useReports(isModerator);
   const myReader = readers.find((r) => r.id === myUid) ?? null;
   const myBooks = books.filter((b) => b.ownerId === myUid);
-  const otherReaders = readers.filter((r) => r.id !== myUid);
+  // `/mapa` y el catálogo son públicos: cada lector aparece en su zona, no en la
+  // coordenada de su dispositivo. Un Punto Librocambio sí va exacto, y la del
+  // propio visitante también, porque solo la usa él para medir distancias.
+  const otherReaders = readers
+    .filter((r) => r.id !== myUid)
+    .map((r) => (r.official ? r : { ...r, lat: snapCoord(r.lat), lng: snapCoord(r.lng) }));
   const { threads: myThreads } = useMyThreads(myUid);
 
   // Rating average per reader, computed client-side from the `ratings` collection rather

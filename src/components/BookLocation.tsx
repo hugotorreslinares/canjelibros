@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { fetchPlace } from "@/lib/firestore-data";
-import { distanceKm } from "@/lib/geo";
+import { distanceKm, snapCoord } from "@/lib/geo";
 import { formatDistance } from "./DistanceLabel";
 
 const BookLocationMap = dynamic(() => import("./BookLocationMap").then((m) => m.BookLocationMap), {
@@ -19,13 +19,10 @@ interface Point {
   lng: number;
 }
 
-// El perfil de un lector se crea con la ubicación de su dispositivo, o sea,
-// muchas veces con su casa. La ficha es pública, así que un lector normal sale
-// como una zona: la coordenada se redondea a ~550 m y el círculo (500 m) cubre
+// La ficha es pública, así que un lector normal sale como una zona: la
+// coordenada ya viene redondeada (ver `snapCoord`) y el círculo de 500 m cubre
 // hasta el peor caso, ~390 m. Un Punto Librocambio sí sale exacto: es un lugar
 // de encuentro que el equipo eligió mostrar.
-const GRID = 0.005;
-const snap = (v: number) => Math.round(v / GRID) * GRID;
 
 export function BookLocation({ ownerId, official }: { ownerId: string; official: boolean }) {
   // undefined = cargando; null = sin ubicación que mostrar.
@@ -40,7 +37,7 @@ export function BookLocation({ ownerId, official }: { ownerId: string; official:
     let cancelled = false;
     fetchPlace(ownerId, official)
       .then((p) => {
-        if (!cancelled) setPlace(p && (official ? p : { lat: snap(p.lat), lng: snap(p.lng) }));
+        if (!cancelled) setPlace(p && (official ? p : { lat: snapCoord(p.lat), lng: snapCoord(p.lng) }));
       })
       .catch((err) => {
         console.error("no se pudo leer la ubicación del libro", err);

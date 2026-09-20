@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 import type { User } from "firebase/auth";
 import { db, FirebaseNotConfiguredError } from "./firebase";
+import { isSnapped, snapCoord } from "./geo";
 import { BOGOTA_CENTER } from "./geo-constants";
 import type {
   Book,
@@ -119,13 +120,21 @@ export async function ensureReaderProfile(user: User, coords?: { lat: number; ln
   if (!db) throw new FirebaseNotConfiguredError();
   const ref = doc(db, READERS, user.uid);
   const snap = await getDoc(ref);
-  if (snap.exists()) return;
+  if (snap.exists()) {
+    // Los perfiles anteriores guardaron la coordenada exacta del dispositivo, y
+    // `readers` es de lectura pública: al volver a entrar se reduce a la zona.
+    const { lat, lng } = snap.data();
+    if (typeof lat === "number" && typeof lng === "number" && !(isSnapped(lat) && isSnapped(lng))) {
+      await updateDoc(ref, { lat: snapCoord(lat), lng: snapCoord(lng) });
+    }
+    return;
+  }
   const name = user.displayName || user.email?.split("@")[0] || "Lector nuevo";
   await setDoc(ref, {
     name,
     barrio: "Bogotá",
-    lat: coords?.lat ?? BOGOTA_CENTER.lat,
-    lng: coords?.lng ?? BOGOTA_CENTER.lng,
+    lat: snapCoord(coords?.lat ?? BOGOTA_CENTER.lat),
+    lng: snapCoord(coords?.lng ?? BOGOTA_CENTER.lng),
     bio: "",
     spot: "",
     interests: [],
