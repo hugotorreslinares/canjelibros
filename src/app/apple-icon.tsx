@@ -5,9 +5,8 @@ export const contentType = "image/png";
 
 // iOS aplica sus propias esquinas redondeadas al agregar a pantalla de
 // inicio, así que este va sin borderRadius y con fondo sólido (no transparente).
-// Dos lomos de libro de altura distinta, no una inicial: a este tamaño (y en
-// el de 512) se lee como objeto, no como letra — ver el comparativo en
-// PLAN.md si hace falta recordar por qué se eligió.
+// El símbolo del logotipo (ver `Logo.tsx`), el mismo de la pestaña y del icono
+// de 512 px: dos marcapáginas, uno que baja y otro que sube.
 export default function AppleIcon() {
   return new ImageResponse(
     (
@@ -21,9 +20,9 @@ export default function AppleIcon() {
           background: "#b84a32",
         }}
       >
-        <svg width="115" height="115" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="9" y="10" width="5.4" height="16" rx="1.4" fill="#f8f4f4" />
-          <rect x="17.6" y="6.5" width="6" height="19.5" rx="1.4" fill="#f8f4f4" />
+        <svg width="84" height="108" viewBox="4 4 142 182" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6 H58 V126 L32 102 L6 126 Z" fill="#f8f4f4" />
+          <path d="M92 64 L118 88 L144 64 V184 H92 Z" fill="rgba(248, 244, 244, 0.72)" />
         </svg>
       </div>
     ),

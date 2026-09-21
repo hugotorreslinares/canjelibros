@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "./Logo";
 
 interface FooterLink {
   label: string;
@@ -58,7 +59,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))] lg:gap-x-12">
           <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <div className="h-0.5 w-12 bg-primary-soft mb-4" />
-            <p className="font-display text-title m-0">Librocambio</p>
+            <Logo tone="ink" className="text-title" />
             <p className="font-serif text-body text-background/80 mt-3 mb-0 max-w-[30ch]">
               Intercambio vecinal de libros en Bogotá. Sin dinero, sin publicidad.
             </p>

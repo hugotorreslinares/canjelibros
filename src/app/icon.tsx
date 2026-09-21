@@ -5,9 +5,9 @@ export const contentType = "image/png";
 
 // El favicon que create-next-app deja por defecto nunca se reemplazó: la
 // pestaña del navegador mostraba el logo de Next, no el de Librocambio.
-// Un marcapáginas en vez de una inicial: es «libro» sin depender de una
-// letra, y su silueta aguanta los 16 px reales de una pestaña — ver el
-// comparativo en PLAN.md si hace falta recordar por qué se eligió.
+// El símbolo del logotipo (ver `Logo.tsx`): dos marcapáginas, uno que baja y
+// otro que sube. Sin letra, así que no depende de ninguna tipografía, y a 16 px
+// siguen leyéndose como dos formas distintas gracias al desnivel.
 export default function Icon() {
   return new ImageResponse(
     (
@@ -22,8 +22,9 @@ export default function Icon() {
           borderRadius: "50%",
         }}
       >
-        <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M11 6 H21 V26 L16 21 L11 26 Z" fill="#f8f4f4" />
+        <svg width="17" height="22" viewBox="4 4 142 182" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6 H58 V126 L32 102 L6 126 Z" fill="#f8f4f4" />
+          <path d="M92 64 L118 88 L144 64 V184 H92 Z" fill="rgba(248, 244, 244, 0.72)" />
         </svg>
       </div>
     ),

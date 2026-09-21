@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { pathForRoute } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AuthModal } from "./AuthModal";
 
@@ -120,16 +121,20 @@ export function Header({
       <header className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="w-full mx-auto max-w-shell flex items-center justify-between gap-3 sm:gap-6 px-4 sm:px-10 h-16 sm:h-17">
           <div className="flex items-baseline min-w-0">
-            {/* Dos pasos más pequeños por debajo de 375 px (hasta los 320 px de la
-                pauta de reflujo): «Librocambio» a 26 px se
-                monta encima de «Publicar libro» y del botón de menú, que ya están en el
-                mínimo de 44 px y no pueden ceder ancho. */}
+            {/* El logotipo cede ancho a «Publicar libro» y al botón de menú, que ya
+                están en el mínimo de 44 px y no pueden encoger: 18/21/26 px de
+                letra según el ancho (hasta los 320 px de la pauta de reflujo), y el
+                símbolo solo aparece desde 360 px, donde cabe. En escritorio baja a
+                24 px hasta xl para no montarse sobre el menú. */}
             <NavLink
               href={pathForRoute("catalog")}
               go={goCatalog}
-              className="flex items-center h-11 min-h-[44px] shrink-0 whitespace-nowrap font-display text-[18px] min-[340px]:text-[21px] min-[375px]:text-[26px] sm:text-[30px] font-semibold tracking-[-.02em] text-foreground"
+              className="flex items-center h-11 min-h-[44px] shrink-0 whitespace-nowrap"
             >
-              Librocambio
+              <Logo
+                markClassName="max-[359px]:hidden"
+                className="text-[18px] min-[340px]:text-[21px] min-[400px]:text-[26px] lg:text-[24px] xl:text-[30px]"
+              />
             </NavLink>
           </div>
 
