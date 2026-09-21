@@ -60,13 +60,20 @@ function mapBook(id: string, data: Record<string, unknown>): Book {
   };
 }
 
+/** Solo el documento del libro: lo que necesita la imagen para compartir, sin leer al dueño ni contar canjes. */
+export async function fetchBookOnly(id: string): Promise<Book | null> {
+  const db = baseDeDatos();
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "books", id));
+  return snap.exists() ? mapBook(snap.id, snap.data()) : null;
+}
+
 export async function fetchBook(id: string): Promise<BookPage | null> {
   const db = baseDeDatos();
   if (!db) return null;
 
-  const snap = await getDoc(doc(db, "books", id));
-  if (!snap.exists()) return null;
-  const book = mapBook(snap.id, snap.data());
+  const book = await fetchBookOnly(id);
+  if (!book) return null;
 
   let owner: BookPage["owner"] = null;
   if (book.ownerId) {

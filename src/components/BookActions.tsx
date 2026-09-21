@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { createReport } from "@/lib/firestore-data";
 import { AuthModal } from "./AuthModal";
 import { ReportDialog } from "./ReportDialog";
+import { ShareBook } from "./ShareBook";
 
 interface BookActionsProps {
   bookId: string;
@@ -15,6 +16,8 @@ interface BookActionsProps {
   ownerId: string;
   ownerName: string;
   reserved: boolean;
+  /** Dirección canónica de la ficha, la que se comparte. */
+  shareUrl: string;
 }
 
 // Proponer el canje y reportar viven aquí y no en la portada: la portada solo
@@ -22,7 +25,7 @@ interface BookActionsProps {
 // `use-app-state`, así que proponer manda a la portada con `#proponer=<id>` (allí
 // está el modal, con sus libros y su sesión) y reportar se resuelve en la propia
 // ficha, que solo necesita la sesión y un documento.
-export function BookActions({ bookId, bookTitle, ownerId, ownerName, reserved }: BookActionsProps) {
+export function BookActions({ bookId, bookTitle, ownerId, ownerName, reserved, shareUrl }: BookActionsProps) {
   const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -64,25 +67,24 @@ export function BookActions({ bookId, bookTitle, ownerId, ownerName, reserved }:
 
   return (
     <div className="mt-8 flex flex-col items-start gap-3">
-      {mine ? (
-        <p className="font-sans text-small text-muted-foreground max-w-[40ch] m-0">Este libro es tuyo.</p>
-      ) : reserved ? (
-        <>
-          <Button disabled>Reservado</Button>
-          <p className="font-sans text-small text-muted-foreground max-w-[40ch] m-0">
-            Alguien ya propuso un canje por este libro. Vuelve a estar libre si la propuesta no cierra.
-          </p>
-        </>
-      ) : (
-        <>
-          <Button asChild>
-            <Link href={`/#proponer=${bookId}`}>Proponer canje</Link>
-          </Button>
-          <p className="font-sans text-small text-muted-foreground max-w-[40ch] m-0">
-            El canje es libro por libro: necesitas uno publicado para ofrecer a cambio.
-          </p>
-        </>
-      )}
+      <div className="flex flex-wrap items-center gap-3">
+        {!mine &&
+          (reserved ? (
+            <Button disabled>Reservado</Button>
+          ) : (
+            <Button asChild>
+              <Link href={`/#proponer=${bookId}`}>Proponer canje</Link>
+            </Button>
+          ))}
+        <ShareBook title={bookTitle} url={shareUrl} />
+      </div>
+      <p className="font-sans text-small text-muted-foreground max-w-[40ch] m-0">
+        {mine
+          ? "Este libro es tuyo."
+          : reserved
+            ? "Alguien ya propuso un canje por este libro. Vuelve a estar libre si la propuesta no cierra."
+            : "El canje es libro por libro: necesitas uno publicado para ofrecer a cambio."}
+      </p>
 
       {!mine && (
         <Button

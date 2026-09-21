@@ -45,6 +45,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `${book.t} en estado ${book.cond.toLowerCase()}, disponible para intercambio entre lectores de Bogotá.`;
   const ruta = pathForBook(book);
 
+  // Lo que ven Facebook, WhatsApp o X al compartir: el libro y la invitación a
+  // intercambiar. Va aparte de la descripción de buscador, que habla del libro;
+  // la imagen es `opengraph-image.tsx`, con la portada.
+  const ficha = [book.cond, book.cat].filter(Boolean).join(" · ");
+  const compartir = `Intercambia libros usados en Bogotá, sin dinero, en librocambio.com. ${ficha}. ${book.desc.trim()}`
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 300);
+
   return {
     title: `${titulo}, usado para intercambio en Bogotá`,
     description: descripcion.slice(0, 300),
@@ -53,11 +62,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       book.desc.trim().length >= MINIMO_PARA_INDEXAR ? undefined : { index: false, follow: true },
     openGraph: {
       title: `${titulo} · ${SITE_NAME}`,
-      description: descripcion.slice(0, 300),
+      description: compartir,
       url: ruta,
       type: "article",
     },
-    twitter: { title: `${titulo} · ${SITE_NAME}`, description: descripcion.slice(0, 300) },
+    twitter: { card: "summary_large_image", title: `${titulo} · ${SITE_NAME}`, description: compartir },
   };
 }
 
@@ -155,6 +164,7 @@ export default async function BookPage({ params }: PageProps) {
               ownerId={book.ownerId}
               ownerName={owner?.name ?? "un lector"}
               reserved={reservado}
+              shareUrl={`${SITE_URL}${pathForBook(book)}`}
             />
           </div>
         </div>

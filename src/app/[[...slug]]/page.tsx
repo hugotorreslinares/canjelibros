@@ -71,6 +71,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const seo = ROUTE_SEO[route];
+  // Un `openGraph` propio en la página hace que el layout pierda la imagen de
+  // `app/opengraph-image.tsx`: sin esto, compartir la portada salía sin imagen.
+  const imagen = { url: "/opengraph-image", width: 1200, height: 630, alt: "Librocambio · Intercambio de libros usados en Bogotá" };
   return {
     title: seo.title,
     description: seo.description,
@@ -81,8 +84,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: seo.description,
       url: pathname,
       type: "website",
+      images: [imagen],
     },
-    twitter: { title: `${seo.title} · ${SITE_NAME}`, description: seo.description },
+    twitter: {
+      card: "summary_large_image",
+      title: `${seo.title} · ${SITE_NAME}`,
+      description: seo.description,
+      images: [imagen],
+    },
   };
 }
 
