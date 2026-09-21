@@ -67,17 +67,14 @@ export function BookActions({ bookId, bookTitle, ownerId, ownerName, reserved, s
 
   return (
     <div className="mt-8 flex flex-col items-start gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        {!mine &&
-          (reserved ? (
-            <Button disabled>Reservado</Button>
-          ) : (
-            <Button asChild>
-              <Link href={`/#proponer=${bookId}`}>Proponer canje</Link>
-            </Button>
-          ))}
-        <ShareBook title={bookTitle} url={shareUrl} />
-      </div>
+      {!mine &&
+        (reserved ? (
+          <Button disabled>Reservado</Button>
+        ) : (
+          <Button asChild>
+            <Link href={`/#proponer=${bookId}`}>Proponer canje</Link>
+          </Button>
+        ))}
       <p className="font-sans text-small text-muted-foreground max-w-[40ch] m-0">
         {mine
           ? "Este libro es tuyo."
@@ -86,15 +83,20 @@ export function BookActions({ bookId, bookTitle, ownerId, ownerName, reserved, s
             : "El canje es libro por libro: necesitas uno publicado para ofrecer a cambio."}
       </p>
 
-      {!mine && (
-        <Button
-          variant="link"
-          onClick={() => (user ? setReportOpen(true) : setAuthOpen(true))}
-          className="px-0 text-muted-foreground"
-        >
-          Reportar
-        </Button>
-      )}
+      {/* Compartir y reportar son utilidades, no el motivo de la página: van
+          como enlaces discretos bajo el llamado a la acción, no a su lado. */}
+      <div className="flex flex-wrap items-center gap-x-6">
+        <ShareBook title={bookTitle} url={shareUrl} />
+        {!mine && (
+          <Button
+            variant="link"
+            onClick={() => (user ? setReportOpen(true) : setAuthOpen(true))}
+            className="px-0 text-muted-foreground"
+          >
+            Reportar
+          </Button>
+        )}
+      </div>
 
       <AuthModal
         open={authOpen}

@@ -30,7 +30,7 @@ export function ShareBook({ title, url }: { title: string; url: string }) {
   };
 
   return (
-    <Button variant="outline" onClick={share}>
+    <Button variant="link" onClick={share} className="px-0 text-muted-foreground">
       <svg
         viewBox="0 0 20 20"
         fill="none"
@@ -39,7 +39,7 @@ export function ShareBook({ title, url }: { title: string; url: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
-        className="size-5"
+        className="size-4"
       >
         <path d="M10 13V3M6.5 6.5 10 3l3.5 3.5M5 10H4v7h12v-7h-1" />
       </svg>
