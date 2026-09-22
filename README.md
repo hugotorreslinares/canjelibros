@@ -45,6 +45,23 @@ La vista de mapa usa [Leaflet](https://leafletjs.com/) con tiles de [OpenStreetM
 
 Para producción con más tráfico, conviene revisar la [política de uso de tiles de OSM](https://operations.osmfoundation.org/policies/tiles/) y considerar un proveedor con capa gratuita más generosa (por ejemplo MapTiler o Stadia Maps) cambiando la URL del `TileLayer` en [src/components/LeafletMap.tsx](src/components/LeafletMap.tsx).
 
+## Avisos por correo (opcional)
+
+Cuando llega un mensaje nuevo (una respuesta, o el primer mensaje de una propuesta de canje), el sitio intenta avisarle por correo al otro participante. Es la única parte de la app que no vive solo en el navegador y Firestore: necesita un endpoint del servidor (`src/app/api/notify-message/route.ts`) con privilegios de administrador para leer el correo de quien recibe el mensaje, y un servicio que lo envíe. Sin configurar esto, el sitio funciona exactamente igual — el aviso simplemente no sale.
+
+1. **Cuenta de servicio de Firebase**: Consola de Firebase → Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada. Del JSON que descarga, copia `client_email` y `private_key` (con sus `\n` literales, tal cual vienen).
+2. **Resend**: crea una cuenta en [resend.com](https://resend.com), verifica un dominio propio para enviar (no el de prueba) y genera una API key.
+3. Completa en `.env.local` (o en las variables de entorno de Vercel):
+
+```
+FIREBASE_ADMIN_CLIENT_EMAIL=
+FIREBASE_ADMIN_PRIVATE_KEY=
+RESEND_API_KEY=
+RESEND_FROM=Librocambio <notificaciones@tudominio.com>
+```
+
+`RESEND_FROM` tiene que usar el dominio que verificaste en Resend. Esto no toca el plan de Firebase (Spark, el gratuito): el endpoint corre en Vercel y usa el SDK de administrador para leer Firestore directamente, no Cloud Functions.
+
 ## Desarrollo
 
 ```bash
@@ -67,4 +84,4 @@ Todo lo relevante para el uso real de la app ya está en Firestore: perfiles de 
 
 Cómo se cierra un intercambio: solo quien **recibió** la propuesta puede pulsar "Marcar intercambio como realizado" (quien propuso no ve ese botón). Al confirmarlo: el libro que ofreció quien propuso pasa al estante de quien recibió, el libro pedido pasa al estante de quien propuso, se guarda una calificación real (`ratings`) a nombre de quien propuso, y sube en 1 el contador de intercambios de quien confirma.
 
-Limitación conocida: el contador de intercambios (`readers/{uid}.trades`) solo sube para quien confirma el cierre, no para ambas partes — cada usuario solo puede escribir su propio documento en Firestore, así que no hay forma de que quien confirma le sume un intercambio a la otra persona sin un backend con permisos de administrador (fuera del alcance actual).
+El contador de intercambios se deriva de `completedTrades` (un documento por canje cerrado, con los dos participantes), no de un campo en el perfil de cada uno — así sube para las dos partes, sin necesitar un backend con permisos de administrador.

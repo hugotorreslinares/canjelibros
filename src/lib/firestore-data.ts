@@ -434,8 +434,22 @@ export async function openThread(
 
 export async function sendThreadMessage(threadId: string, senderId: string, text: string): Promise<void> {
   if (!db) throw new FirebaseNotConfiguredError();
-  await addDoc(collection(db, THREADS, threadId, MESSAGES), { senderId, text, createdAt: serverTimestamp() });
+  const ref = await addDoc(collection(db, THREADS, threadId, MESSAGES), { senderId, text, createdAt: serverTimestamp() });
   await setDoc(doc(db, THREADS, threadId), { lastMessage: text, lastMessageAt: serverTimestamp() }, { merge: true });
+  notifyNewMessage(threadId, ref.id);
+}
+
+// Aviso por correo al otro participante, en paralelo y sin bloquear el envío:
+// si `/api/notify-message` falla o no está configurado, el mensaje ya quedó
+// escrito igual. Cubre tanto una respuesta como el primer mensaje de una
+// propuesta (`sendOffer` llama a `sendThreadMessage` para los dos casos), y
+// también los mensajes de sistema (cancelar un canje, por ejemplo).
+function notifyNewMessage(threadId: string, messageId: string): void {
+  fetch("/api/notify-message", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ threadId, messageId }),
+  }).catch(() => {});
 }
 
 export async function closeThread(threadId: string): Promise<void> {

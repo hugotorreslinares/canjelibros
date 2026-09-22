@@ -2,11 +2,11 @@
 
 Estado del proyecto y trabajo pendiente. Complementa a [AGENTS.md](AGENTS.md), que describe **cómo está hecho**; aquí va **qué falta y en qué orden**.
 
-Última revisión: 11 de septiembre de 2026 · rama `main`.
+Última revisión: 22 de septiembre de 2026 · rama `main`.
 
 ## 1. Estado actual
 
-Funciona de punta a punta contra Firestore, sin backend propio:
+Funciona de punta a punta contra Firestore, prácticamente sin backend propio (la única excepción es un endpoint en Vercel para avisos por correo, ver §4):
 
 - Mapa con lectores reales y geolocalización, catálogo con filtros y recomendados por intereses.
 - Publicar, editar y eliminar libros del propio estante, con cupos ligados a intercambios cerrados.
@@ -20,16 +20,16 @@ Autenticación con Firebase (Google y correo). Solo publicar/editar/eliminar y p
 ## 2. Pendiente inmediato
 
 1. **Recorrer la aplicación con sesión iniciada.** Todo el rediseño (fases 0 a 9 de [UI-PLAN.md](UI-PLAN.md)) se verificó vista por vista en el navegador, pero **sin cuenta**: estante, publicar, mensajes y moderación se comprobaron por código, por piezas sueltas o con datos de prueba. El recorrido que falta es publicar → proponer → chatear → confirmar canje → calificar, y moderar un libro.
-2. **Reemplazar `moderacion@librocambio.com`** por una dirección real antes de exponer el sitio: hoy la página de políticas promete un canal de correo que ya no es el único — ver #6 más abajo — pero sigue siendo la vía para quien no tiene cuenta.
-3. **Ver la presencia en verde.** `lastSeenAt` solo existe para quien haya entrado después del latido; los perfiles antiguos no dicen nada hasta que su dueño vuelva a entrar. Es lo correcto, pero conviene confirmarlo con dos sesiones.
-4. **Crear los Puntos Librocambio** (Milenta y Calle 93 con 11) y publicar la regla de `officials/{uid}` (`npx firebase-tools deploy --only firestore:rules`; sin publicarla, la etiqueta no aparece). Pasos en AGENTS.md, sección de `officials/{uid}`. Antes de anunciar el sitio, que cada punto tenga días y horas reales en `spot` y libros que de verdad se puedan entregar.
-5. **Publicar las reglas de Firestore de la revisión anterior** (ya hecho el 11 de sept 2026; se deja como registro). `firestore.rules` ganó `completedTrades`, `reports`, la suspensión de cuentas (`readers.suspended`) y el borrado de mensajes por moderación — ninguna de las cuatro funciona en producción hasta correr `npx firebase-tools deploy --only firestore:rules` desde una terminal con sesión iniciada (no lo puede hacer un agente). Sin publicar, el conteo de intercambios cae a cero para todos, reportar da error de permisos y el build de `/libro/[slug]` falla al intentar contar canjes cerrados.
+2. **Crear el Punto Librocambio de la Calle 93 con 11.** El de Milenta ya está creado y en producción, con la etiqueta visible. Mismos pasos, en AGENTS.md, sección de `officials/{uid}`.
+3. **Configurar los avisos por correo**, si se quieren activar: cuenta de servicio de Firebase + cuenta de Resend con dominio verificado + variables de entorno en Vercel. Pasos en el README, «Avisos por correo». Sin esto el sitio sigue funcionando igual, solo que sin avisar por correo cuando llega un mensaje.
+4. **Reemplazar `moderacion@librocambio.com`** por una dirección real antes de exponer el sitio más — ver P1 #6 más abajo: ese correo sigue siendo la vía para quien no tiene cuenta.
+5. **Ver la presencia en verde.** `lastSeenAt` solo existe para quien haya entrado después del latido; los perfiles antiguos no dicen nada hasta que su dueño vuelva a entrar. Es lo correcto, pero conviene confirmarlo con dos sesiones.
 
 ## 3. Backlog priorizado
 
 ### P0 — la interfaz afirma cosas que no son ciertas
 
-Al 11 de septiembre de 2026, **cerrado por completo** — sujeto a publicar las reglas nuevas (ver #4 arriba).
+Cerrado por completo desde el 11 de septiembre de 2026.
 
 | # | Qué | Por qué importa | Nota de implementación |
 |---|-----|-----------------|------------------------|
@@ -60,7 +60,7 @@ Al 11 de septiembre de 2026, **cerrado por completo** — sujeto a publicar las 
 
 ## 4. Restricciones que condicionan el diseño
 
-- **Sin backend.** No hay Admin SDK ni Cloud Functions, así que toda regla de negocio que exija escribir datos ajenos está bloqueada (de ahí el P0 #1 y la calificación promediada en cliente).
+- **Casi sin backend.** No hay Cloud Functions, y el Admin SDK de Firebase solo lo usa un endpoint (`/api/notify-message`, en Vercel) para leer el correo de quien recibe un mensaje y avisarle — necesita una cuenta de servicio y una cuenta de Resend con dominio verificado; sin esas variables de entorno, el sitio funciona igual y el aviso no se envía (ver README, «Avisos por correo»). Todo lo demás sigue bloqueado para cualquier regla de negocio que exija escribir datos ajenos.
 - **Plan gratuito.** Desde febrero de 2026 un bucket de Cloud Storage exige cuenta de facturación aunque no se gaste nada; por eso las portadas van dentro del documento del libro y hay un tope de tamaño en las reglas.
 - **Derechos de imagen.** La portada debe ser una foto tomada por el propio lector. No se buscan imágenes en bancos gratuitos: no dan la tapa real del libro, y las fuentes que sí la dan (Open Library) no declaran licencia. La verificación es reactiva, vía moderación.
 - **Reglas publicadas a mano.** Cualquier cambio en `firestore.rules` dentro de un diff hay que anunciarlo: nada se despliega solo.
