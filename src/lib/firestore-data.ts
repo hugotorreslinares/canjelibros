@@ -152,6 +152,12 @@ export async function setReaderSuspended(uid: string, suspended: boolean): Promi
   await updateDoc(doc(db, READERS, uid), { suspended });
 }
 
+// `null` vuelve al cálculo automático de cupos (ver `totalSlots` en use-app-state.ts).
+export async function setReaderSlotOverride(uid: string, slotOverride: number | null): Promise<void> {
+  if (!db) throw new FirebaseNotConfiguredError();
+  await updateDoc(doc(db, READERS, uid), { slotOverride });
+}
+
 // Un latido por sesión y cada pocos minutos mientras la pestaña esté visible.
 // Es lo único que puede escribir la presencia sin un backend: cada lector
 // solo puede tocar su propio documento.
@@ -192,6 +198,7 @@ export function subscribeReaders(cb: (readers: Reader[]) => void, onError?: (err
             interests: data.interests ?? [],
             suspended: data.suspended === true,
             official: false,
+            slotOverride: typeof data.slotOverride === "number" ? data.slotOverride : null,
           };
         })
       );

@@ -33,7 +33,7 @@ service cloud.firestore {
       allow read: if isModerator();
       allow create: if isModerator()
         && request.resource.data.moderatorUid == request.auth.uid
-        && request.resource.data.action in ['edit', 'delete', 'delete-message', 'suspend', 'unsuspend']
+        && request.resource.data.action in ['edit', 'delete', 'delete-message', 'suspend', 'unsuspend', 'slots']
         && request.resource.data.reason is string
         && request.resource.data.reason.size() > 0;
       allow update, delete: if false;
@@ -72,7 +72,7 @@ service cloud.firestore {
       // that's the one field the panel's suspend/reactivate action touches.
       allow update: if request.auth != null && (
         request.auth.uid == uid ||
-        (isModerator() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['suspended']))
+        (isModerator() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['suspended', 'slotOverride']))
       );
       allow delete: if false;
     }

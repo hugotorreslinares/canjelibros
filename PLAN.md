@@ -47,6 +47,7 @@ Al 11 de septiembre de 2026, **cerrado por completo** — sujeto a publicar las 
 | ~~7~~ | ~~Moderación solo alcanza libros~~ | **Hecho.** Un moderador puede borrar un mensaje reportado (`allow delete: if isModerator()` en `threads/*/messages`, sin necesitar leer el resto del hilo) y suspender o reactivar una cuenta (`readers.suspended`, el único campo que un moderador puede tocar en el documento de otro lector). Suspendida, una cuenta no puede publicar libros nuevos, proponer canjes ni enviar mensajes — bloqueado en cliente y también en las reglas (`isSuspended()`), para que no dependa solo de la interfaz |
 | 8 | La bitácora muestra las últimas 50 entradas, sin paginación real | Se sumó un filtro de texto en cliente sobre esas 50 (11 sept 2026), que cubre el uso de hoy. Paginación real con cursor sigue pendiente para cuando haya volumen |
 | 9 | El rol de moderador se otorga creando `moderators/{uid}` a mano en la consola | Aceptable para un equipo de una persona; documentar el procedimiento si entra alguien más |
+| ~~14~~ | ~~Sin forma de subir los cupos de un Punto Librocambio que llenó sus 40~~ | **Hecho** (22 sept 2026). `readers.slotOverride`, el único otro campo que un moderador puede tocar en el documento de otro lector; reemplaza al cálculo automático mientras no sea `null`. Control «Ajustar» junto a «Suspender cuenta» en cada fila del panel, para cualquier lector, no solo los oficiales |
 
 ### P2 — escala y deuda
 

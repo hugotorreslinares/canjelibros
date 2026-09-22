@@ -32,6 +32,11 @@ export interface Reader {
   // «Punto Librocambio»: cuenta del equipo, con libros y encuentro reales. Sale
   // de `officials/{uid}`, no del perfil, así que nadie se la pone editando el suyo.
   official: boolean;
+  // Cupos fijados a mano por un moderador — reemplaza al cálculo automático
+  // (base + canjes, o el tope de un Punto) mientras no sea null. Es el único
+  // otro campo, junto a `suspended`, que un moderador puede tocar en el
+  // documento de otro lector.
+  slotOverride: number | null;
 }
 
 // Lo que el equipo escribe a mano en `officials/{uid}` y manda sobre el perfil
@@ -86,7 +91,7 @@ export interface Rating {
   createdAt: number;
 }
 
-export type ModerationAction = "edit" | "delete" | "delete-message" | "suspend" | "unsuspend";
+export type ModerationAction = "edit" | "delete" | "delete-message" | "suspend" | "unsuspend" | "slots";
 
 export interface ModerationLogEntry {
   id: string;

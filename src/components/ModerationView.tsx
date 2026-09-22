@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookCover } from "./BookCover";
@@ -12,6 +13,8 @@ interface ModerationBook {
   desc: string;
   ownerName: string;
   ownerSuspended: boolean;
+  ownerSlots: number;
+  ownerSlotOverride: number | null;
   isMine: boolean;
   reserved: boolean;
   reservedWith: string;
@@ -20,6 +23,7 @@ interface ModerationBook {
   edit: () => void;
   remove: () => void;
   toggleSuspend: () => void;
+  setSlots: (value: number | null) => void;
 }
 
 interface ReportItem {
@@ -82,6 +86,87 @@ interface ModerationViewProps {
   save: () => void;
   cancelEdit: () => void;
   goPolicies: () => void;
+}
+
+// Un lector con varios libros repite este control una vez por fila —igual que
+// «Suspender cuenta»—, así que el campo empieza sin editar y solo el que se
+// toca manda un valor nuevo, para no pelear con lo que otra fila del mismo
+// dueño acaba de guardar.
+function SlotsControl({
+  ownerName,
+  slots,
+  override,
+  setSlots,
+}: {
+  ownerName: string;
+  slots: number;
+  override: number | null;
+  setSlots: (value: number | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(String(slots));
+
+  if (!editing) {
+    return (
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="font-sans text-small text-muted-foreground">
+          Cupos de {ownerName}: {slots}
+          {override !== null && " (ajustado a mano)"}
+        </span>
+        <Button
+          variant="link"
+          onClick={() => {
+            setValue(String(slots));
+            setEditing(true);
+          }}
+          className="px-0 h-auto"
+        >
+          Ajustar
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <label className="flex items-center gap-2">
+        <span className="font-sans text-small text-muted-foreground">Cupos de {ownerName}</span>
+        <input
+          type="number"
+          min={0}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="w-20 border border-input rounded-sm bg-card px-2 py-1.5 font-serif text-body text-foreground outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+        />
+      </label>
+      <Button
+        variant="link"
+        className="px-0 h-auto"
+        onClick={() => {
+          const n = Number(value);
+          if (Number.isInteger(n) && n >= 0) setSlots(n);
+          setEditing(false);
+        }}
+      >
+        Guardar
+      </Button>
+      {override !== null && (
+        <Button
+          variant="link"
+          className="px-0 h-auto text-muted-foreground"
+          onClick={() => {
+            setSlots(null);
+            setEditing(false);
+          }}
+        >
+          Quitar ajuste
+        </Button>
+      )}
+      <Button variant="link" className="px-0 h-auto text-muted-foreground" onClick={() => setEditing(false)}>
+        Cancelar
+      </Button>
+    </div>
+  );
 }
 
 export function ModerationView({
@@ -363,6 +448,12 @@ export function ModerationView({
                       {b.ownerSuspended ? `Reactivar cuenta de ${b.ownerName}` : `Suspender cuenta de ${b.ownerName}`}
                     </Button>
                   </div>
+                  <SlotsControl
+                    ownerName={b.ownerName}
+                    slots={b.ownerSlots}
+                    override={b.ownerSlotOverride}
+                    setSlots={b.setSlots}
+                  />
                 </>
               )}
             </div>

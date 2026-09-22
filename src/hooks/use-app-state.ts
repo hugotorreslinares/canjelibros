@@ -20,6 +20,7 @@ import {
   removeReaderInterest,
   reserveBook,
   sendThreadMessage,
+  setReaderSlotOverride,
   setReaderSuspended,
   setReportStatus,
   transferBook,
@@ -126,6 +127,8 @@ function moderationLine(action: ModerationAction, bookTitle: string, ownerName: 
       return `Suspendió la cuenta de ${ownerName}`;
     case "unsuspend":
       return `Reactivó la cuenta de ${ownerName}`;
+    case "slots":
+      return `Ajustó los cupos de ${ownerName}`;
   }
 }
 
@@ -552,6 +555,30 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
     [user, moderatorName, showToast]
   );
 
+  const modSetSlots = useCallback(
+    async (uid: string, name: string, before: number, after: number | null) => {
+      if (!user) return;
+      try {
+        await setReaderSlotOverride(uid, after);
+        await logModerationAction({
+          action: "slots",
+          bookId: "",
+          bookTitle: "",
+          ownerId: uid,
+          ownerName: name,
+          moderatorUid: user.uid,
+          moderatorName,
+          reason: after === null ? "Vuelve al cálculo automático de cupos." : "Cupos ajustados a mano.",
+          changes: [`cupos: ${before} → ${after ?? "automático"}`],
+        });
+        showToast(after === null ? `Cupos de ${name} vueltos al cálculo automático.` : `Cupos de ${name} ajustados a ${after}.`);
+      } catch {
+        showToast("No se pudo ajustar los cupos.");
+      }
+    },
+    [user, moderatorName, showToast]
+  );
+
   const removeReportedMessage = useCallback(
     async (report: Report) => {
       if (!user || report.kind !== "message" || !report.threadId || !report.messageId) return;
@@ -761,7 +788,12 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
 
   const vals = useMemo(() => {
     const myTrades = myUid ? tradesFor(myUid) : 0;
-    const totalSlots = myReader?.official ? OFFICIAL_SLOTS : BASE_SLOTS + Math.floor(myTrades / TRADES_PER_SLOT);
+    // Un moderador puede fijar los cupos a mano (`slotOverride`): reemplaza al
+    // cálculo automático mientras no sea null — para un Punto que llenó sus
+    // 40 y necesita más antes de cerrar otro canje.
+    const totalSlots =
+      myReader?.slotOverride ??
+      (myReader?.official ? OFFICIAL_SLOTS : BASE_SLOTS + Math.floor(myTrades / TRADES_PER_SLOT));
     const used = myBooks.length;
     const navColor = (r: Route) => (route === r ? "#201e1d" : "#605d5d");
     const navLine = (r: Route) => (route === r ? "#0088b0" : "transparent");
@@ -1063,6 +1095,10 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
       })
       .map((b) => {
         const owner = readers.find((r) => r.id === b.ownerId) ?? null;
+        const ownerTrades = owner ? tradesFor(owner.id) : 0;
+        const ownerSlots =
+          owner?.slotOverride ??
+          (owner?.official ? OFFICIAL_SLOTS : BASE_SLOTS + Math.floor(ownerTrades / TRADES_PER_SLOT));
         return {
           id: b.id,
           t: b.t,
@@ -1074,6 +1110,8 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
           ownerName: nameOf(b.ownerId),
           ownerId: b.ownerId,
           ownerSuspended: owner?.suspended ?? false,
+          ownerSlots,
+          ownerSlotOverride: owner?.slotOverride ?? null,
           isMine: b.ownerId === myUid,
           reserved: !!b.resUid,
           reservedWith: b.resUid ? nameOf(b.resUid) : "",
@@ -1082,9 +1120,10 @@ export function useAppState(initialNearby: NearbyItem[] = []) {
           edit: () => modStartEdit(b.id),
           remove: () => modDelete(b.id),
           toggleSuspend: () => toggleSuspend(b.ownerId, nameOf(b.ownerId), !(owner?.suspended ?? false)),
+          setSlots: (value: number | null) => modSetSlots(b.ownerId, nameOf(b.ownerId), ownerSlots, value),
         };
       });
-  }, [books, readers, modQuery, modEditingId, myUid, modStartEdit, modDelete, toggleSuspend]);
+  }, [books, readers, modQuery, modEditingId, myUid, modStartEdit, modDelete, toggleSuspend, modSetSlots, tradesFor]);
 
   const reportItems = useMemo(
     () =>
