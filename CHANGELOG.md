@@ -3,6 +3,36 @@
 Las entradas a partir de aquí las genera release-please leyendo los commits.
 No edites este archivo a mano: se regenera y tu cambio se pierde.
 
+## [0.6.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.5.0...v0.6.0) (2026-09-23)
+
+
+### Novedades
+
+* aviso por correo cuando llega un mensaje o una propuesta ([728c72d](https://github.com/hugotorreslinares/canjelibros/commit/728c72d76dc629ec900329ee073e765eb89a3b42))
+* cuenta ambos lados de un canje y suma reportes y suspensión ([74919ab](https://github.com/hugotorreslinares/canjelibros/commit/74919ab7e9e4adffacfc7dbfb2249f92f0d8590e))
+* la cabecera dice en qué Punto Librocambio se entró ([805cdb8](https://github.com/hugotorreslinares/canjelibros/commit/805cdb8947e83b6890b17e0f9b3f080954ed3732))
+* la ficha de un libro muestra dónde está y a qué distancia ([bfcedee](https://github.com/hugotorreslinares/canjelibros/commit/bfcedeeb6a5cc37c0826219c1ff2414f545983b1))
+* la ficha se comparte con la portada del libro y una invitación ([c1d4748](https://github.com/hugotorreslinares/canjelibros/commit/c1d47485147d78e8a8a8ae87e3e6502d9ea39cff))
+* las primeras portadas llegan ya en el HTML de la portada ([bd73fb5](https://github.com/hugotorreslinares/canjelibros/commit/bd73fb5d4fe52e10dc71050c12873c31cd072d28))
+* nuevo logotipo, dos marcapáginas con el nombre en dos tonos ([b0dbe44](https://github.com/hugotorreslinares/canjelibros/commit/b0dbe443add719558d1753afa4df9f681a6067a9))
+* pie de página con tinta, enlaces y «cómo funciona» ([041fc9e](https://github.com/hugotorreslinares/canjelibros/commit/041fc9ead6ad3ab6b45255119e140849e364c541))
+* proponer canje, reportar y la descripción pasan a la ficha ([4f3c980](https://github.com/hugotorreslinares/canjelibros/commit/4f3c980aad010e0f2b59302ddd1d4efd713a3f75))
+* Puntos Librocambio, cuentas del equipo con etiqueta y horario ([3bc1e51](https://github.com/hugotorreslinares/canjelibros/commit/3bc1e519e687f0d7dbd73789ab2cf2a17be5b656))
+* rediseña el favicon y el ícono de la app ([71343c7](https://github.com/hugotorreslinares/canjelibros/commit/71343c76656d5891f64e65fc612fc1b2a9d54488))
+* un moderador puede ajustar a mano los cupos de un lector ([4d9e858](https://github.com/hugotorreslinares/canjelibros/commit/4d9e858db72694ff534f705ed7dcbddfc0741ee2))
+
+
+### Correcciones
+
+* cabecera con enlaces reales y un solo CTA sólido por pantalla ([c89b27c](https://github.com/hugotorreslinares/canjelibros/commit/c89b27cee77f4691aae6b50ff1f2141fd93263ec))
+* Compartir baja a un enlace discreto y deja solo un CTA en la ficha ([8eaec5e](https://github.com/hugotorreslinares/canjelibros/commit/8eaec5e35687cdc028af7a3e6ae0b8f41312b58c))
+* el aviso por correo daba 500 por una dependencia rota ([6f0e3ea](https://github.com/hugotorreslinares/canjelibros/commit/6f0e3eaa1adb4f4f8c02a9bf7f70eae576b4dd7a))
+* el filtro de distancia ya no esconde los libros de un Punto ([9f4e5fd](https://github.com/hugotorreslinares/canjelibros/commit/9f4e5fd494a68930b50d5a5b9707258fc9375888))
+* el mapa público muestra a cada lector en su zona, no en su casa ([f86e8dd](https://github.com/hugotorreslinares/canjelibros/commit/f86e8ddb6e3e029805ffec0fe3c3e7548ba8e83e))
+* la ficha pública de un libro hereda header y footer ([593ed4c](https://github.com/hugotorreslinares/canjelibros/commit/593ed4c6b37fe9361655c672e3981c030e4706b7))
+* og:title y twitter:title salen iguales y en el orden del título ([119c9ef](https://github.com/hugotorreslinares/canjelibros/commit/119c9ef810a783001c373d58e93f6c8e06681715))
+* una clave de administrador inválida ya no tumba el build entero ([8234805](https://github.com/hugotorreslinares/canjelibros/commit/8234805072870a4fca3292245aede3ac6ea5532b))
+
 ## [0.5.0](https://github.com/hugotorreslinares/canjelibros/compare/v0.4.0...v0.5.0) (2026-09-07)
 
 
