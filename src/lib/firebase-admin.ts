@@ -20,6 +20,12 @@ import { getFirestore, type Firestore } from "firebase-admin/firestore";
  * privada — cuyos `client_email` y `private_key` van en variables de entorno
  * del servidor. Sin ellas, `isFirebaseAdminConfigured` es `false` y el
  * endpoint no hace nada: el resto del sitio sigue sin necesitar esto.
+ *
+ * Este módulo se evalúa durante el build (Next ejecuta la ruta para recoger
+ * su configuración), así que una clave con un formato inválido no puede
+ * lanzar sin más: tumbaría el build entero, no solo este endpoint. `cert()`
+ * va en un try/catch — si falla, `adminDb` queda en `null` como si faltaran
+ * las variables, y el build sigue.
  */
 const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
@@ -30,9 +36,18 @@ export const isFirebaseAdminConfigured = Boolean(projectId && clientEmail && pri
 
 const ADMIN_APP_NAME = "librocambio-admin";
 
-const app: App | null = isFirebaseAdminConfigured
-  ? (getApps().find((a) => a.name === ADMIN_APP_NAME) ??
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) }, ADMIN_APP_NAME))
-  : null;
+function initAdminApp(): App | null {
+  if (!isFirebaseAdminConfigured) return null;
+  const existing = getApps().find((a) => a.name === ADMIN_APP_NAME);
+  if (existing) return existing;
+  try {
+    return initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) }, ADMIN_APP_NAME);
+  } catch (err) {
+    console.error("no se pudo iniciar Firebase admin — revisa FIREBASE_ADMIN_PRIVATE_KEY", err);
+    return null;
+  }
+}
+
+const app = initAdminApp();
 
 export const adminDb: Firestore | null = app ? getFirestore(app) : null;
