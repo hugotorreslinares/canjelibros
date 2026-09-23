@@ -1,5 +1,4 @@
 import { getApps, initializeApp, cert, type App } from "firebase-admin/app";
-import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 /**
@@ -7,6 +6,13 @@ import { getFirestore, type Firestore } from "firebase-admin/firestore";
  * importa desde un componente de cliente. Hoy lo usa un único endpoint
  * (`/api/notify-message`) para leer el correo de quien recibe un mensaje, algo
  * que las reglas de Firestore no dejan hacer al propio remitente.
+ *
+ * Solo `firebase-admin/firestore`, no `firebase-admin/auth`: ese módulo
+ * arrastra `jwks-rsa` → `jose`, cuya build ESM no carga bajo el `require()`
+ * nativo que usa Next para los paquetes externos (`ERR_REQUIRE_ESM` en
+ * producción). El correo del destinatario se guarda aparte, en
+ * `readerEmails/{uid}` (ver `ensureReaderProfile`), así que no hace falta
+ * Admin Auth para nada.
  *
  * El proyecto es el mismo de siempre (`NEXT_PUBLIC_FIREBASE_PROJECT_ID`, no es
  * secreto); lo que falta es una cuenta de servicio — Consola de Firebase →
@@ -30,4 +36,3 @@ const app: App | null = isFirebaseAdminConfigured
   : null;
 
 export const adminDb: Firestore | null = app ? getFirestore(app) : null;
-export const adminAuth: Auth | null = app ? getAuth(app) : null;

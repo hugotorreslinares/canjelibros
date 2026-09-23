@@ -118,6 +118,14 @@ export function subscribeModerationLog(
 
 export async function ensureReaderProfile(user: User, coords?: { lat: number; lng: number }): Promise<void> {
   if (!db) throw new FirebaseNotConfiguredError();
+  // Aparte del perfil (público), guarda el correo en un documento propio y
+  // privado: es lo único que lee `/api/notify-message` para avisar por
+  // correo, y `readers/{uid}` es de lectura pública. Se actualiza en cada
+  // inicio de sesión, no solo la primera vez, por si el correo cambia.
+  if (user.email) {
+    const emailRef = doc(db, "readerEmails", user.uid);
+    updateDoc(emailRef, { email: user.email }).catch(() => setDoc(emailRef, { email: user.email }));
+  }
   const ref = doc(db, READERS, user.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {

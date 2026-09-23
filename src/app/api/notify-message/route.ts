@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminAuth, adminDb, isFirebaseAdminConfigured } from "@/lib/firebase-admin";
+import { adminDb, isFirebaseAdminConfigured } from "@/lib/firebase-admin";
 import { SITE_URL } from "@/lib/seo";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -26,7 +26,7 @@ function escapeHtml(text: string): string {
  * conversación rápida resulta ruidosa, añadir un mínimo entre avisos por hilo.
  */
 export async function POST(req: Request) {
-  if (!isFirebaseAdminConfigured || !RESEND_API_KEY || !adminDb || !adminAuth) {
+  if (!isFirebaseAdminConfigured || !RESEND_API_KEY || !adminDb) {
     return NextResponse.json({ skipped: true });
   }
 
@@ -48,13 +48,14 @@ export async function POST(req: Request) {
     const recipientUid = participants.find((uid) => uid !== message.senderId);
     if (!recipientUid) return NextResponse.json({ skipped: true });
 
-    const [recipient, senderReader] = await Promise.all([
-      adminAuth.getUser(recipientUid).catch(() => null),
+    const [recipientEmailSnap, senderReader] = await Promise.all([
+      adminDb.doc(`readerEmails/${recipientUid}`).get(),
       adminDb.doc(`readers/${message.senderId}`).get(),
     ]);
-    if (!recipient?.email) return NextResponse.json({ skipped: true });
+    const recipientEmail = recipientEmailSnap.data()?.email as string | undefined;
+    if (!recipientEmail) return NextResponse.json({ skipped: true });
 
-    const senderName = (senderReader.data()?.name as string | undefined) || recipient.displayName || "Un lector";
+    const senderName = (senderReader.data()?.name as string | undefined) || "Un lector";
     const preview = String(message.text ?? "").slice(0, 240);
     const url = `${SITE_URL}/mensajes`;
 
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: RESEND_FROM,
-        to: [recipient.email],
+        to: [recipientEmail],
         subject: `${senderName} te escribió en Librocambio`,
         text: `${senderName}: ${preview}\n\nResponde en ${url}`,
         html: `<p><strong>${escapeHtml(senderName)}</strong> te escribió en Librocambio:</p><p>${escapeHtml(preview)}</p><p><a href="${url}">Responder</a></p>`,

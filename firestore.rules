@@ -65,6 +65,15 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // El correo de cada lector, para que `/api/notify-message` sepa a quién
+    // escribirle sin exponerlo en `readers/{uid}` (esa colección es de lectura
+    // pública). Cada quien escribe y lee solo el suyo; el SDK de administrador
+    // que usa el endpoint no pasa por estas reglas, así que sí puede leer el
+    // de cualquiera.
+    match /readerEmails/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
     match /readers/{uid} {
       allow read: if true;
       allow create: if request.auth != null && request.auth.uid == uid;
